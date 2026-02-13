@@ -1,9 +1,9 @@
 <!--
-  Sync Impact Report (v1.1.0)
-  Version change: 1.0.0 → 1.1.0
-  Modified principles: Sections 2 (personas expanded), 3 (latest deps + CVE), 4 (Trust Filter + dynamic dates), 5, 6, 7, 8 (dynamic cycle logic), Governance
-  Change type: Clarifications, normative fixes, persona roles/tasks, dynamic academic-year logic, dependency/CVE requirements
-  Templates: plan-template.md ✅ (Constitution Check gates updated for Trust Filter, dynamic cycle, personas, deps/CVE)
+  Sync Impact Report (v1.2.0)
+  Version change: 1.1.0 → 1.2.0
+  Modified principles: Added Section 9 (Documentation Protocol)
+  Change type: New principle—doc references, App Router only, Zod/Supabase/LangGraph conventions
+  Templates: plan-template.md ✅ (Documentation Protocol gates added to Constitution Check)
   Follow-up TODOs: None
 -->
 
@@ -85,10 +85,19 @@ Every user-facing AI interaction that influences search, verification, or applic
 
 **Rationale:** Prioritizing authoritative sources and dynamic cycle checks protects students from outdated or low-trust listings without requiring yearly constitution updates.
 
+## 9. Documentation Protocol
+
+- **Strict Adherence:** All implementation plans (`/speckit.plan`) MUST reference the official documentation for technologies prescribed in this constitution.
+- **Next.js App Router Standard:** Strictly use App Router conventions. The `pages/` directory MUST NOT be used. React 19 features (e.g., `useActionState`) MUST be used where applicable.
+- **Type Safety:** Schema validation MUST use **Zod** per its official documentation. Database interactions MUST use **Supabase**-generated types.
+- **Agent Orchestration:** LangGraph usage MUST follow **LangGraph JS** documentation for state and persistence. Checkpoints MUST be used to save agent progress in Supabase.
+
+**Rationale:** Consistent reference to authoritative documentation reduces drift, enables correct feature usage, and ensures agent state is durable across sessions.
+
 ## Governance
 
 - This constitution supersedes ad-hoc practices for the TuitionLift project. All feature specs and implementation plans MUST pass a Constitution Check before Phase 0 research and again upon completion of Phase 1 design (before Phase 2 implementation).
 - **Amendments:** Changes require documentation of the change, rationale, and impact on existing specs/plans. Version MUST be incremented per semantic versioning (MAJOR: backward-incompatible principle removals/redefinitions; MINOR: new principle or material expansion; PATCH: clarifications, typos, non-semantic refinements).
 - **Compliance:** PRs and reviews MUST verify alignment with the principles above. Exceptions (e.g., complexity or new patterns) MUST be justified in the plan's Complexity Tracking table.
 
-**Version**: 1.1.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2025-02-13
+**Version**: 1.2.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2025-02-13

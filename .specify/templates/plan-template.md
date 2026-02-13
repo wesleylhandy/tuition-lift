@@ -40,6 +40,7 @@ Verify alignment with `.specify/memory/constitution.md`:
 - **UX/UI:** MVP scope only; WCAG 2.1 AA; Lighthouse 90+ Performance and Best Practices.
 - **Forbidden:** No inline styles; no floating promises in LangGraph; no mock data in production; Loading/Empty states handled.
 - **Data integrity:** .edu/.gov weighted 2× over .org; dynamic cycle checks—due dates after today = Active, past due dates = "Potentially Expired"; no hardcoded academic years.
+- **Documentation protocol:** Plan references official docs for Next.js, Zod, Supabase, LangGraph JS; App Router only (no `pages/`); Zod for schemas, Supabase types for DB; LangGraph Checkpoints for agent persistence.
 
 ## Project Structure
 
