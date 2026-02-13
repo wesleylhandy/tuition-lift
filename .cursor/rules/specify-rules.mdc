@@ -1,0 +1,30 @@
+# tuition-lift Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-02-13
+
+## Active Technologies
+
+- TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
+
+## Project Structure
+
+```text
+backend/
+frontend/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript 5.9, Node 18+: Follow standard conventions
+
+## Recent Changes
+
+- 001-waitlist-launch: Added TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
