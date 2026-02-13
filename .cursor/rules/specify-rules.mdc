@@ -5,11 +5,14 @@ Auto-generated from all feature plans. Last updated: 2026-02-13
 ## Active Technologies
 
 - TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
+- TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
 
 ## Project Structure
 
 ```text
 src/
+backend/
+frontend/
 tests/
 ```
 
