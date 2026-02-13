@@ -1,9 +1,10 @@
 <!--
-  Sync Impact Report (v1.2.0)
-  Version change: 1.1.0 → 1.2.0
-  Modified principles: Added Section 9 (Documentation Protocol)
-  Change type: New principle—doc references, App Router only, Zod/Supabase/LangGraph conventions
-  Templates: plan-template.md ✅ (Documentation Protocol gates added to Constitution Check)
+  Sync Impact Report (v1.3.0)
+  Version change: 1.2.0 → 1.3.0
+  Modified principles: Section 3 (Technical Standards)—added Monorepo Layout to Architecture
+  Change type: MINOR—new principle/material expansion (monorepo layout, two Vercel apps)
+  Added sections: Monorepo Layout (within Section 3 Architecture)
+  Templates: plan-template.md ✅ (Constitution Check + Project Structure Option 4), tasks-template.md ✅ (Path Conventions)
   Follow-up TODOs: None
 -->
 
@@ -37,10 +38,11 @@ Every user-facing AI interaction that influences search, verification, or applic
 - **State Management:** LangGraph for agentic loops (search/verify).
 - **Persistence:** Supabase (PostgreSQL). Use Row Level Security (RLS) for ALL tables.
 - **Architecture:**
+  - **Monorepo Layout:** The project MUST use a Turborepo monorepo with two deployable Vercel apps: `apps/web` (Next.js user-facing application) and `apps/agent` (LangGraph agent service). Shared logic MUST live in `packages/` (e.g., `packages/database` for Supabase client, types, and schema). Each app MUST be deployed as a separate Vercel project with its root directory set to its respective `apps/*` path.
   - **Separation of Concerns:** Agent logic (LangGraph) MUST be kept separate from UI components.
   - **Server-First:** All API keys and sensitive logic MUST reside in Server Components or Server Actions. Use `server-only`.
 
-**Rationale:** Consistency in stack and boundaries ensures maintainability, security, and a single "Edu-tech" identity.
+**Rationale:** Consistency in stack and boundaries ensures maintainability, security, and a single "Edu-tech" identity. The monorepo layout codifies deployment units and shared package usage for Spec-Kit plans and contributor alignment.
 
 ## 4. Security & Safety (PII Guardrails)
 
@@ -100,4 +102,4 @@ Every user-facing AI interaction that influences search, verification, or applic
 - **Amendments:** Changes require documentation of the change, rationale, and impact on existing specs/plans. Version MUST be incremented per semantic versioning (MAJOR: backward-incompatible principle removals/redefinitions; MINOR: new principle or material expansion; PATCH: clarifications, typos, non-semantic refinements).
 - **Compliance:** PRs and reviews MUST verify alignment with the principles above. Exceptions (e.g., complexity or new patterns) MUST be justified in the plan's Complexity Tracking table.
 
-**Version**: 1.2.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2025-02-13
+**Version**: 1.3.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2025-02-13

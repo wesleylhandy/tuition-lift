@@ -23,6 +23,7 @@ description: "Task list template for feature implementation"
 - **Single project**: `src/`, `tests/` at repository root
 - **Web app**: `backend/src/`, `frontend/src/`
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
+- **Turborepo (TuitionLift)**: `apps/web/`, `apps/agent/`, `packages/database/`, etc.
 - Paths shown below assume single project - adjust based on plan.md structure
 
 <!-- 

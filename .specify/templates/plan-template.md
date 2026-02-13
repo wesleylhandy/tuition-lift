@@ -34,7 +34,7 @@
 Verify alignment with `.specify/memory/constitution.md`:
 
 - **Mission & scope:** Feature supports "Search → Verify → Apply" and does not defer core-loop work without justification.
-- **Technical standards:** Plan uses Next.js latest (App Router), React latest, Tailwind + Shadcn/ui, LangGraph for agentic flows, Supabase with RLS; all deps latest; no HIGH/CRITICAL CVEs; agent logic separate from UI; secrets in Server Components/Actions with `server-only`.
+- **Technical standards:** Plan uses Next.js latest (App Router), React latest, Tailwind + Shadcn/ui, LangGraph for agentic flows, Supabase with RLS; all deps latest; no HIGH/CRITICAL CVEs; agent logic separate from UI; secrets in Server Components/Actions with `server-only`. Monorepo layout: code in `apps/web`, `apps/agent`, or `packages/*` per constitution; each app deployed as separate Vercel project.
 - **Security & PII:** No raw PII to third-party LLMs; placeholders (e.g. `{{USER_CITY}}`) for Professional Advisor search; Trust Filter (domain check + dynamic due-date verification by current academic year) for scholarships; no data brokering.
 - **Workflow:** Spec and plan exist; spec is what, plan is how; tasks are atomic and marked done when verified.
 - **UX/UI:** MVP scope only; WCAG 2.1 AA; Lighthouse 90+ Performance and Best Practices.
@@ -98,6 +98,14 @@ api/
 
 ios/ or android/
 └── [platform-specific structure: feature modules, UI flows, platform tests]
+
+# [REMOVE IF UNUSED] Option 4: Turborepo monorepo (TuitionLift DEFAULT)
+apps/
+├── web/          # Next.js user-facing app (Vercel)
+├── agent/        # LangGraph agent service (Vercel)
+packages/
+├── database/     # Supabase client, types, schema
+└── [other shared packages]
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real
