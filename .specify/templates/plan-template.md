@@ -34,12 +34,12 @@
 Verify alignment with `.specify/memory/constitution.md`:
 
 - **Mission & scope:** Feature supports "Search → Verify → Apply" and does not defer core-loop work without justification.
-- **Technical standards:** Plan uses Next.js 16+ (App Router), React 19, Tailwind + Shadcn/ui, LangGraph for agentic flows, Supabase with RLS; agent logic separate from UI; secrets in Server Components/Actions with `server-only`.
-- **Security & PII:** No raw PII to third-party LLMs; placeholders (e.g. `{{USER_CITY}}`) for Advisor search; Trust Filter (.edu/.gov + 2026/2027 cycle) for scholarships; no data brokering.
+- **Technical standards:** Plan uses Next.js latest (App Router), React latest, Tailwind + Shadcn/ui, LangGraph for agentic flows, Supabase with RLS; all deps latest; no HIGH/CRITICAL CVEs; agent logic separate from UI; secrets in Server Components/Actions with `server-only`.
+- **Security & PII:** No raw PII to third-party LLMs; placeholders (e.g. `{{USER_CITY}}`) for Professional Advisor search; Trust Filter (domain check + dynamic due-date verification by current academic year) for scholarships; no data brokering.
 - **Workflow:** Spec and plan exist; spec is what, plan is how; tasks are atomic and marked done when verified.
 - **UX/UI:** MVP scope only; WCAG 2.1 AA; Lighthouse 90+ Performance and Best Practices.
 - **Forbidden:** No inline styles; no floating promises in LangGraph; no mock data in production; Loading/Empty states handled.
-- **Data integrity:** .edu/.gov weighted 2× over .org; cycle checks flag pre-2026 as "Potentially Expired."
+- **Data integrity:** .edu/.gov weighted 2× over .org; dynamic cycle checks—due dates after today = Active, past due dates = "Potentially Expired"; no hardcoded academic years.
 
 ## Project Structure
 
