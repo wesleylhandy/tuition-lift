@@ -21,6 +21,9 @@ coverage
 # Vercel
 .vercel
 
+# SpecStory
+.specstory
+
 # Build Outputs
 .next/
 out/
