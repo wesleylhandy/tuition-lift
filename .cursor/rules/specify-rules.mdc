@@ -1,0 +1,29 @@
+# tuition-lift Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-02-13
+
+## Active Technologies
+
+- TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript 5.9: Follow standard conventions
+
+## Recent Changes
+
+- 002-db-core-infrastructure: Added TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
