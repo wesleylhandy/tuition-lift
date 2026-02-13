@@ -1,10 +1,10 @@
 <!--
   Sync Impact Report (v1.3.0)
   Version change: 1.2.0 → 1.3.0
-  Modified principles: Section 3 (Technical Standards)—added Monorepo Layout to Architecture
-  Change type: MINOR—new principle/material expansion (monorepo layout, two Vercel apps)
-  Added sections: Monorepo Layout (within Section 3 Architecture)
-  Templates: plan-template.md ✅ (Constitution Check + Project Structure Option 4), tasks-template.md ✅ (Path Conventions)
+  Modified principles: Added Section 10 (Reputation Engine / Trust Scoring)
+  Change type: MINOR—new principle; formalizes trust tiers, auto-fail rule, and 0-100 scoring
+  Sections 4 & 8: Cross-referenced; Section 10 supersedes ranking/priority details
+  Specs affected: None (001-waitlist-launch is pre-launch; trust rules apply to scholarship discovery features)
   Follow-up TODOs: None
 -->
 
@@ -47,7 +47,7 @@ Every user-facing AI interaction that influences search, verification, or applic
 ## 4. Security & Safety (PII Guardrails)
 
 - **PII Scrubbing:** Raw student names or addresses MUST NOT be sent to third-party LLM APIs. Use placeholders (e.g., `{{USER_CITY}}`) during the Professional Advisor search.
-- **Verification Rule:** Every scholarship found MUST pass a Trust Filter before inclusion. The Trust Filter consists of: (a) domain check (.edu/.gov preferred; .org allowed but deprioritized per Section 8), and (b) dynamic date verification based on current date and academic year. Scholarships with due dates in the past MUST NOT appear as "Active"; scholarships with due dates after today MAY appear as "Active" if they align with the current or upcoming academic term. Scholarships failing either check MUST NOT appear as "Active."
+- **Verification Rule:** Every scholarship found MUST pass a Trust Filter before inclusion. The Trust Filter consists of: (a) dynamic date verification (Section 8), and (b) the Reputation Engine (Section 10)—0–100 scoring, auto-fail for fees, and tiered display. Scholarships with due dates in the past MUST NOT appear as "Active." Scholarships failing the Reputation Engine MUST NOT appear as "Active" or MUST be flagged per Section 10.
 - **No Data Brokering:** The system MUST NOT be designed to sell or expose user data.
 
 **Rationale:** Student trust and regulatory safety require strict PII handling and source verification; data is never a product.
@@ -80,9 +80,9 @@ Every user-facing AI interaction that influences search, verification, or applic
 
 ## 8. Data Integrity & Verification
 
-*These rules define ranking and cycle logic within the Trust Filter (Section 4).*
+*These rules define cycle logic within the Trust Filter (Section 4). Domain/trust ranking is formalized in Section 10 (Reputation Engine).*
 
-- **The .edu/.gov Priority:** The Professional Advisor MUST weight institutional (.edu) and federal/state (.gov) sources at 2× the priority of .org sources.
+- **The .edu/.gov Priority:** The Professional Advisor MUST weight institutional (.edu) and federal/state (.gov) sources at 2× the priority of .org sources. Section 10 maps these to High Trust (80–100).
 - **Dynamic Cycle Checks:** The system MUST NOT hardcode academic years. Cycle and due-date logic MUST be computed dynamically from the current date and the current/upcoming academic year. A scholarship MUST be considered "Active" only if its due date is after today and aligns with the current or upcoming academic term. Example: for the 2026/2027 academic year, due dates in 2025 are already past and thus NOT active; due dates after today ARE active. Scholarships with past due dates MUST be flagged as "Potentially Expired."
 
 **Rationale:** Prioritizing authoritative sources and dynamic cycle checks protects students from outdated or low-trust listings without requiring yearly constitution updates.
@@ -96,10 +96,21 @@ Every user-facing AI interaction that influences search, verification, or applic
 
 **Rationale:** Consistent reference to authoritative documentation reduces drift, enables correct feature usage, and ensures agent state is durable across sessions.
 
+## 10. The Reputation Engine (Trust Scoring)
+
+- **Multi-Factor Ranking:** The Professional Advisor MUST rank scholarships using a 0–100 score.
+- **The "Auto-Fail" Rule:** Any scholarship requiring an upfront fee (application, processing, or "guarantee" fee) MUST be scored 0 and hidden from the user.
+- **Verification Priority:**
+  - **High Trust (80–100):** Direct institutional aid (.edu) or Federal/State grants (.gov).
+  - **Vetted Commercial (60–79):** Established .com/.org platforms (e.g., Fastweb, Coca-Cola Foundation).
+  - **Under Review (Below 60):** New opportunities or those missing key data. These MUST be flagged to the user with a "Verify with Caution" warning.
+
+**Rationale:** A numeric, tiered trust model protects students from fee scams while allowing vetted commercial sources. Low-score items remain visible with explicit warnings rather than hidden, preserving discovery without false safety.
+
 ## Governance
 
 - This constitution supersedes ad-hoc practices for the TuitionLift project. All feature specs and implementation plans MUST pass a Constitution Check before Phase 0 research and again upon completion of Phase 1 design (before Phase 2 implementation).
 - **Amendments:** Changes require documentation of the change, rationale, and impact on existing specs/plans. Version MUST be incremented per semantic versioning (MAJOR: backward-incompatible principle removals/redefinitions; MINOR: new principle or material expansion; PATCH: clarifications, typos, non-semantic refinements).
 - **Compliance:** PRs and reviews MUST verify alignment with the principles above. Exceptions (e.g., complexity or new patterns) MUST be justified in the plan's Complexity Tracking table.
 
-**Version**: 1.3.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2025-02-13
+**Version**: 1.3.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2026-02-13
