@@ -5,6 +5,15 @@
 **Status**: Draft  
 **Input**: User description: "Create the Advisor Discovery Engine: A LangGraph-powered search and verification system for TuitionLift."
 
+## Clarifications
+
+### Session 2025-02-13
+
+- Q: When same scholarship appears from multiple queries in a discovery run, how should system behave? → A: Deduplicate by URL; keep one record per unique scholarship; merge metadata and use the highest trust score when conflicting.
+- Q: Scholarships "flagged for manual review" (ambiguous deadlines)—what workflow is in scope? → A: Flag and route only: mark status and route to a queue; no reviewer UI or actions in this feature.
+- Q: Rate limit between search batches—specific value or leave to plan? → A: Default to 2-second delay; configurable to adjust for external source rate limits.
+- Q: When persisting to scholarships table, same URL already exists from another user/run—how to handle? → A: Upsert by URL: update metadata/trust score if exists; otherwise create new row. Also: scholarship_category should support multiple categories per scholarship.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Privacy-Safe Scholarship Search (Priority: P1)
@@ -69,7 +78,7 @@ Discovery runs in phases: Scout (search) and Verify. State is checkpointed after
 
 1. **Given** Scout phase completes successfully, **When** state is persisted, **Then** a checkpoint exists so that verification can be retried without re-executing search.
 2. **Given** verification fails after Scout, **When** the workflow resumes, **Then** search is not re-run; verification is retried using checkpointed search results.
-3. **Given** multiple search batches, **When** executing, **Then** batches are rate-limited to prevent external API throttling.
+3. **Given** multiple search batches, **When** executing, **Then** batches are rate-limited (configurable minimum delay; default 2 seconds) to prevent external API throttling.
 4. **Given** discovery runs, **When** state is updated, **Then** all updates align with the shared orchestration state (TuitionLiftState) defined in the Orchestration spec.
 
 ---
@@ -81,6 +90,7 @@ Discovery runs in phases: Scout (search) and Verify. State is checkpointed after
 - What happens when external search fails or times out? Error is logged; state is updated; Safe Recovery (per Orchestration spec) notifies user; checkpoint before verification allows retry of verification only if Scout had partially completed.
 - How does the system handle scholarships with past due dates? They are not shown as "Active"; they may be flagged as "Potentially Expired" for user awareness (Constitution §8).
 - What happens when all generated queries return no results? Same as zero results—empty discovery_results; no error for empty results.
+- What happens when multiple queries return the same scholarship (same URL)? System deduplicates by URL; keeps one record, merges metadata, and uses the highest trust score when conflicting.
 
 ## Requirements *(mandatory)*
 
@@ -93,8 +103,9 @@ Discovery runs in phases: Scout (search) and Verify. State is checkpointed after
 
 **Search & Verification**
 - **FR-004**: System MUST execute deep web searches focusing on the current and upcoming scholarship cycles (e.g., 2026/2027).
-- **FR-005**: System MUST verify every result for cycle eligibility (deadline aligns with current/upcoming academic year); results with ambiguous or unverifiable deadlines MUST be flagged for manual review, not silently included (Cycle Sniper Logic).
+- **FR-005**: System MUST verify every result for cycle eligibility (deadline aligns with current/upcoming academic year); results with ambiguous or unverifiable deadlines MUST be flagged and routed to a manual-review queue—no reviewer UI or actions in this feature (Cycle Sniper Logic).
 - **FR-006**: System MUST NOT hardcode academic years; cycle and due-date logic MUST be computed dynamically from the current date (Constitution §8).
+- **FR-006a**: When the same scholarship (same URL) appears from multiple search queries in a single run, the system MUST deduplicate: keep one record per unique scholarship, merge metadata, and use the highest trust score when conflicting.
 
 **Reputation Engine**
 - **FR-007**: System MUST assign each scholarship a trust score (0–100) using a multi-factor model: domain type (.edu/.gov vs .com), site longevity, and fee check.
@@ -108,24 +119,27 @@ Discovery runs in phases: Scout (search) and Verify. State is checkpointed after
 **State & Persistence**
 - **FR-012**: System MUST use the shared orchestration state (TuitionLiftState) as defined in the Orchestration spec; discovery_results and related fields MUST align with that schema.
 - **FR-013**: System MUST checkpoint state after the Scout phase (before verification) so that verification retries do not re-run search.
-- **FR-014**: System MUST rate-limit search batches to prevent external API throttling.
+- **FR-014**: System MUST rate-limit search batches to prevent external API throttling; minimum delay between batches MUST be configurable, with a default of 2 seconds (to allow adjustment for external source rate limits).
 
 **Data Output**
-- **FR-015**: System MUST write verified scholarship results to the scholarships entity in the shared data layer.
+- **FR-015**: System MUST write verified scholarship results to the scholarships entity in the shared data layer; when a scholarship with the same URL already exists, the system MUST upsert (update metadata and trust score) rather than create a duplicate row.
 - **FR-016**: System MUST preserve search metadata (source URL, snippet, scoring factors) for each result; metadata MUST be stored alongside the scholarship record in a structured, queryable form.
+- **FR-016a**: When a scholarship fits multiple categories (e.g., need_based and field_specific), the system MUST assign and store all applicable categories; the scholarships entity or metadata MUST support multiple categories per scholarship.
 
 ### Key Entities
 
 - **TuitionLiftState**: Shared orchestration state (from Orchestration spec). Includes user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile.
 - **discovery_results**: Array of scholarship objects produced by the Advisor. Each has trust_score, source_url, need_match_score, Trust Report, and cycle verification status.
-- **Scholarship (verified)**: Persisted to scholarships table. Attributes: title, amount, deadline, url, trust_score, category. Search metadata (source URL, snippet, scoring factors) stored in metadata field.
+- **Scholarship (verified)**: Persisted to scholarships table. Attributes: title, amount, deadline, url, trust_score, category (supports multiple when applicable). Search metadata (source URL, snippet, scoring factors) stored in metadata field.
 - **Trust Report**: Human-readable explanation of trust score for a scholarship; includes domain type, longevity, fee check outcome, and score rationale.
 - **user_profile**: Validated student data (GPA, major, SAI brackets) used for query generation; never includes name or SSN in external calls.
 
 ### Assumptions
 
+- Manual-review workflow: this feature flags and routes ambiguous-deadline scholarships to a queue; reviewer triage, approve/reject, or status updates are out of scope.
+- Rate-limit delay between search batches is configurable; default 2 seconds; exact mechanism (config var, env) deferred to plan.
 - The orchestration layer and shared state (TuitionLiftState) exist as defined in the Orchestration spec.
-- The shared data layer provides a scholarships entity with support for title, amount, deadline, url, trust_score, category, and a metadata field for search provenance.
+- The shared data layer provides a scholarships entity with support for title, amount, deadline, url, trust_score, category (single or multi-valued; schema alignment with 002 may be needed), and a metadata field for search provenance.
 - External search is available; exact search provider is an implementation choice.
 - Checkpointing mechanism supports persisting state after Scout phase; implementation follows Orchestration spec and persistence requirements.
 - SAI validation and range (-1500 to 999999) follow federal guidance; FAFSA 2026–2027 applies.
