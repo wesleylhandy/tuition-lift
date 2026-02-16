@@ -1,36 +1,38 @@
 # Implementation Plan: Scholarship Inbox & Dashboard
 
-**Branch**: `006-scholarship-inbox-dashboard` | **Date**: 2025-02-13 | **Spec**: [spec.md](./spec.md)  
+**Branch**: `006-scholarship-inbox-dashboard` | **Date**: 2025-02-16 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/006-scholarship-inbox-dashboard/spec.md`
 
 ## Summary
 
-Build a real-time, Bento-box Control Center in `apps/web` that transitions students from Discovery to Action. Three core views: (1) Match Inbox with prioritized feed, Live Pulse, Trust Shield, and Coach's Take; (2) Coach's Game Plan with Top 3 Tasks, Debt Lifted ring, Next Win countdown; (3) Application Tracker with full lifecycle. Uses Next.js 16 App Router, Server Actions for state transitions, Supabase Realtime for live updates, shadcn/ui for layout/components, Framer Motion for animations. Consumes data from `packages/database`; adds `dismissals` table for soft-dismiss behavior.
+Build a real-time, Bento-box Control Center in `apps/web` that transitions students from Discovery to Action. Three core views: (1) Match Inbox with prioritized feed, Live Pulse, Trust Shield, and Coach's Take; (2) Coach's Game Plan with Top 3 Tasks, Debt Lifted ring, Next Win countdown; (3) Application Tracker with full lifecycle. Uses Next.js App Router, Server Actions for state transitions, Supabase Realtime for live updates, shadcn/ui for layout/components, Framer Motion for animations. Consumes data from `packages/database` and GET /api/discovery/results (003); adds `dismissals` table for soft-dismiss behavior.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.9  
-**Primary Dependencies**: Next.js 16 (App Router), React 19, Tailwind CSS, shadcn/ui, Framer Motion, @supabase/supabase-js, @supabase/realtime  
+**Language/Version**: TypeScript 5.x (Next.js project)  
+**Primary Dependencies**: Next.js (App Router), React 19, Tailwind CSS, shadcn/ui, Framer Motion, Supabase JS  
 **Storage**: Supabase (PostgreSQL); `packages/database` schema + new `dismissals` table  
-**Testing**: Vitest for Server Actions; Playwright or Cypress for E2E dashboard flows  
-**Target Platform**: Web (Next.js, Vercel)  
-**Project Type**: Turborepo monorepo (UI in `apps/web`)  
+**Testing**: Vitest / Playwright (per project setup); manual verification per quickstart  
+**Target Platform**: Web (Vercel deployment)  
+**Project Type**: monorepo (Turborepo)  
 **Performance Goals**: Match Inbox load <2s (SC-001); Live Pulse within 5s (SC-002); action feedback within 2s (SC-004)  
-**Constraints**: WCAG 2.1 AA; Lighthouse 90+ Performance; 320px minimum viewport  
+**Constraints**: WCAG 2.1 AA; Lighthouse 90+ Performance and Best Practices  
 **Scale/Scope**: Dashboard home page; Match Inbox, Coach's Game Plan, Application Tracker; ~15–20 components
 
 ## Constitution Check
 
-*GATE: Passed before Phase 0. Re-checked after Phase 1.*
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **Mission & scope:** Feature supports "Search → Verify → Apply" by providing the Control Center UI; core loop transition from Discovery to Action.
-- **Technical standards:** Next.js App Router, React 19, Tailwind + shadcn/ui per Constitution §3. No LangGraph in UI; agent logic separate. Server Actions for state transitions; secrets in server-only.
-- **Security & PII:** No PII to third-party; RLS on dismissals (user_id = auth.uid()). Data consumed from shared layer.
-- **Workflow:** Spec and plan exist; tasks will be atomic.
-- **UX/UI:** MVP scope; WCAG 2.1 AA; Loading/Empty states (skeletons, Coach's Prep Checklist); no mock data in production.
-- **Forbidden:** No inline styles; Loading and Empty states handled; Tailwind/shadcn only.
+Verify alignment with `.specify/memory/constitution.md`:
+
+- **Mission & scope:** Feature supports "Search → Verify → Apply" and does not defer core-loop work without justification. Dashboard surfaces discovery results and application progress; enables Track, Dismiss, Verify Submission.
+- **Technical standards:** Plan uses Next.js latest (App Router), React latest, Tailwind + Shadcn/ui; agent logic in apps/agent (orchestration 003); Supabase with RLS; all deps latest; no HIGH/CRITICAL CVEs; secrets in Server Components/Actions with `server-only`. Monorepo layout: code in `apps/web`, `packages/database`; dashboard deployed via Vercel.
+- **Security & PII:** No raw PII to third-party; Trust Filter / trust_score from shared layer; RLS on dismissals (user_id = auth.uid()); data consumed from shared layer.
+- **Workflow:** Spec and plan exist; spec is what, plan is how; tasks are atomic and marked done when verified.
+- **UX/UI:** MVP scope only; WCAG 2.1 AA; Lighthouse 90+ Performance and Best Practices.
+- **Forbidden:** No inline styles; no mock data in production; Loading/Empty states (skeletons, Coach's Prep Checklist) handled.
 - **Data integrity:** trust_score, momentum_score from shared layer; dynamic cycle per Constitution §8.
-- **Documentation protocol:** Plan references Next.js, Supabase Realtime, Framer Motion, shadcn/ui official docs.
+- **Documentation protocol:** Plan references official docs for Next.js, Zod, Supabase; App Router only; Zod for schemas; Supabase types for DB.
 
 ## Project Structure
 
@@ -38,14 +40,14 @@ Build a real-time, Bento-box Control Center in `apps/web` that transitions stude
 
 ```text
 specs/006-scholarship-inbox-dashboard/
-├── plan.md              # This file
+├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output
-├── data-model.md        # Phase 1 (dismissals + UI entities)
-├── quickstart.md        # Phase 1 developer guide
-├── contracts/           # Server Actions + Realtime contracts
+├── data-model.md        # Phase 1 output (dismissals + consumed entities)
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
 │   ├── server-actions.md
 │   └── realtime-channels.md
-└── tasks.md             # Phase 2 output (/speckit.tasks)
+└── tasks.md             # Phase 2 output (/speckit.tasks command)
 ```
 
 ### Source Code (repository root)
@@ -53,43 +55,24 @@ specs/006-scholarship-inbox-dashboard/
 ```text
 apps/web/
 ├── app/
-│   ├── (auth)/              # or (dashboard) route group
-│   │   └── dashboard/
-│   │       └── page.tsx      # Main Control Center page
-│   └── layout.tsx
+│   └── (auth)/
+│       └── dashboard/
+│           └── page.tsx           # Main Control Center
 ├── components/
-│   ├── dashboard/
-│   │   ├── match-inbox/
-│   │   │   ├── match-inbox.tsx
-│   │   │   ├── match-card.tsx
-│   │   │   ├── live-pulse.tsx
-│   │   │   ├── trust-shield.tsx
-│   │   │   └── coaches-take.tsx
-│   │   ├── game-plan/
-│   │   │   ├── game-plan.tsx
-│   │   │   ├── top-three-tasks.tsx
-│   │   │   ├── debt-lifted-ring.tsx
-│   │   │   └── next-win-countdown.tsx
-│   │   ├── application-tracker/
-│   │   │   ├── application-tracker.tsx
-│   │   │   ├── tracker-column.tsx
-│   │   │   └── application-card.tsx
-│   │   ├── coaches-prep-checklist.tsx
-│   │   └── bento-grid.tsx
-│   └── ui/                   # shadcn components
-│       ├── skeleton.tsx
-│       ├── toast.tsx (sonner)
-│       └── ...
+│   └── dashboard/
+│       ├── match-inbox/            # Trust Shield, Coach's Take, Match Card, Live Pulse, Match Inbox
+│       ├── game-plan/             # Top Three Tasks, Debt Lifted ring, Next Win countdown
+│       └── application-tracker/   # Tracker Column, Application Card, Application Tracker
 ├── lib/
 │   ├── actions/
-│   │   ├── track.ts          # Server Action: add to tracked
-│   │   ├── dismiss.ts        # Server Action: soft dismiss
-│   │   └── verify-submission.ts
-│   ├── hooks/
-│   │   └── use-realtime-matches.ts
-│   └── utils/
-│       └── trust-shield.ts   # score → color mapping
-└── package.json              # + framer-motion, @supabase/realtime if needed
+│   │   ├── track.ts               # Server Action: add to tracked
+│   │   ├── dismiss.ts             # Server Action: soft dismiss
+│   │   └── verify-submission.ts   # Server Action: confirm submitted
+│   └── hooks/
+│       ├── use-realtime-matches.ts
+│       └── use-realtime-applications.ts
+└── lib/utils/
+    └── trust-shield.ts            # Badge color mapping (trust_score → Green/Amber/Yellow/Red)
 
 packages/database/
 └── supabase/migrations/
@@ -100,4 +83,4 @@ packages/database/
 
 ## Complexity Tracking
 
-No Constitution violations requiring justification.
+No violations. Complexity Tracking section left empty per Constitution alignment.

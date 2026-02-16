@@ -58,7 +58,7 @@
 - [ ] T016 [US1] Create Live Pulse component at apps/web/components/dashboard/match-inbox/live-pulse.tsx showing "Active Scouting" and domain ticker when scouting active per FR-002
 - [ ] T017 [US1] Create Match Card component at apps/web/components/dashboard/match-inbox/match-card.tsx with Trust Shield, Coach's Take, scholarship title, amount, deadline; wrap in motion.div for AnimatePresence
 - [ ] T018 [US1] Create Match Inbox component at apps/web/components/dashboard/match-inbox/match-inbox.tsx: fetch/sort matches by trust_score and momentum_score, render MatchCard list with AnimatePresence, integrate Live Pulse, subscribe via use-realtime-matches for new matches
-- [ ] T019 [US1] Wire Match Inbox data source to consume discovery results from shared data layer (orchestration/discovery_results or equivalent); filter out dismissed scholarships per current run
+- [ ] T019 [US1] Wire Match Inbox data source to GET /api/discovery/results (003); consume discoveryRunId and results with discovery_run_id; filter out dismissed scholarships per current run (user_id, scholarship_id, discovery_run_id in dismissals)
 - [ ] T020 [US1] Add Framer Motion entrance animation for new matches in Match Inbox (AnimatePresence, initial/animate/exit, key=id) per research.md
 
 **Checkpoint**: Match Inbox fully functional; Trust Shield, Coach's Take, Live Pulse, real-time updates working
@@ -72,10 +72,10 @@
 **Independent Test**: Supply applications with varying deadlines/trust; verify Top 3 ordered by momentum_score, Debt Lifted from Won apps, Next Win shows nearest deadline
 
 - [ ] T021 [P] [US2] Create Top Three Tasks component at apps/web/components/dashboard/game-plan/top-three-tasks.tsx displaying up to 3 applications ordered by momentum_score
-- [ ] T022 [P] [US2] Create Debt Lifted progress ring at apps/web/components/dashboard/game-plan/debt-lifted-ring.tsx showing cumulative $ from confirmed Won (awarded) applications
+- [ ] T022 [P] [US2] Create Debt Lifted progress ring at apps/web/components/dashboard/game-plan/debt-lifted-ring.tsx showing cumulative $ from applications where status='awarded' AND confirmed_at IS NOT NULL (per 005)
 - [ ] T023 [P] [US2] Create Next Win countdown at apps/web/components/dashboard/game-plan/next-win-countdown.tsx showing nearest deadline or next actionable milestone
-- [ ] T024 [US2] Create Game Plan component at apps/web/components/dashboard/game-plan/game-plan.tsx composing Top Three Tasks, Debt Lifted ring, Next Win countdown; fetch applications with priority_score
-- [ ] T025 [US2] Wire Game Plan to applications data; compute Debt Lifted from applications where status = 'awarded'; adapt layout when fewer than 3 tasks (no empty placeholders)
+- [ ] T024 [US2] Create Game Plan component at apps/web/components/dashboard/game-plan/game-plan.tsx composing Top Three Tasks, Debt Lifted ring, Next Win countdown; fetch applications with momentum_score (002 schema)
+- [ ] T025 [US2] Wire Game Plan to applications data; compute Debt Lifted from applications where status = 'awarded' AND confirmed_at IS NOT NULL (per 005); adapt layout when fewer than 3 tasks (no empty placeholders)
 
 **Checkpoint**: Coach's Game Plan displays Top 3, Debt Lifted, Next Win correctly
 
@@ -103,7 +103,7 @@
 
 **Independent Test**: Click Track, Dismiss, Verify Submission; verify state updates; on server error, toast shows with retry
 
-- [ ] T031 [US4] Add Quick Actions component or buttons to Match Card: Track, Dismiss; wire to trackScholarship and dismissScholarship Server Actions with toast on error and retry per FR-017
+- [ ] T031 [US4] Add Quick Actions component or buttons to Match Card: Track, Dismiss; wire to trackScholarship and dismissScholarship Server Actions; pass discovery_run_id from match to dismissScholarship when available (003); toast on error and retry per FR-017
 - [ ] T032 [US4] Add Verify Submission button to Application Card for Drafting/Review status; wire to verifySubmission Server Action with confirmation flow (per Coach spec); use React 19 useActionState where form-based; toast on error with retry
 - [ ] T033 [US4] Ensure card state does not change until action succeeds; use startTransition for optimistic UX where appropriate; reject duplicate/conflicting rapid actions server-side
 - [ ] T034 [US4] Add Quick Actions to Application Tracker application cards where context permits (e.g., Track if not yet tracked, Verify Submission if draft/review)
