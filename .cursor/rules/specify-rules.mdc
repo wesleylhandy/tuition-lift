@@ -33,10 +33,9 @@ npm test && npm run lint
 TypeScript 5.9: Follow standard conventions
 
 ## Recent Changes
+- 002-db-core-infrastructure: Added TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen)
 - 005-coach-execution-engine: Added TypeScript 5.x (Node 18+) + Inngest, Resend, React Email, LangGraph JS, Supabase (@supabase/supabase-js), Zod
 - 005-coach-execution-engine: Added TypeScript 5.x (Node 18+) + Inngest, Resend, React Email, LangGraph JS, Supabase (@supabase/supabase-js), Zod
-- 004-advisor-discovery-engine: Added TypeScript 5.x (Node 18+) + LangGraph JS, @langchain/langgraph-checkpoint-postgres, Tavily API client (or fetch), Zod, Supabase (@supabase/supabase-js)
-- 006-scholarship-inbox-dashboard: Added TypeScript 5.9 + Next.js 16 (App Router), React 19, Tailwind CSS, shadcn/ui, Framer Motion, @supabase/supabase-js, @supabase/realtime
 
 
 <!-- MANUAL ADDITIONS START -->

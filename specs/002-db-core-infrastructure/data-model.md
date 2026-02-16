@@ -11,11 +11,16 @@
 |-------------|----------|--------------------------------|--------------------------------------------|
 | id          | uuid     | PK, default gen_random_uuid()  |                                            |
 | email       | text     | NOT NULL, UNIQUE               |                                            |
+| segment     | text     | nullable                       | Self-categorization: high_school, undergraduate, masters, doctoral |
 | referral_code | text   | NOT NULL, UNIQUE               | 8-char alphanumeric, generated on insert   |
 | referred_by | uuid     | FK → waitlist.id, nullable     | Set only when valid referrer exists        |
+| referral_count | int   | NOT NULL, default 0             | Number of successful referrals; used for position jump |
+| unlock_sent_at | timestamptz | nullable                    | When share-to-unlock asset email was sent  |
 | created_at  | timestamptz | NOT NULL, default now()     |                                            |
 
-**RLS**: Public insert (allow anyone to join); public select for own row and referrer counts (or service-role for admin).
+**Constraints**: `CHECK (segment IN ('high_school', 'undergraduate', 'masters', 'doctoral') OR segment IS NULL)` (aligns with 001).
+
+**RLS**: INSERT service-role only (no direct anon INSERT). Anyone with the signup link may join via Server Actions; inserts go through validated, rate-limited Server Actions. SELECT and UPDATE service-role or admin only; no public read of waitlist rows.
 
 **Validation**: Zod schema must validate email format; referred_by must reference existing id when provided; invalid referral_code → leave referred_by null (FR-005a).
 
@@ -44,6 +49,8 @@
 **Enum `pell_eligibility_status`** (used by profiles): `eligible`, `ineligible`, `unknown`.
 
 **Validation**: Zod schema for all fields; gpa in range; sai in -1500..999999; pell_eligibility_status must be one of enum values; household_size and number_in_college positive; updated_at used for optimistic locking.
+
+**Note**: No `household_income_bracket` column. Consumers (orchestration 003) derive household_income_bracket from SAI at read time per federal tiers (Low/Moderate/Middle/Upper-Middle/High).
 
 ---
 
@@ -77,7 +84,10 @@
 | scholarship_id | uuid       | NOT NULL, FK → scholarships(id)      |                                |
 | academic_year  | text       | NOT NULL                            | Format "YYYY-YYYY"              |
 | status         | application_status | NOT NULL, default 'draft' | See enum below                  |
-| priority_score | numeric(5,2) | nullable                         |                                |
+| momentum_score | numeric(5,2) | nullable                         | Coach prioritization (005); 0–1 or 0–100; Deadline Proximity × 0.6 + Trust Score × 0.4 |
+| submitted_at   | timestamptz | nullable                         | Set when status→submitted; used for 21-day check-in (005) |
+| last_progress_at | timestamptz | nullable                        | Updated on status change; for 48h staleness check (005) |
+| confirmed_at   | timestamptz | nullable                         | HITL confirmation timestamp for Won; Total Debt Lifted updated only after confirmed |
 | created_at     | timestamptz | NOT NULL, default now()            |                                |
 | updated_at     | timestamptz | NOT NULL, default now()            | Optimistic locking (FR-011)     |
 
