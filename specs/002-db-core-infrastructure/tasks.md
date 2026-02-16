@@ -25,7 +25,7 @@
 **Purpose**: Package initialization and structure
 
 - [x] T001 Create package structure: package.json with name `@repo/db`, exports, and scripts in packages/database/package.json
-- [ ] T002 Add dependencies @supabase/supabase-js and zod to packages/database/package.json
+- [x] T002 Add dependencies @supabase/supabase-js and zod to packages/database/package.json
 - [ ] T003 [P] Create tsconfig.json extending @repo/typescript-config in packages/database/tsconfig.json
 - [ ] T004 [P] Create supabase/config.toml in packages/database/supabase/config.toml
 - [ ] T005 Create directory structure: packages/database/src/, packages/database/src/schema/, packages/database/src/generated/, packages/database/supabase/migrations/, packages/database/tests/

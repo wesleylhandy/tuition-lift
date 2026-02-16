@@ -21,5 +21,9 @@
     "@repo/typescript-config": "workspace:*",
     "eslint": "^9.39.1",
     "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.90.0",
+    "zod": "^3.24.0"
   }
 }
