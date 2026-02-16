@@ -51,7 +51,7 @@ async function dismissScholarship(
 
 **Input**:
 - `scholarshipId`: uuid (FK → scholarships.id)
-- `discoveryRunId`: optional uuid; when provided, scope dismiss to this run.
+- `discoveryRunId`: optional uuid; when DiscoveryResult includes discovery_run_id (003), MUST pass it to scope dismiss to this run.
 
 **Behavior**:
 - Validate user is authenticated.

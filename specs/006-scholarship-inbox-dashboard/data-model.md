@@ -77,9 +77,9 @@ CREATE POLICY "Users can delete own dismissals"
 | profiles     | 002 data-model | Coach's Prep Checklist (GPA, intended_major, SAI)   |
 | scholarships | 002 data-model | Match cards, trust_score for Trust Shield          |
 | applications | 002 data-model | Application Tracker, Top 3, Debt Lifted           |
-| discovery_results | Orchestration / Advisor | Match Inbox feed; need_match_score, trust_score |
+| discovery_results | Orchestration / Advisor (003) | Match Inbox feed; need_match_score, trust_score, discovery_run_id |
 
-**Note**: discovery_results may live in TuitionLiftState (orchestration) or a persisted discovery_output table. Dashboard consumes whatever the data layer exposes. momentum_score and Coach's Take may be computed by Coach/Orchestration.
+**Note**: discovery_results are retrieved via GET /api/discovery/results (003) which returns discoveryRunId and results with discovery_run_id per item. momentum_score and Coach's Take may be computed by Coach/Orchestration. applications.momentum_score (002; formerly priority_score) used for Top 3 ordering.
 
 ## Trust Shield Mapping
 

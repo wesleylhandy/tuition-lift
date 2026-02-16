@@ -7,6 +7,12 @@
 
 ## Clarifications
 
+### Session 2025-02-16 (Alignment with 002, 003)
+
+- Q: How does Match Inbox align with orchestration's discovery_run_id (003)? → A: DiscoveryResult includes discovery_run_id per 003. When Dismiss is clicked, pass discovery_run_id from the displayed match; store in dismissals for run-scoped filtering. Required when orchestration provides it; optional fallback when null (legacy).
+- Q: How does Coach's Game Plan align with 002 applications schema? → A: Use momentum_score for Top 3 ordering (002 renames priority_score → momentum_score). Debt Lifted sums only applications where status='awarded' AND confirmed_at IS NOT NULL (per 005 HITL verification).
+- Q: Where does Match Inbox get discovery results? → A: GET /api/discovery/results (003) returns discoveryRunId and results with discovery_run_id per item. Dashboard consumes this API.
+
 ### Session 2025-02-13
 
 - Q: What trust_score ranges map to Trust Shield badge colors (Green/Amber/Red)? → A: Four levels—Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39.
@@ -150,7 +156,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 **Coach's Game Plan**
 - **FR-006**: System MUST display a prominent "Coach's Game Plan" section with the Top 3 Tasks, ordered by momentum_score.
-- **FR-007**: System MUST display a "Debt Lifted" progress ring showing cumulative dollars from confirmed Won scholarships.
+- **FR-007**: System MUST display a "Debt Lifted" progress ring showing cumulative dollars from confirmed Won scholarships. Count only applications where status='awarded' AND confirmed_at IS NOT NULL (per 005 HITL verification; 002 applications schema).
 - **FR-008**: System MUST display a "Next Win" countdown indicating the nearest deadline or next actionable milestone.
 
 **Application Tracker**
@@ -160,7 +166,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 **Quick Actions**
 - **FR-012**: System MUST provide "Track" quick action to add a scholarship to tracked applications.
-- **FR-013**: System MUST provide "Dismiss" quick action to remove a scholarship from the feed without tracking. Dismissal is soft: hidden for the current discovery run only; scholarship may reappear when a new discovery run returns it.
+- **FR-013**: System MUST provide "Dismiss" quick action to remove a scholarship from the feed without tracking. Dismissal is soft: hidden for the current discovery run only; scholarship may reappear when a new discovery run returns it. When DiscoveryResult includes discovery_run_id (per 003), Dismiss MUST pass it to store run-scoped dismissals.
 - **FR-014**: System MUST provide "Verify Submission" quick action to trigger the verification flow for applications; upon confirmation, status updates to Submitted.
 
 **Zero-State**
@@ -182,7 +188,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 ### Key Entities
 
-- **Match**: A scholarship discovery result from the Advisor. Has trust_score, momentum_score, Coach's Take, and eligibility metadata. Displayed in Match Inbox.
+- **Match**: A scholarship discovery result from the Advisor. Has trust_score, momentum_score, Coach's Take, discovery_run_id (per 003), and eligibility metadata. Displayed in Match Inbox.
 - **Trust Shield**: Visual badge (Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39) derived from trust_score; indicates scholarship legitimacy per Reputation Engine.
 - **Coach's Take**: Micro-summary explaining ROI and fit for a specific scholarship; generated from student profile and scholarship attributes.
 - **Top 3 Tasks**: The three applications a student should focus on today; ordered by momentum_score per Coach Execution Engine.
@@ -192,7 +198,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 ### Assumptions
 
-- The shared data layer exposes trust_score and momentum_score for scholarships and applications; Advisor Discovery Engine and Coach Execution Engine populate these. Implementation consumes from the project's data package.
+- The shared data layer exposes trust_score and momentum_score for scholarships and applications; Advisor Discovery Engine and Coach Execution Engine populate these. Implementation consumes from the project's data package. Applications use momentum_score (002 schema; formerly priority_score).
 - Real-time updates are delivered via the project's real-time subscription layer; the UI subscribes to relevant channels for matches, applications, and scouting status.
 - The Coach's Take micro-summary is either pre-computed by the Advisor/Coach or generated on demand; exact source is implementation-defined.
 - Bento grid layout and design system components are available; exact component library is an implementation choice.
@@ -200,7 +206,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 - Application lifecycle states (Tracked, Drafting, Review, Submitted, Outcome Pending; Won/Lost as outcomes) align with the Coach Execution Engine spec. **Cross-spec alignment**: Coach spec, DB application_status enum (draft, submitted, awarded, rejected, withdrawn), and Dashboard UI terminology should be revisited to establish a single canonical lifecycle.
 - "Active Scouting" status and domain ticker are derived from the Advisor Discovery Engine's checkpoint or progress state when Scout phase is running.
 - Coach's Prep Checklist required profile fields (GPA, major, SAI) align with Orchestration spec FR-005/FR-006 and Advisor spec FR-001: discovery requires complete user_profile and financial_profile.
-- Dismissals are persisted in a lightweight table (user_id, scholarship_id, optionally scoped by discovery run). A full events DB for audit/analytics would be overengineering for this feature; a simple dismissals table suffices.
+- Dismissals are persisted in a lightweight table (user_id, scholarship_id, discovery_run_id nullable). When orchestration provides discovery_run_id with results (003), store it on dismiss for run-scoped filtering. A full events DB for audit/analytics would be overengineering for this feature.
 
 ## Success Criteria *(mandatory)*
 
@@ -217,7 +223,8 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 ## Documentation References
 
-- [Orchestration Spec](../003-langgraph-orchestration/spec.md) — TuitionLiftState, user_profile, financial_profile, discovery trigger requirements
+- [Orchestration Spec](../003-langgraph-orchestration/spec.md) — TuitionLiftState, user_profile, financial_profile, discovery trigger requirements, discovery_run_id
+- [Discovery API Contract](../003-langgraph-orchestration/contracts/api-discovery.md) — GET /api/discovery/results returns discoveryRunId and results with discovery_run_id per item
 - [Coach Execution Engine Spec](../005-coach-execution-engine/spec.md) — Top 3 Game Plan, Momentum Score, application lifecycle, verification protocol
 - [Advisor Discovery Engine Spec](../004-advisor-discovery-engine/spec.md) — trust_score, Trust Report, discovery results, scouting state, profile requirements
 - [Core Infrastructure Spec](../002-db-core-infrastructure/spec.md) — Data layer, scholarships, applications, trust_score, momentum_score
