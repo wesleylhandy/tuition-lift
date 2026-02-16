@@ -38,7 +38,7 @@
 
 - [ ] T005 Create migration adding metadata JSONB and UNIQUE(url) partial index to scholarships table in packages/database/supabase/migrations/
 - [ ] T006 [P] Create AnonymizedProfileSchema (gpa, major, incomeBracket, pellStatus; no PII) in apps/agent/lib/discovery/schemas.ts
-- [ ] T007 [P] Create DiscoveryResultSchema with trust_score 0-100, trust_report, verification_status, categories in apps/agent/lib/discovery/schemas.ts
+- [ ] T007 [P] Create DiscoveryResultSchema with trust_score 0-100, trust_report, verification_status, categories, discovery_run_id (uuid, optional) in apps/agent/lib/discovery/schemas.ts
 - [ ] T008 [P] Create ScholarshipMetadataSchema for metadata JSONB shape (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/schemas.ts
 - [ ] T009 [P] Create PII scrub utility that strips full_name and SSN from profile before external calls in apps/agent/lib/discovery/pii-scrub.ts
 - [ ] T010 Wire TuitionLiftState and discovery_results type extensions in apps/agent/lib/state.ts (align with 003 data-model; requires 003 graph and state)
@@ -60,7 +60,7 @@
 - [ ] T013 [US1] Add rate-limit delay (DISCOVERY_SEARCH_BATCH_DELAY_MS, default 2000ms) between Tavily calls in apps/agent/lib/discovery/tavily-client.ts
 - [ ] T014 [P] [US1] Create Deduplicator that merges by URL, keeps highest Tavily relevance score and merges snippets (runs pre-TrustScorer; trust_score applied later in Verify) in apps/agent/lib/discovery/deduplicator.ts
 - [ ] T015 [P] [US1] Create CycleVerifier that computes academic year from Date, verifies deadline in cycle, returns verification_status (verified|ambiguous_deadline|needs_manual_review|potentially_expired) and active (false when deadline past today per Constitution §8) in apps/agent/lib/discovery/cycle-verifier.ts
-- [ ] T016 [US1] Implement Advisor_Search node: load profile, scrub PII, call QueryGenerator, TavilyClient (rate-limited), Deduplicator; write raw results to state.discovery_results in apps/agent/lib/nodes/advisor-search.ts
+- [ ] T016 [US1] Implement Advisor_Search node: load profile, scrub PII, call QueryGenerator, TavilyClient (rate-limited), Deduplicator; extract domains from result URLs for Live Pulse (006); write raw results to state.discovery_results in apps/agent/lib/nodes/advisor-search.ts
 - [ ] T017 [US1] Ensure graph checkpoints after Advisor_Search (separate node from Advisor_Verify) in apps/agent/lib/graph.ts
 - [ ] T018 [US1] Wire CycleVerifier into Advisor_Verify for each result; set verification_status; flag ambiguous for manual review in apps/agent/lib/nodes/advisor-verify.ts
 
@@ -78,10 +78,10 @@
 
 - [ ] T019 [P] [US2] Create TrustScorer: domain tier (.edu/.gov→high, .com/.org→vetted/under_review), longevity (WHOIS fallback 12), fee check; output trust_score, trust_report in apps/agent/lib/discovery/trust-scorer.ts
 - [ ] T020 [US2] Add fee-detection logic (application fee, processing fee, guarantee fee) to TrustScorer; set fee_check=fail and trust_score=0 when detected in apps/agent/lib/discovery/trust-scorer.ts
-- [ ] T021 [US2] Integrate TrustScorer into Advisor_Verify; exclude fee_check=fail from active discovery_results; include trust_report in each result in apps/agent/lib/nodes/advisor-verify.ts
+- [ ] T021 [US2] Integrate TrustScorer into Advisor_Verify; read discovery_run_id from config.configurable, attach to each DiscoveryResult (003/006 alignment); exclude fee_check=fail from active discovery_results; include trust_report in each result in apps/agent/lib/nodes/advisor-verify.ts
 - [ ] T022 [US2] Create ScholarshipUpsert: INSERT ON CONFLICT(url) DO UPDATE for trust_score, metadata in apps/agent/lib/discovery/scholarship-upsert.ts
 - [ ] T023 [US2] Persist verified results to scholarships table with metadata (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T024 [US2] Extend GET /api/discovery/results response to include trustReport, verificationStatus, categories per contracts/discovery-internals.md in apps/web/app/api/discovery/results/
+- [ ] T024 [US2] Extend GET /api/discovery/results response to include discoveryRunId at root, discoveryRunId per result, trustReport, verificationStatus, categories per contracts/discovery-internals.md and 003/006 alignment in apps/web/app/api/discovery/results/
 
 **Checkpoint**: User Story 2—Trust Report on every result; fee-required excluded
 

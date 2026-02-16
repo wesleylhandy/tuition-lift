@@ -117,38 +117,42 @@ interface CycleVerificationResult {
 1. Load `user_profile`, `financial_profile` from state
 2. Scrub PII; build `AnonymizedProfile`
 3. `QueryGenerator.generate(profile)` → 3–5 queries
-4. For each query (with rate limit): `TavilyClient.search(query)` → append results
+4. For each query (with rate limit): `TavilyClient.search(query)` → append results; extract domains from result URLs for Live Pulse
 5. `Deduplicator.dedupe(results)` → unique by URL
 6. Update state: `discovery_results` = raw results (pre-verify)
-7. Checkpoint (automatic after node)
+7. Optionally expose scouting domains (e.g., via state or orchestration) for 006 Live Pulse "Active Scouting" ticker
+8. Checkpoint (automatic after node)
 
 ---
 
 ## 8. Advisor_Verify Node
 
 **Flow**:
-1. Load `discovery_results` from state (from Scout)
-2. For each result: `TrustScorer.score(...)`, `CycleVerifier.verify(...)`
-3. Filter: exclude fee_check=fail from active; flag ambiguous
-4. Assign `need_match_score` (SAI alignment)
-5. Build `DiscoveryResult[]` with trust_report, verification_status
-6. `ScholarshipUpsert` for each verified result
-7. Update state: `discovery_results` = full array (verified + flagged)
-8. Return `Command({ goto: "Coach_Prioritization", update: { ... } })`
+1. Load `discovery_run_id` from graph `config.configurable` (003 provides at run start)
+2. Load `discovery_results` from state (from Scout)
+3. For each result: `TrustScorer.score(...)`, `CycleVerifier.verify(...)`
+4. Filter: exclude fee_check=fail from active; flag ambiguous
+5. Assign `need_match_score` (SAI alignment)
+6. Build `DiscoveryResult[]` with trust_report, verification_status, discovery_run_id (attach from config)
+7. `ScholarshipUpsert` for each verified result
+8. Update state: `discovery_results` = full array (verified + flagged)
+9. Return `Command({ goto: "Coach_Prioritization", update: { ... } })`
 
 ---
 
 ## 9. GET /api/discovery/results Response (Extended)
 
-Per 003 contract; extend `discoveryResults` item:
+Per 003 contract; extend `discoveryResults` item. 003 includes discoveryRunId at response root; each result includes discoveryRunId or discovery_run_id for 006 dismissals scoping.
 
 ```json
 {
+  "discoveryRunId": "uuid",
   "discoveryResults": [
     {
       "id": "string",
       "title": "string",
       "url": "string",
+      "discoveryRunId": "uuid",
       "trustScore": 85,
       "needMatchScore": 72,
       "trustReport": "High-trust .edu source; domain established 2010; no fees.",
