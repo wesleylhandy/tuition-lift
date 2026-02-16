@@ -26,9 +26,9 @@
 
 - [x] T001 Create package structure: package.json with name `@repo/db`, exports, and scripts in packages/database/package.json
 - [x] T002 Add dependencies @supabase/supabase-js and zod to packages/database/package.json
-- [ ] T003 [P] Create tsconfig.json extending @repo/typescript-config in packages/database/tsconfig.json
-- [ ] T004 [P] Create supabase/config.toml in packages/database/supabase/config.toml
-- [ ] T005 Create directory structure: packages/database/src/, packages/database/src/schema/, packages/database/src/generated/, packages/database/supabase/migrations/, packages/database/tests/
+- [x] T003 [P] Create tsconfig.json extending @repo/typescript-config in packages/database/tsconfig.json
+- [x] T004 [P] Create supabase/config.toml in packages/database/supabase/config.toml
+- [x] T005 Create directory structure: packages/database/src/, packages/database/src/schema/, packages/database/src/generated/, packages/database/supabase/migrations/, packages/database/tests/
 
 ---
 
@@ -38,7 +38,7 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete. Migration filenames per plan.md Project Structure (00000000000000_create_enums.sql, etc.).
 
-- [ ] T006 Create migration for enums: scholarship_category, application_status, pell_eligibility_status (eligible, ineligible, unknown) in packages/database/supabase/migrations/
+- [x] T006 Create migration for enums: scholarship_category, application_status, pell_eligibility_status (eligible, ineligible, unknown) in packages/database/supabase/migrations/
 - [ ] T007 Create migration for waitlist table (id, email, segment, referral_code, referred_by, referral_count, unlock_sent_at, created_at) with segment CHECK, RLS (service-role only INSERT), and indexes in packages/database/supabase/migrations/
 - [ ] T008 Create migration for profiles table (id FK auth.users, full_name, intended_major, gpa, state, interests, sai, pell_eligibility_status, household_size, number_in_college, created_at, updated_at) with RLS (owner-only) in packages/database/supabase/migrations/
 - [ ] T009 Create migration for scholarships table with scholarship_category enum, trust_score, deadline in packages/database/supabase/migrations/
