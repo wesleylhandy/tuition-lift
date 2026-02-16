@@ -41,7 +41,7 @@
 - [x] T006 Create migration for enums: scholarship_category, application_status, pell_eligibility_status (eligible, ineligible, unknown) in packages/database/supabase/migrations/
 - [x] T007 Create migration for waitlist table (id, email, segment, referral_code, referred_by, referral_count, unlock_sent_at, created_at) with segment CHECK, RLS (service-role only INSERT), and indexes in packages/database/supabase/migrations/
 - [x] T008 Create migration for profiles table (id FK auth.users, full_name, intended_major, gpa, state, interests, sai, pell_eligibility_status, household_size, number_in_college, created_at, updated_at) with RLS (owner-only) in packages/database/supabase/migrations/
-- [ ] T009 Create migration for scholarships table with scholarship_category enum, trust_score, deadline in packages/database/supabase/migrations/
+- [x] T009 Create migration for scholarships table with scholarship_category enum, trust_score, deadline in packages/database/supabase/migrations/
 - [ ] T010 Create migration for applications table (user_id, scholarship_id, academic_year, status, momentum_score, submitted_at, last_progress_at, confirmed_at, created_at, updated_at) with UNIQUE(user_id, scholarship_id, academic_year) and RLS in packages/database/supabase/migrations/
 - [ ] T011 Create migration or document LangGraph checkpoint table setup for agent persistence in packages/database/supabase/migrations/ or quickstart.md
 - [ ] T012 Add db:generate and db:push scripts to packages/database/package.json; run supabase gen types typescript --local and output to src/generated/database.types.ts
