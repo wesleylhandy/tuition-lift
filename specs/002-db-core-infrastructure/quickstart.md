@@ -80,6 +80,21 @@ pnpm --filter @repo/db test
 pnpm test
 ```
 
+## LangGraph Checkpoint Setup (Agent Persistence)
+
+Checkpoint tables for agent state are **not** created by Supabase migrations. The `@langchain/langgraph-checkpoint-postgres` package creates them when `PostgresSaver.setup()` is called.
+
+**Setup flow (apps/agent)**:
+
+1. Use `DATABASE_URL` (Supabase direct Postgres connection string, e.g. `postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres`).
+2. Create checkpointer: `PostgresSaver.fromConnString(DATABASE_URL)`.
+3. Call `await checkpointer.setup()` once before first use (e.g. on agent init). This creates the checkpoint tables in the configured schema (default: `public`).
+4. Compile the graph with the checkpointer: `workflow.compile({ checkpointer })`.
+
+**RLS**: Checkpoint tables are service-role/agent-only. No user-facing RLS; the agent accesses via `DATABASE_URL` (service credentials). Never expose checkpoint data to the client.
+
+**Reference**: [LangGraph JS - Persistence with Postgres](https://langchain-ai.github.io/langgraphjs/how-tos/persistence-postgres/)
+
 ## Environment Variables
 
 | Variable | Required | Used By | Notes |
@@ -87,7 +102,7 @@ pnpm test
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Client + Server | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client + Server | Public anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only | Server | For admin operations; never expose to client |
-| `DATABASE_URL` | Agent | LangGraph checkpointer | Postgres connection string |
+| `DATABASE_URL` | Agent | LangGraph checkpointer | Postgres connection string (direct DB URL for checkpointer) |
 
 ## Financial Aid Layer (Profiles)
 
