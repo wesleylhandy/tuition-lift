@@ -113,3 +113,15 @@
 **Decision**: When discovery completes, write a completion record (e.g., `discovery_completions` table or update `threads` with status). Frontend polls `GET /api/discovery/status?thread_id=X` or subscribes via Supabase Realtime to a `user_notifications` table. On status=complete, show toaster/bell. Keep polling as fallback for environments without Realtime.
 
 **Rationale**: FR-013b requires notification when discovery completes. Supabase Realtime provides push; polling provides fallback. Avoids separate push service for MVP.
+
+---
+
+### 11. discovery_run_id for 006 Dismissals (2025-02-16)
+
+**Decision**: Generate a uuid for each discovery run at start; include in discovery_completions (as discovery_run_id column) and in each DiscoveryResult in state. Expose via GET /api/discovery/results and GET /api/discovery/status responses so 006 can scope dismissals by run (soft dismiss: hidden for current run only; reappears on new discovery).
+
+**Rationale**: 006 dismissals table expects discovery_run_id to filter "dismissed for this run." Without it, 006 falls back to timestamp heuristics. Per 2025-02-16 clarification: add discovery_run_id to support clean soft-dismiss semantics.
+
+**Alternatives considered**:
+- Timestamp heuristic: Fragile; run boundaries unclear.
+- No run ID: 006 would filter by user+scholarship only; dismissals would persist across runs (stricter than spec).

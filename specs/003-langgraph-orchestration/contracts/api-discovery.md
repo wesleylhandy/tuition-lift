@@ -63,12 +63,15 @@ APIs for triggering scholarship discovery, polling status, HITL confirmation, an
 ```json
 {
   "threadId": "user_abc123",
+  "discoveryRunId": "uuid",
   "status": "running" | "completed" | "failed",
   "lastActiveNode": "Advisor_Discovery" | "Coach_Prioritization" | "SafeRecovery" | null,
   "completedAt": "2025-02-13T12:00:00Z" | null,
   "errorMessage": null
 }
 ```
+
+`discoveryRunId` (uuid): Per-run identifier; exposed for 006 dismissals scoping. Present when run has started.
 
 On `status=completed`, frontend may show toaster/bell (FR-013b).
 
@@ -119,9 +122,11 @@ If `approved: false`, Advisor proceeds with income tiers only.
 **Response 200**:
 ```json
 {
+  "discoveryRunId": "uuid",
   "discoveryResults": [
     {
       "id": "string",
+      "discoveryRunId": "uuid",
       "title": "string",
       "url": "string",
       "trustScore": 85,
@@ -139,6 +144,8 @@ If `approved: false`, Advisor proceeds with income tiers only.
   ]
 }
 ```
+
+`discoveryRunId` (top-level and per result): Per-run identifier for 006 dismissals scoping. Same value for all results in a run.
 
 **Response 404**: Thread not found or not owned by user.
 
