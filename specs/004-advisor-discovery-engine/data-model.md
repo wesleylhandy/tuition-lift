@@ -19,7 +19,8 @@ Extends the 003 TuitionLiftState `discovery_results` field. Each item in the arr
 | title             | string | Scholarship title                                            |
 | url               | string | Source URL (used for dedupe, upsert); same as metadata.source_url |
 | trust_score       | number | 0–100; Reputation Engine                                     |
-| need_match_score  | number | 0–100; SAI/gap alignment                                    |
+| need_match_score  | number | 0–100; SAI/gap alignment; used by 006 for Match Inbox ordering |
+| discovery_run_id  | uuid   | From orchestration config (003); attached by Advisor_Verify; 006 uses for dismissals scoping |
 | trust_report      | string | Human-readable explanation of trust score (FR-009)           |
 | verification_status| string | `verified` \| `ambiguous_deadline` \| `needs_manual_review` \| `potentially_expired` |
 | categories        | string[]| e.g. `["need_based", "field_specific"]`                      |

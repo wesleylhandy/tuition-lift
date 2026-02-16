@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-13
 - Supabase (PostgreSQL); `packages/database` schema + new `dismissals` table (006-scholarship-inbox-dashboard)
 - Supabase (PostgreSQL) — checkpoints table via PostgresSaver; profiles, scholarships from @repo/db; discovery_completions table (includes discovery_run_id) (003-langgraph-orchestration)
 - TypeScript 5.x (Next.js project) + Next.js (App Router), React 19, Tailwind CSS, shadcn/ui, Framer Motion, Supabase JS (006-scholarship-inbox-dashboard)
+- TypeScript 5.x (Node.js) + LangGraph, LangChain, Tavily API, @langchain/langgraph-checkpoint-postgres, @repo/db (004-advisor-discovery-engine)
+- Supabase (PostgreSQL); TuitionLiftState via checkpoints; scholarships table (metadata JSONB, UNIQUE url); no new top-level tables (004-advisor-discovery-engine)
 
 - TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
 - TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
@@ -35,12 +37,9 @@ npm test && npm run lint
 TypeScript 5.9: Follow standard conventions
 
 ## Recent Changes
+- 004-advisor-discovery-engine: Added TypeScript 5.x (Node.js) + LangGraph, LangChain, Tavily API, @langchain/langgraph-checkpoint-postgres, @repo/db
 - 003-langgraph-orchestration: Added TypeScript 5.x (Node 18+) + LangGraph JS (@langchain/langgraph), @langchain/langgraph-checkpoint-postgres, Inngest, Supabase
 - 002-db-core-infrastructure: Added TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen)
-- 005-coach-execution-engine: Added TypeScript 5.x (Node 18+) + Inngest, Resend, React Email, LangGraph JS, Supabase (@supabase/supabase-js), Zod
-- 006-scholarship-inbox-dashboard: Added TypeScript 5.x (Next.js project) + Next.js (App Router), React 19, Tailwind CSS, shadcn/ui, Framer Motion, Supabase JS
-- 005-coach-execution-engine: Added TypeScript 5.x (Node 18+) + Inngest, Resend, React Email, LangGraph JS, Supabase (@supabase/supabase-js), Zod
-- 005-coach-execution-engine: Added TypeScript 5.x (Node 18+) + Inngest, Resend, React Email, LangGraph JS, Supabase (@supabase/supabase-js), Zod
 
 
 <!-- MANUAL ADDITIONS START -->
