@@ -44,7 +44,7 @@
 - [x] T009 Create migration for scholarships table with scholarship_category enum, trust_score, deadline in packages/database/supabase/migrations/
 - [x] T010 Create migration for applications table (user_id, scholarship_id, academic_year, status, momentum_score, submitted_at, last_progress_at, confirmed_at, created_at, updated_at) with UNIQUE(user_id, scholarship_id, academic_year) and RLS in packages/database/supabase/migrations/
 - [x] T011 Create migration or document LangGraph checkpoint table setup for agent persistence in packages/database/supabase/migrations/ or quickstart.md
-- [ ] T012 Add db:generate and db:push scripts to packages/database/package.json; run supabase gen types typescript --local and output to src/generated/database.types.ts
+- [x] T012 Add db:generate and db:push scripts to packages/database/package.json; run supabase gen types typescript --local and output to src/generated/database.types.ts
 
 **Checkpoint**: All tables exist; types can be generated. Foundation ready for user story implementation.
 

@@ -12,7 +12,10 @@
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "db:generate": "supabase gen types typescript --local --schema public > src/generated/database.types.ts",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
