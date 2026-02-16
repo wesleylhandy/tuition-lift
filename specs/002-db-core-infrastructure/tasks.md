@@ -58,9 +58,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Create placeholder or ensure db:generate outputs to packages/database/src/generated/database.types.ts; add to packages/database/.gitignore if generated
-- [ ] T014 [US1] Create src/index.ts that exports Database, Tables, Enums from generated types in packages/database/src/index.ts
-- [ ] T015 [US1] Configure package.json exports field to expose types and client entry points per contracts/package-exports.md
+- [x] T013 [US1] Create placeholder or ensure db:generate outputs to packages/database/src/generated/database.types.ts; add to packages/database/.gitignore if generated
+- [x] T014 [US1] Create src/index.ts that exports Database, Tables, Enums from generated types in packages/database/src/index.ts
+- [x] T015 [US1] Configure package.json exports field to expose types and client entry points per contracts/package-exports.md
 
 **Checkpoint**: Consuming apps can import types from @repo/db and receive identical definitions.
 
