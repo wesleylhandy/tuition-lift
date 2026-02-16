@@ -96,3 +96,15 @@
 **Alternatives considered**:
 - UUID: Long, not user-friendly for shareable links.
 - Short numeric: Fewer combinations; alphanumeric preferred.
+
+---
+
+### 8. Cross-Spec Alignment (2025-02-16)
+
+**Decision**: Add waitlist columns (segment, referral_count, unlock_sent_at) per 001; applications columns (momentum_score, submitted_at, last_progress_at, confirmed_at) per 005/006; waitlist RLS service-role only INSERT; rename priority_score → momentum_score; no household_income_bracket in profiles (derive from SAI at read).
+
+**Rationale**: 002 is the canonical data layer. Consuming specs (001, 005, 006) require these fields; including them in 002 avoids downstream migrations and keeps single source of truth. Waitlist RLS: Server Actions use service-role for secure, validated inserts; no direct anon INSERT. household_income_bracket: computed from SAI by orchestration (003) at read time; avoids schema drift from federal tier changes.
+
+**Alternatives considered**:
+- Defer columns to consuming spec migrations: Fragments schema across specs; 002 would not be complete.
+- Public waitlist INSERT: Bypasses Server Action validation; rate limiting and fraud checks would fail.

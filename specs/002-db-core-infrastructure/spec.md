@@ -8,6 +8,14 @@
 
 ## Clarifications
 
+### Session 2025-02-16
+
+- Q: Should 002 waitlist schema include segment, referral_count, and unlock_sent_at to align with 001 (Waitlist Launch)? → A: Add all three columns to 002 waitlist schema
+- Q: Should waitlist INSERT be public or service-role only? → A: Service-role only for INSERT. Anyone with the link can join (open signup), but inserts MUST go through Server Actions—no direct anon INSERT. Secure insert path ensures validation, rate limiting, and fraud checks.
+- Q: Should 002 applications schema include submitted_at, last_progress_at, and confirmed_at for Coach Execution Engine (005)? → A: Add all three columns to 002 applications schema
+- Q: Should priority_score be renamed to momentum_score for cross-spec consistency (005, 006)? → A: Rename priority_score to momentum_score in 002
+- Q: Should profiles include household_income_bracket column for orchestration (003)? → A: Compute from SAI at read; no new column; consumers (e.g. agent) derive bracket from SAI
+
 ### Session 2025-02-13
 
 - Q: How should the system handle concurrent writes to the same record? → A: Optimistic locking (record has version/timestamp; concurrent write fails if version changed; caller retries)
@@ -120,8 +128,10 @@ As a student, I need my profile to store my Student Aid Index (SAI), Pell-eligib
 - What happens when the database connection fails or times out? **Resolved:** The client must surface a clear, user-facing error message rather than hanging indefinitely. Stack traces and internal error details must remain server-side and be logged safely; they must NOT be exposed to the client.
 - How does the system handle concurrent writes to the same record? **Resolved:** Optimistic locking—records include a version or timestamp; a write fails if the version has changed since read; the caller must retry with fresh data.
 - What happens when a referral code does not exist? **Resolved:** Allow signup without attribution—the user joins successfully, referred_by is left empty, and no error is shown to the user.
+- How does waitlist signup remain "open to anyone" while secure? **Resolved:** Anyone with the link may join; the signup flow is open. Inserts MUST go through Server Actions (service-role); no direct anonymous INSERT to the database. Server Actions enforce validation, rate limiting, and fraud checks before persisting.
 - How does the system handle schema migrations when consumers are not yet upgraded? **Resolved:** Migrations must be backward-compatible only—additive changes (new columns as nullable, new tables); never remove or rename in a single step so consumers can deploy independently.
 - How does the system validate SAI? Values must be in range -1500 to 999999 (federal SAI range); out-of-range values are rejected with a validation error.
+- Where does household_income_bracket come from? **Resolved:** Not stored in profiles. Consumers derive it from SAI at read time using federal tier thresholds (Low/Moderate/Middle/Upper-Middle/High). Orchestration (003) computes it when loading FinancialProfile.
 
 ## Requirements *(mandatory)*
 
@@ -133,8 +143,10 @@ As a student, I need my profile to store my Student Aid Index (SAI), Pell-eligib
 - **FR-004**: The system MUST export a shared database client that automatically initializes with environment-appropriate configuration for server vs. client contexts.
 - **FR-004a**: In client (browser) contexts, connection or query errors MUST expose only a safe, user-facing message; stack traces and internal error details MUST remain server-side and be logged safely, never exposed to the browser.
 - **FR-005**: The waitlist entity MUST support `referral_code` (unique per user) and `referred_by` (link to referrer) to enable viral referral tracking.
+- **FR-005b**: The waitlist entity MUST support `segment` (optional self-categorization: high_school, undergraduate, masters, doctoral), `referral_count` (default 0; for position jump), and `unlock_sent_at` (nullable; when share-to-unlock email was sent) to align with 001 Waitlist Launch.
 - **FR-005a**: When a user joins the waitlist with an invalid or unknown referral code, the system MUST allow signup, leave referred_by empty, and NOT surface an error to the user.
 - **FR-006**: All tables MUST enforce Row Level Security policies so that access is restricted to authorized users only.
+- **FR-006a**: Waitlist INSERT MUST be service-role only (no direct anon INSERT). Anyone with the signup link may join, but inserts MUST go through Server Actions to ensure validation, rate limiting, and fraud checks. SELECT/UPDATE for waitlist remain service-role or admin only.
 - **FR-007**: Profile data MUST be readable only by the authenticated owner; no other user or system role may access another user's profile.
 - **FR-008**: The system MUST NOT store sensitive PII such as Social Security numbers or full home addresses in this schema. Compliance is enforced via PR review checklist—migrations must not add such columns.
 - **FR-009**: The system MUST support persistence of agent checkpoints (thread_id, checkpoint_id, checkpoint payload) for resumable agent sessions.
@@ -142,14 +154,16 @@ As a student, I need my profile to store my Student Aid Index (SAI), Pell-eligib
 - **FR-011**: Records that support concurrent writes (e.g., Profiles, Applications) MUST use optimistic locking (version or timestamp); writes MUST fail when the record has changed since read, and callers MUST retry with fresh data. The package provides `updated_at` and typed client; consuming applications implement the `.eq('updated_at', oldValue)` check and retry logic.
 - **FR-012**: Schema migrations MUST be backward-compatible only—additive changes (new columns nullable, new tables allowed); removal or renaming of columns/tables MUST be done in separate steps after all consumers are upgraded.
 - **FR-013**: Applications MUST enforce uniqueness per (user, scholarship, academic_year). At most one application per combination; drafts are allowed before submission; a user may apply to the same scholarship again when it is offered in a future academic year.
+- **FR-013a**: The applications entity MUST support `momentum_score` (Coach prioritization; replaces former priority_score), `submitted_at` (set when status→submitted; for 21-day check-in), `last_progress_at` (updated on status change; for 48h staleness), and `confirmed_at` (HITL confirmation for Won; Total Debt Lifted updated only after confirmed) to align with Coach Execution Engine (005) and Dashboard (006).
 - **FR-014**: The profiles entity MUST support a Financial Aid Layer: Student Aid Index (SAI) in range -1500 to 999999, Pell-eligibility markers (eligible, ineligible, unknown), household size, and number in college. All fields nullable; validation MUST reject out-of-range SAI.
+- **FR-014a**: The system MUST NOT add a `household_income_bracket` column to profiles. Consumers (e.g. orchestration, agent) derive household_income_bracket (Low/Moderate/Middle/Upper-Middle/High) from SAI at read time per federal tiers. Profiles remain the single source for SAI and related fields.
 
 ### Key Entities
 
-- **Waitlist**: Represents users who have signed up for early access. Key attributes: unique email, referral code (one per user), referred-by (optional link to another waitlist entry).
+- **Waitlist**: Represents users who have signed up for early access. Key attributes: unique email, referral code (one per user), referred-by (optional link to another waitlist entry), segment (optional self-categorization: high_school, undergraduate, masters, doctoral), referral_count (number of successful referrals for position jump), unlock_sent_at (when share-to-unlock asset email was sent).
 - **Profiles**: Represents extended user profile data linked to authentication. Key attributes: full name, intended major, GPA, state, interests; Financial Aid Layer: SAI (-1500 to 999999), Pell-eligibility status (eligible/ineligible/unknown), household size, number in college. Readable only by owner.
 - **Scholarships**: Represents scholarship opportunities. Key attributes: title, amount, deadline, URL, trust score, category.
-- **Applications**: Represents a user's application to a scholarship. Key attributes: user, scholarship, academic_year, status (includes draft), priority score. Uniqueness: at most one application per (user, scholarship, academic_year); drafts allowed before submission; same scholarship may be applied to again in a future academic year.
+- **Applications**: Represents a user's application to a scholarship. Key attributes: user, scholarship, academic_year, status (includes draft), momentum_score (prioritization; Coach 005), submitted_at (when status→submitted), last_progress_at (updated on status change for staleness checks), confirmed_at (HITL confirmation for Won/Total Debt Lifted). Uniqueness: at most one application per (user, scholarship, academic_year); drafts allowed before submission; same scholarship may be applied to again in a future academic year.
 - **Checkpoints**: Represents persisted agent state for resumable sessions. Key attributes: thread identifier, checkpoint identifier, serialized checkpoint payload.
 
 ### Assumptions

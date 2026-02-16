@@ -31,7 +31,7 @@ The `@repo/db` package MUST export the following. All consumers (apps/web, apps/
 
 ```typescript
 // Export: One Zod schema per table
-// waitlistSchema, profileSchema (includes Financial Aid: sai, pell_eligibility_status, household_size, number_in_college), scholarshipSchema, applicationSchema
+// waitlistSchema (email, segment, referral_code, referred_by, referral_count, unlock_sent_at), profileSchema (includes Financial Aid: sai, pell_eligibility_status, household_size, number_in_college), scholarshipSchema, applicationSchema (momentum_score, submitted_at, last_progress_at, confirmed_at)
 // Checkpoint: opaque; no schema (LangGraph manages)
 ```
 

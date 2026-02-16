@@ -39,10 +39,10 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete. Migration filenames per plan.md Project Structure (00000000000000_create_enums.sql, etc.).
 
 - [ ] T006 Create migration for enums: scholarship_category, application_status, pell_eligibility_status (eligible, ineligible, unknown) in packages/database/supabase/migrations/
-- [ ] T007 Create migration for waitlist table (id, email, referral_code, referred_by, created_at) with RLS policies in packages/database/supabase/migrations/
+- [ ] T007 Create migration for waitlist table (id, email, segment, referral_code, referred_by, referral_count, unlock_sent_at, created_at) with segment CHECK, RLS (service-role only INSERT), and indexes in packages/database/supabase/migrations/
 - [ ] T008 Create migration for profiles table (id FK auth.users, full_name, intended_major, gpa, state, interests, sai, pell_eligibility_status, household_size, number_in_college, created_at, updated_at) with RLS (owner-only) in packages/database/supabase/migrations/
 - [ ] T009 Create migration for scholarships table with scholarship_category enum, trust_score, deadline in packages/database/supabase/migrations/
-- [ ] T010 Create migration for applications table (user_id, scholarship_id, academic_year, status, priority_score, created_at, updated_at) with UNIQUE(user_id, scholarship_id, academic_year) and RLS in packages/database/supabase/migrations/
+- [ ] T010 Create migration for applications table (user_id, scholarship_id, academic_year, status, momentum_score, submitted_at, last_progress_at, confirmed_at, created_at, updated_at) with UNIQUE(user_id, scholarship_id, academic_year) and RLS in packages/database/supabase/migrations/
 - [ ] T011 Create migration or document LangGraph checkpoint table setup for agent persistence in packages/database/supabase/migrations/ or quickstart.md
 - [ ] T012 Add db:generate and db:push scripts to packages/database/package.json; run supabase gen types typescript --local and output to src/generated/database.types.ts
 
@@ -58,7 +58,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Create src/generated/database.types.ts placeholder or ensure db:generate outputs there; add to .gitignore if generated
+- [ ] T013 [US1] Create placeholder or ensure db:generate outputs to packages/database/src/generated/database.types.ts; add to packages/database/.gitignore if generated
 - [ ] T014 [US1] Create src/index.ts that exports Database, Tables, Enums from generated types in packages/database/src/index.ts
 - [ ] T015 [US1] Configure package.json exports field to expose types and client entry points per contracts/package-exports.md
 
@@ -74,10 +74,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Create waitlistSchema with email, referral_code, referred_by in packages/database/src/schema/waitlist.ts
+- [ ] T016 [P] [US2] Create waitlistSchema with email, segment, referral_code, referred_by, referral_count, unlock_sent_at in packages/database/src/schema/waitlist.ts
 - [ ] T017 [P] [US2] Create profileSchema with full_name, intended_major, gpa (0–4), state, interests, sai (-1500 to 999999), pell_eligibility_status (enum), household_size, number_in_college, updated_at in packages/database/src/schema/profiles.ts
 - [ ] T018 [P] [US2] Create scholarshipSchema with title, amount, deadline, url, trust_score (0–100), category in packages/database/src/schema/scholarships.ts
-- [ ] T019 [P] [US2] Create applicationSchema with user_id, scholarship_id, academic_year (YYYY-YYYY), status enum, priority_score, updated_at in packages/database/src/schema/applications.ts
+- [ ] T019 [P] [US2] Create applicationSchema with user_id, scholarship_id, academic_year (YYYY-YYYY), status enum, momentum_score, submitted_at, last_progress_at, confirmed_at, updated_at in packages/database/src/schema/applications.ts
 - [ ] T020 [US2] Create schema index exporting all schemas and optional parseOrThrow helper in packages/database/src/schema/index.ts
 - [ ] T021 [US2] Export schemas from main package in packages/database/src/index.ts
 
@@ -95,7 +95,7 @@
 
 - [ ] T022 [US3] Implement createDbClient in packages/database/src/client.ts with runtime detection (typeof window, process.env)
 - [ ] T023 [US3] Export createDbClient from packages/database/src/index.ts
-- [ ] T024 [US3] Document env vars (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) in quickstart.md
+- [ ] T024 [US3] Document env vars (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) in specs/002-db-core-infrastructure/quickstart.md
 
 **Checkpoint**: Apps can import createDbClient and get environment-appropriate Supabase client.
 
@@ -148,9 +148,10 @@
 
 **Purpose**: Integration, docs, consumer wiring
 
-- [ ] T031 [P] Add @repo/db as dependency to apps/web/package.json
+- [ ] T031 [P] Add @repo/db as dependency to apps/web/package.json (add to apps/agent/package.json when that app exists)
 - [ ] T032 Update quickstart.md with full workflow (install, supabase start, db:generate, usage examples) including Financial Aid Layer section in specs/002-db-core-infrastructure/quickstart.md
 - [ ] T033 Run pnpm install at repo root and verify @repo/db builds with pnpm --filter @repo/db build
+- [ ] T034 Run quickstart.md workflow to validate package setup: install deps, supabase start, db:generate, import from stub consumer in specs/002-db-core-infrastructure/quickstart.md
 
 ---
 
@@ -187,7 +188,7 @@
 
 - T003, T004, T005 (Setup) can run in parallel
 - T016–T019 (US2 Zod schemas) can run in parallel
-- T031, T032 (Polish) can run in parallel
+- T031, T032 (Polish) can run in parallel; T033, T034 run sequentially after consumer wiring
 
 ---
 
