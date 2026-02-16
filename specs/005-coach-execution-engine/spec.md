@@ -7,6 +7,13 @@
 
 ## Clarifications
 
+### Session 2025-02-16 (Alignment with 002, 003, 004, 006)
+
+- Q: How does Coach align with 002 applications schema (momentum_score, submitted_at, confirmed_at)? → A: Use momentum_score (002; formerly priority_score) for application prioritization; persist to applications.momentum_score. Set submitted_at when status→submitted; set confirmed_at when user confirms Won (HITL). 006 Debt Lifted sums only status='awarded' AND confirmed_at IS NOT NULL.
+- Q: How does Coach_Prioritization consume discovery_results from Advisor (004)? → A: Coach receives discovery_results (trust_score, need_match_score, discovery_run_id) from Advisor_Verify. Coach maps to active_milestones and computes momentum_score for applications (different from need_match_score—momentum combines deadline proximity + trust for applications; need_match_score is Advisor's SAI alignment for discovery results).
+- Q: Who produces Coach's Take (006 Match Inbox)? → A: 005 Coach may generate Coach's Take (ROI micro-summary) when mapping discovery_results to active_milestones; 004 produces Trust Report. Source is implementation-defined—Coach can derive from Trust Report or generate independently.
+- Q: When must Coach update submitted_at, last_progress_at, confirmed_at? → A: submitted_at set when status→submitted (after HITL confirm); last_progress_at updated on every status change (for 48h staleness); confirmed_at set when user confirms Won (before Total Debt Lifted update).
+
 ### Session 2025-02-13
 
 - Q: How should Coach lifecycle states (Tracked, Drafting, Review, Submitted, Outcome Pending) align with the Core Infrastructure application_status enum (draft, submitted, awarded, rejected, withdrawn)? → A: Coach states live in orchestration (LangGraph/active_milestones); DB keeps existing enum; a mapping layer converts between them.
@@ -149,7 +156,7 @@ When a student has made no progress on any application for 48 hours, the Coach s
 **Application Lifecycle**
 - **FR-003**: System MUST support application lifecycle states: Tracked → Drafting → Review → Submitted → Outcome Pending. All status changes MUST be validated against the defined lifecycle; invalid transitions MUST be rejected.
 - **FR-003a**: Coach lifecycle states MUST be reconciled with the data layer application_status enum via a mapping layer; orchestration uses Coach states; persistence uses DB enum values; conversions MUST be bidirectional and consistent.
-- **FR-004**: System MUST persist application status and priority scores in a manner consistent with the shared data layer schema.
+- **FR-004**: System MUST persist application status and momentum_score in a manner consistent with the shared data layer schema (002). When status→submitted, set submitted_at; on every status change, set last_progress_at; when user confirms Won, set confirmed_at before updating Total Debt Lifted.
 - **FR-005**: System MUST keep the shared orchestration state (active_milestones) in sync with application status changes; updates MUST occur immediately in the same flow as the status change (e.g., same API call).
 
 **Verification Protocol**
@@ -182,7 +189,7 @@ When a student has made no progress on any application for 48 hours, the Coach s
 
 ### Key Entities
 
-- **Application**: A scholarship application a student is pursuing. Has status (lifecycle state), deadline (from linked scholarship), priority score (Momentum Score), and trust score (from linked scholarship's reputation).
+- **Application**: A scholarship application a student is pursuing. Has status (lifecycle state), deadline (from linked scholarship), momentum_score (Momentum Score; 002 schema), trust score (from linked scholarship's reputation), submitted_at, last_progress_at, confirmed_at (002).
 - **Momentum Score**: Composite score for prioritization; (Deadline Proximity × 0.6) + (Trust Score × 0.4). Combines urgency and source trustworthiness; quadrant logic: high trust + high urgency = best; low trust deprioritizes even when urgent.
 - **active_milestones**: Prioritized list of upcoming tasks (from Orchestration spec); Coach Execution Engine consumes and updates this as part of shared orchestration state.
 - **Total Debt Lifted**: Dashboard aggregate of confirmed scholarship awards; updated only after verification protocol confirmation.
@@ -223,5 +230,7 @@ A future feature will address coordination between external application submissi
 
 ## Documentation References
 
-- [Orchestration Spec](../003-langgraph-orchestration/spec.md) — TuitionLiftState, active_milestones, Coach handoffs
-- [Core Infrastructure Spec](../002-db-core-infrastructure/spec.md) — Application schema, ApplicationStatus, validation
+- [Orchestration Spec](../003-langgraph-orchestration/spec.md) — TuitionLiftState, active_milestones, Coach handoffs, discovery_run_id
+- [Core Infrastructure Spec](../002-db-core-infrastructure/spec.md) — Application schema (momentum_score, submitted_at, last_progress_at, confirmed_at), ApplicationStatus
+- [Advisor Discovery Engine Spec](../004-advisor-discovery-engine/spec.md) — discovery_results (trust_score, need_match_score, Trust Report); Coach consumes for prioritization
+- [Dashboard Spec](../006-scholarship-inbox-dashboard/spec.md) — Top 3 ordered by momentum_score; Debt Lifted uses confirmed_at; Coach's Take display
