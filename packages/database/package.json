@@ -1,0 +1,38 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./schema": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "db:generate": "supabase gen types typescript --local --schema public > src/generated/database.types.ts",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.39.1",
+    "supabase": "^2.76.9",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.90.0",
+    "zod": "^3.24.0"
+  }
+}
