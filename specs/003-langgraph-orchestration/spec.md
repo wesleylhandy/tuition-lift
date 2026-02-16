@@ -7,6 +7,11 @@
 
 ## Clarifications
 
+### Session 2025-02-16
+
+- Q: Source of household_income_bracket for FinancialProfile (002 alignment)? → A: Compute from SAI at read; NOT stored in profiles; orchestration derives at load per 002 FR-014a
+- Q: Should 003 expose discovery_run_id with discovery results for downstream consumers (e.g., 006 dismissals)? → A: Add discovery_run_id to discovery_completions and/or discovery results payload so 006 can scope dismissals by run
+
 ### Session 2025-02-13
 
 - Q: When a user triggers a second "New Search" while discovery is already in progress, what should the second request do? → A: Return status immediately—surface "discovery in progress" with link to live run; user can refresh
@@ -112,6 +117,7 @@ On a defined schedule (e.g., daily), Coach_Prioritization runs to refresh the mi
 - **FR-007a**: Advisor_Discovery MUST NOT send raw student names or full addresses to search APIs; use placeholders only (e.g., {{USER_STATE}}, {{USER_CITY}}) for geo or identifiers.
 - **FR-008**: Advisor_Discovery MUST score discovery results with trust_score and source_url; results MUST include need_match_score comparing scholarship requirements to financial_profile.
 - **FR-009**: Advisor_Discovery MUST hand off via a Command object to transition to Coach_Prioritization once results are verified.
+- **FR-009a**: System MUST expose discovery_run_id (uuid) with discovery results and/or discovery_completions so downstream consumers (e.g., 006) can scope dismissals by run (soft dismiss: hidden for current run only; reappears on new discovery).
 
 **Prioritization (Coach)**
 - **FR-010**: Coach_Prioritization MUST trigger when new discovery results are added or on a defined schedule (e.g., daily).
@@ -128,7 +134,7 @@ On a defined schedule (e.g., daily), Coach_Prioritization runs to refresh the mi
 - **FR-013b**: During async discovery, the system MUST surface a status message (e.g., "Discovery in progress…") and support polling/refresh. When discovery completes, the system MUST notify the user via a notification bell or toaster so they can multitask and choose when to return to view results.
 
 **Security & PII**
-- **FR-014**: All financial data at rest MUST be encrypted. Application-level encryption is required for financial fields in profiles (e.g., SAI, income bracket); database-level encryption provides defense-in-depth.
+- **FR-014**: All financial data at rest MUST be encrypted. Application-level encryption is required for financial fields in profiles (e.g., SAI); database-level encryption provides defense-in-depth. Note: household_income_bracket is not stored (computed from SAI at read per 002).
 - **FR-015**: System MUST store only calculated SAI and broad income brackets; never raw parent/student SSNs or full tax returns.
 - **FR-016**: Coach MUST ask for user confirmation before Advisor uses SAI range filter in search (e.g., SAI bands like 0–2000); without confirmation, Advisor must not include SAI range—only broad income tiers may be used.
 
@@ -145,7 +151,7 @@ On a defined schedule (e.g., daily), Coach_Prioritization runs to refresh the mi
 - **active_milestones**: Prioritized list of upcoming tasks for the Coach; ordered by ROI (Lift relative to financial gap).
 - **messages**: Message history for cross-agent communication (Advisor ↔ Coach).
 - **last_active_node**: String identifying which persona last modified the state.
-- **financial_profile**: Includes estimated_sai (Number, -1500 to 999999), is_pell_eligible (Boolean), household_income_bracket (Enum: Low / Moderate / Middle / Upper-Middle / High—standard federal tiers). Used for filtering and anonymization in search.
+- **financial_profile**: Includes estimated_sai (Number, -1500 to 999999), is_pell_eligible (Boolean), household_income_bracket (Enum: Low / Moderate / Middle / Upper-Middle / High—standard federal tiers). household_income_bracket is computed from SAI at read time; NOT stored in profiles (per 002 FR-014a). Used for filtering and anonymization in search.
 - **Command**: Object used for handoff between Advisor and Coach; triggers transition to Coach_Prioritization.
 - **error_log**: Record of failures; populated when a node fails; used for recovery and user notification.
 

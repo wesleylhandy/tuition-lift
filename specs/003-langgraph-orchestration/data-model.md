@@ -46,7 +46,7 @@ The shared orchestration state. Serialized into checkpoints by LangGraph. All fi
 | is_pell_eligible         | boolean | Derived from profiles.pell_eligibility_status      |
 | household_income_bracket | enum    | Low \| Moderate \| Middle \| Upper-Middle \| High |
 
-**Source**: Derived from `profiles`. `household_income_bracket` computed from SAI or stored in profiles (add column if needed); per spec clarification, use federal tiers.
+**Source**: Derived from `profiles`. `household_income_bracket` computed from SAI at read time; NOT stored in profiles (002 FR-014a). Use federal tiers (Low / Moderate / Middle / Upper-Middle / High).
 
 **Anonymization for search**: Map to strings: "Low Income", "Pell Eligible", etc. Never send raw SAI unless HITL confirmed.
 
@@ -54,15 +54,16 @@ The shared orchestration state. Serialized into checkpoints by LangGraph. All fi
 
 ## 4. DiscoveryResult (Embedded)
 
-| Field           | Type   | Notes                                          |
-|-----------------|--------|------------------------------------------------|
-| id              | string | Unique per result                              |
-| title           | string | Scholarship title                              |
-| url             | string | source_url                                     |
-| trust_score     | number | 0–100; Reputation Engine (Constitution §10)     |
-| need_match_score| number | 0–100; match vs financial_profile               |
+| Field             | Type   | Notes                                          |
+|-------------------|--------|------------------------------------------------|
+| id                | string | Unique per result                              |
+| discovery_run_id  | uuid   | Per-run identifier; passed to 006 for dismissals scoping |
+| title             | string | Scholarship title                              |
+| url               | string | source_url                                     |
+| trust_score       | number | 0–100; Reputation Engine (Constitution §10)     |
+| need_match_score  | number | 0–100; match vs financial_profile               |
 
-**Source**: Advisor_Verify node; scored per Trust Filter and need criteria.
+**Source**: Advisor_Verify node; scored per Trust Filter and need criteria. discovery_run_id from orchestration run; same value in discovery_completions for that run.
 
 ---
 
@@ -114,18 +115,19 @@ The shared orchestration state. Serialized into checkpoints by LangGraph. All fi
 
 ## 9. New Table: discovery_completions (Optional)
 
-For notification delivery (bell/toaster) when discovery completes:
+For notification delivery (bell/toaster) when discovery completes. Includes discovery_run_id for 006 dismissals scoping.
 
-| Field       | Type        | Constraints                    | Notes                        |
-|-------------|-------------|--------------------------------|------------------------------|
-| id          | uuid        | PK                             |                              |
-| user_id     | uuid        | NOT NULL, FK auth.users        |                              |
-| thread_id   | text        | NOT NULL                       | Matches LangGraph thread_id  |
-| status      | text        | NOT NULL                       | running \| completed \| failed |
-| completed_at| timestamptz | nullable                       | Set when status=completed    |
-| created_at  | timestamptz | NOT NULL, default now()        |                              |
+| Field             | Type        | Constraints                    | Notes                        |
+|-------------------|-------------|--------------------------------|------------------------------|
+| id                | uuid        | PK                             |                              |
+| discovery_run_id   | uuid       | NOT NULL, UNIQUE               | Per-run identifier; exposed to 006 for dismissals scoping |
+| user_id           | uuid        | NOT NULL, FK auth.users        |                              |
+| thread_id         | text        | NOT NULL                       | Matches LangGraph thread_id  |
+| status            | text        | NOT NULL                       | running \| completed \| failed |
+| completed_at      | timestamptz | nullable                       | Set when status=completed    |
+| created_at        | timestamptz | NOT NULL, default now()        |                              |
 
-**Purpose**: Frontend polls or Supabase Realtime subscribes; when `status=completed`, show notification. Alternative: derive from checkpoint metadata if LangGraph exposes it.
+**Purpose**: Frontend polls or Supabase Realtime subscribes; when `status=completed`, show notification. discovery_run_id exposed to 006 for dismissals scoping (soft dismiss per run).
 
 **RLS**: User can read only own rows (user_id = auth.uid()).
 
@@ -136,7 +138,7 @@ For notification delivery (bell/toaster) when discovery completes:
 | TuitionLiftState Field | DB Source                              |
 |------------------------|----------------------------------------|
 | user_profile           | profiles (id, gpa, intended_major, state)|
-| financial_profile      | profiles (sai, pell_eligibility_status) + computed household_income_bracket |
+| financial_profile      | profiles (sai, pell_eligibility_status); household_income_bracket computed from SAI at read (not stored; 002 FR-014a) |
 | discovery_results      | In-memory; scholarships table for canonical records |
 | Checkpoints            | checkpoints (002) via PostgresSaver     |
 
@@ -148,7 +150,7 @@ Define Zod schemas for:
 
 - `FinancialProfileSchema` — estimated_sai (-1500..999999), is_pell_eligible, household_income_bracket enum
 - `UserProfileSchema` — gpa, major, state
-- `DiscoveryResultSchema` — trust_score 0–100, need_match_score 0–100
+- `DiscoveryResultSchema` — discovery_run_id (uuid), trust_score 0–100, need_match_score 0–100
 - `ActiveMilestoneSchema` — priority, status
 
 Use for validation before writing to state or external APIs.
