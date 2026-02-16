@@ -1,6 +1,6 @@
 # Quickstart: @repo/db Development
 
-**Branch**: `002-db-core-infrastructure` | **Date**: 2025-02-13
+**Branch**: `002-db-core-infrastructure` | **Date**: 2025-02-16
 
 ## Prerequisites
 
@@ -8,6 +8,48 @@
 - pnpm 9+
 - Docker (for local Supabase)
 - [Supabase CLI](https://supabase.com/docs/guides/cli) installed
+
+## Full Workflow (End-to-End)
+
+Run these steps in order to validate package setup:
+
+```bash
+# 1. Install dependencies
+cd /path/to/tuition-lift
+pnpm install
+
+# 2. Start local Supabase (Docker required)
+cd packages/database
+supabase start
+
+# 3. Copy credentials to .env.local (from supabase status output)
+# NEXT_PUBLIC_SUPABASE_URL=...
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+# SUPABASE_SERVICE_ROLE_KEY=...
+
+# 4. Generate TypeScript types from schema
+pnpm db:generate
+
+# 5. Verify package builds
+pnpm --filter @repo/db build
+
+# 6. Validate stub consumer (import from apps/web)
+pnpm --filter web check-types
+```
+
+Stub consumer: `apps/web/lib/db.ts` re-exports `createDbClient`, schemas, and types from `@repo/db`.
+
+Then import from `@repo/db`:
+
+```typescript
+import { createDbClient } from '@repo/db';
+import { profileSchema, parseOrThrow } from '@repo/db';
+import type { Tables, Enums } from '@repo/db';
+```
+
+The stub consumer `apps/web/lib/db.ts` re-exports these for use across the app.
+
+---
 
 ## 1. Install Dependencies
 
@@ -35,20 +77,50 @@ pnpm db:generate
 # Or: supabase gen types typescript --local > src/generated/database.types.ts
 ```
 
-## 4. Use in an App
+## 4. Usage Examples
 
-### apps/web (Server Component)
+### Client, types, and schemas
 
 ```typescript
 import { createDbClient } from '@repo/db';
-import { profileSchema } from '@repo/db/schema';
+import { waitlistSchema, profileSchema, scholarshipSchema, applicationSchema, parseOrThrow } from '@repo/db';
+import type { Database, Tables, Enums } from '@repo/db';
+
+const supabase = createDbClient();
+```
+
+### apps/web — Profiles (Server Component / Server Action)
+
+```typescript
+import { createDbClient } from '@repo/db';
+import { profileSchema, parseOrThrow } from '@repo/db';
 
 const supabase = createDbClient(); // server context
 const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
 // Before insert/update (validates SAI range -1500..999999, Pell status, etc.):
-const validated = profileSchema.parse(payload);
+const validated = parseOrThrow(profileSchema, payload);
 await supabase.from('profiles').upsert(validated);
+```
+
+### apps/web — Waitlist (Server Action, service-role)
+
+```typescript
+import { createDbClient } from '@repo/db';
+import { waitlistSchema, parseOrThrow } from '@repo/db';
+
+// Server Action uses service-role (bypasses RLS). Validate before insert.
+const validated = parseOrThrow(waitlistSchema, { email, segment, referral_code });
+const { error } = await createDbClient().from('waitlist').insert(validated);
+```
+
+### apps/web — Scholarship discovery (anon/authenticated)
+
+```typescript
+const { data } = await createDbClient()
+  .from('scholarships')
+  .select('id, title, amount, deadline, trust_score, category')
+  .not('deadline', 'lt', new Date().toISOString());
 ```
 
 ### apps/agent (LangGraph)
@@ -97,16 +169,46 @@ Checkpoint tables for agent state are **not** created by Supabase migrations. Th
 
 ## Environment Variables
 
+`createDbClient` reads these variables at runtime. Server context uses service-role when available; client context uses anon only (never exposes service-role to the browser).
+
 | Variable | Required | Used By | Notes |
 |----------|----------|---------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Client + Server | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client + Server | Public anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Server | For admin operations; never expose to client |
-| `DATABASE_URL` | Agent | LangGraph checkpointer | Postgres connection string (direct DB URL for checkpointer) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Client + Server | Supabase project URL. Required by `createDbClient`. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client + Server | Public anon key. Used in browser; used on server when service-role is not set. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Server | For admin operations (bypasses RLS). Used by `createDbClient` in Node when set. **Never expose to client.** |
+| `DATABASE_URL` | Agent | LangGraph checkpointer | Postgres connection string (direct DB URL for checkpointer). Not used by `createDbClient`. |
+
+## Referral Tracking (Waitlist)
+
+The waitlist supports `referral_code`, `referred_by`, and `referral_count`. **FR-005a**: When a user joins with an invalid or unknown referral code, the system MUST allow signup, leave `referred_by` empty, and NOT surface an error. Consumers implement the lookup: before insert, look up `waitlist` by `referral_code`; if found, set `referred_by` to that row's `id`; otherwise omit `referred_by` (null). The migration indexes `referred_by` for referrer count queries: `SELECT COUNT(*) FROM waitlist WHERE referred_by = $referrerId`.
+
+## Row-Level Security (RLS)
+
+All tables have RLS enabled (verified T029, T030). Profile data is protected from cross-user access.
+
+| Table | RLS | Policies |
+|-------|-----|----------|
+| **waitlist** | Enabled | No policies for anon/authenticated (default deny). INSERT/SELECT/UPDATE via service-role only. |
+| **profiles** | Enabled | SELECT, INSERT, UPDATE only where `auth.uid() = id`. No cross-user access. |
+| **scholarships** | Enabled | Public SELECT (`USING (true)`). INSERT/UPDATE/DELETE service-role only. |
+| **applications** | Enabled | SELECT, INSERT, UPDATE, DELETE only where `auth.uid() = user_id`. |
+
+**Independent test**: With anon client, `SELECT` another user's profile → denied. With auth `auth.uid() = id` → allowed.
 
 ## Financial Aid Layer (Profiles)
 
-Profiles support SAI (Student Aid Index, -1500 to 999999), `pell_eligibility_status` (eligible/ineligible/unknown), `household_size`, and `number_in_college`. The `profileSchema` validates SAI range before write; out-of-range values throw ZodError.
+Profiles support need-based scholarship matching via:
+
+| Field | Type | Validation |
+|-------|------|------------|
+| `sai` | integer | -1500 to 999999 (profileSchema rejects out-of-range) |
+| `pell_eligibility_status` | enum | `eligible`, `ineligible`, `unknown` |
+| `household_size` | integer | positive |
+| `number_in_college` | integer | ≥ 0 |
+
+**Enum and migration**: `pell_eligibility_status` is defined in `00000000000000_create_enums.sql`; the profiles table uses it in `00000000000002_create_profiles.sql`.
+
+**Usage**: Store SAI, pell_eligibility_status, and household context in a profile. Consumers can query need-based scholarships filtered by eligibility (e.g. `scholarship_category = 'need_based'` with profile SAI/Pell data).
 
 ## Package Scripts (packages/database/package.json)
 

@@ -74,12 +74,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Create waitlistSchema with email, segment, referral_code, referred_by, referral_count, unlock_sent_at in packages/database/src/schema/waitlist.ts
-- [ ] T017 [P] [US2] Create profileSchema with full_name, intended_major, gpa (0–4), state, interests, sai (-1500 to 999999), pell_eligibility_status (enum), household_size, number_in_college, updated_at in packages/database/src/schema/profiles.ts
-- [ ] T018 [P] [US2] Create scholarshipSchema with title, amount, deadline, url, trust_score (0–100), category in packages/database/src/schema/scholarships.ts
-- [ ] T019 [P] [US2] Create applicationSchema with user_id, scholarship_id, academic_year (YYYY-YYYY), status enum, momentum_score, submitted_at, last_progress_at, confirmed_at, updated_at in packages/database/src/schema/applications.ts
-- [ ] T020 [US2] Create schema index exporting all schemas and optional parseOrThrow helper in packages/database/src/schema/index.ts
-- [ ] T021 [US2] Export schemas from main package in packages/database/src/index.ts
+- [x] T016 [P] [US2] Create waitlistSchema with email, segment, referral_code, referred_by, referral_count, unlock_sent_at in packages/database/src/schema/waitlist.ts
+- [x] T017 [P] [US2] Create profileSchema with full_name, intended_major, gpa (0–4), state, interests, sai (-1500 to 999999), pell_eligibility_status (enum), household_size, number_in_college, updated_at in packages/database/src/schema/profiles.ts
+- [x] T018 [P] [US2] Create scholarshipSchema with title, amount, deadline, url, trust_score (0–100), category in packages/database/src/schema/scholarships.ts
+- [x] T019 [P] [US2] Create applicationSchema with user_id, scholarship_id, academic_year (YYYY-YYYY), status enum, momentum_score, submitted_at, last_progress_at, confirmed_at, updated_at in packages/database/src/schema/applications.ts
+- [x] T020 [US2] Create schema index exporting all schemas and optional parseOrThrow helper in packages/database/src/schema/index.ts
+- [x] T021 [US2] Export schemas from main package in packages/database/src/index.ts
 
 **Checkpoint**: All write paths can validate with Zod before DB access; invalid data rejected.
 
@@ -93,9 +93,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement createDbClient in packages/database/src/client.ts with runtime detection (typeof window, process.env)
-- [ ] T023 [US3] Export createDbClient from packages/database/src/index.ts
-- [ ] T024 [US3] Document env vars (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) in specs/002-db-core-infrastructure/quickstart.md
+- [x] T022 [US3] Implement createDbClient in packages/database/src/client.ts with runtime detection (typeof window, process.env)
+- [x] T023 [US3] Export createDbClient from packages/database/src/index.ts
+- [x] T024 [US3] Document env vars (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) in specs/002-db-core-infrastructure/quickstart.md
 
 **Checkpoint**: Apps can import createDbClient and get environment-appropriate Supabase client.
 
@@ -109,8 +109,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] Ensure waitlist migration includes index on referred_by for referrer count queries in packages/database/supabase/migrations/
-- [ ] T026 [US4] Ensure waitlistSchema allows referred_by as optional; document FR-005a (invalid code → null) in schema or quickstart in packages/database/src/schema/waitlist.ts
+- [x] T025 [US4] Ensure waitlist migration includes index on referred_by for referrer count queries in packages/database/supabase/migrations/
+- [x] T026 [US4] Ensure waitlistSchema allows referred_by as optional; document FR-005a (invalid code → null) in schema or quickstart in packages/database/src/schema/waitlist.ts
 
 **Checkpoint**: Referral tracking fully supported at data layer; consumers implement lookup logic.
 
@@ -122,8 +122,8 @@
 
 **Independent Test**: Store SAI (-1500 to 999999), pell_eligibility_status, household_size in profile; query need-based scholarships filtered by eligibility.
 
-- [ ] T027 [US6] Verify profileSchema rejects SAI outside -1500..999999 in packages/database/src/schema/profiles.ts
-- [ ] T028 [US6] Verify pell_eligibility_status enum and profile migration are applied; add Financial Aid Layer section to quickstart (T032 does full quickstart update)
+- [x] T027 [US6] Verify profileSchema rejects SAI outside -1500..999999 in packages/database/src/schema/profiles.ts
+- [x] T028 [US6] Verify pell_eligibility_status enum and profile migration are applied; add Financial Aid Layer section to quickstart (T032 does full quickstart update)
 
 **Checkpoint**: Financial Aid Layer integrated; need-based matching can use profile data.
 
@@ -137,8 +137,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T029 [US5] Verify profiles RLS policy: SELECT/UPDATE/INSERT only where auth.uid() = id in packages/database/supabase/migrations/
-- [ ] T030 [US5] Verify all tables (waitlist, profiles, scholarships, applications) have RLS enabled with correct policies in packages/database/supabase/migrations/
+- [x] T029 [US5] Verify profiles RLS policy: SELECT/UPDATE/INSERT only where auth.uid() = id in packages/database/supabase/migrations/
+- [x] T030 [US5] Verify all tables (waitlist, profiles, scholarships, applications) have RLS enabled with correct policies in packages/database/supabase/migrations/
 
 **Checkpoint**: RLS enforced; profile data protected from cross-user access.
 
@@ -148,10 +148,10 @@
 
 **Purpose**: Integration, docs, consumer wiring
 
-- [ ] T031 [P] Add @repo/db as dependency to apps/web/package.json (add to apps/agent/package.json when that app exists)
-- [ ] T032 Update quickstart.md with full workflow (install, supabase start, db:generate, usage examples) including Financial Aid Layer section in specs/002-db-core-infrastructure/quickstart.md
-- [ ] T033 Run pnpm install at repo root and verify @repo/db builds with pnpm --filter @repo/db build
-- [ ] T034 Run quickstart.md workflow to validate package setup: install deps, supabase start, db:generate, import from stub consumer in specs/002-db-core-infrastructure/quickstart.md
+- [x] T031 [P] Add @repo/db as dependency to apps/web/package.json (add to apps/agent/package.json when that app exists)
+- [x] T032 Update quickstart.md with full workflow (install, supabase start, db:generate, usage examples) including Financial Aid Layer section in specs/002-db-core-infrastructure/quickstart.md
+- [x] T033 Run pnpm install at repo root and verify @repo/db builds with pnpm --filter @repo/db build
+- [x] T034 Run quickstart.md workflow to validate package setup: install deps, supabase start, db:generate, import from stub consumer in specs/002-db-core-infrastructure/quickstart.md
 
 ---
 

@@ -3,6 +3,7 @@
  * Single source of truth for types, schemas, and client.
  */
 
+export { createDbClient } from './client.js';
 export type {
   Database,
   Tables,
@@ -13,3 +14,26 @@ export type {
 } from './generated/database.types.js';
 
 export { Constants } from './generated/database.types.js';
+
+export {
+  waitlistSchema,
+  waitlistSegmentEnum,
+  profileSchema,
+  profileInsertSchema,
+  profileUpdateSchema,
+  pellEligibilityStatusEnum,
+  scholarshipSchema,
+  scholarshipCategoryEnum,
+  applicationSchema,
+  applicationStatusEnum,
+  parseOrThrow,
+} from './schema/index.js';
+
+export type {
+  WaitlistSchema,
+  ProfileSchema,
+  ProfileInsertSchema,
+  ProfileUpdateSchema,
+  ScholarshipSchema,
+  ApplicationSchema,
+} from './schema/index.js';
