@@ -15,6 +15,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-13
 - TypeScript 5.x (Next.js project) + Next.js (App Router), React 19, Tailwind CSS, shadcn/ui, Framer Motion, Supabase JS (006-scholarship-inbox-dashboard)
 - TypeScript 5.x (Node.js) + LangGraph, LangChain, Tavily API, @langchain/langgraph-checkpoint-postgres, @repo/db (004-advisor-discovery-engine)
 - Supabase (PostgreSQL); TuitionLiftState via checkpoints; scholarships table (metadata JSONB, UNIQUE url); no new top-level tables (004-advisor-discovery-engine)
+- TypeScript 5.x (Node.js) + Inngest, Resend, React Email, LangGraph (Coach_Prioritization node), @repo/db, Supabase (005-coach-execution-engine)
+- Supabase; applications (momentum_score, submitted_at, last_progress_at, confirmed_at); notification_log, check_in_tasks; profiles.preferences or application_snoozes for snooze (005-coach-execution-engine)
 
 - TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
 - TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
@@ -37,9 +39,9 @@ npm test && npm run lint
 TypeScript 5.9: Follow standard conventions
 
 ## Recent Changes
+- 005-coach-execution-engine: Added TypeScript 5.x (Node.js) + Inngest, Resend, React Email, LangGraph (Coach_Prioritization node), @repo/db, Supabase
 - 004-advisor-discovery-engine: Added TypeScript 5.x (Node.js) + LangGraph, LangChain, Tavily API, @langchain/langgraph-checkpoint-postgres, @repo/db
 - 003-langgraph-orchestration: Added TypeScript 5.x (Node 18+) + LangGraph JS (@langchain/langgraph), @langchain/langgraph-checkpoint-postgres, Inngest, Supabase
-- 002-db-core-infrastructure: Added TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen)
 
 
 <!-- MANUAL ADDITIONS START -->

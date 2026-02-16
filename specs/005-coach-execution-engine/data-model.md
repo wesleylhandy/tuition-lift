@@ -92,12 +92,14 @@ FR-013b: Snooze Micro-Task; must not extend past due date.
 
 ## 5. Extend applications (if needed)
 
-Per 002, `applications` has `status`, `priority_score`. Add if missing:
+Per 002, `applications` has `status`, `momentum_score` (formerly priority_score). Add if missing:
 
 | Field | Type | Notes |
 |-------|------|-------|
-| submitted_at | timestamptz | nullable. Set when status → submitted. Used for 21-day check-in. |
-| last_progress_at | timestamptz | nullable. Updated on status change only (content save out of scope). For 48h staleness. |
+| momentum_score | numeric(5,2) | nullable. Coach prioritization; (Deadline Proximity × 0.6) + (Trust Score × 0.4). |
+| submitted_at | timestamptz | nullable. Set when status → submitted (after HITL confirm). Used for 21-day check-in. |
+| last_progress_at | timestamptz | nullable. Updated on every status change (content save out of scope). For 48h staleness. |
+| confirmed_at | timestamptz | nullable. Set when user confirms Won (HITL). 006 Debt Lifted sums only awarded + confirmed_at IS NOT NULL. |
 
 **Migration**: Add columns if not in 002. Check 002 data-model for current schema.
 
@@ -115,7 +117,7 @@ If 002 scholarships has `metadata` JSONB, store `metadata.application_type` inst
 
 ## 7. Total Debt Lifted
 
-**Option A**: Compute on read: `SELECT COALESCE(SUM(s.amount), 0) FROM applications a JOIN scholarships s ON a.scholarship_id = s.id WHERE a.user_id = $1 AND a.status = 'awarded' AND a.confirmed_at IS NOT NULL`.
+**Option A** (aligned with 006): Compute on read: `SELECT COALESCE(SUM(s.amount), 0) FROM applications a JOIN scholarships s ON a.scholarship_id = s.id WHERE a.user_id = $1 AND a.status = 'awarded' AND a.confirmed_at IS NOT NULL`.
 
 **Option B**: Add `profiles.total_debt_lifted` numeric, updated only after HITL confirmation.
 
@@ -161,7 +163,7 @@ Implementation: Extend 003 ActiveMilestone schema or add sibling `coach_suggesti
 |-----------|---------|
 | 005_notification_log | Create notification_log table |
 | 005_check_in_tasks | Create check_in_tasks table |
-| 005_applications_submitted_at | Add submitted_at, last_progress_at if missing |
+| 005_applications_extend | Add momentum_score, submitted_at, last_progress_at, confirmed_at if missing (per 002 FR-013a) |
 | 005_profiles_preferences | Add preferences JSONB for snooze if using profiles |
 
 Exact migration names follow 002 conventions.

@@ -38,7 +38,7 @@
 
 - [ ] T005 Add migration 005_notification_log: create notification_log table with user_id, channel (enum email|dashboard_toast), sent_at, notification_type, template_name (SC-008), application_ids in packages/database/supabase/migrations/
 - [ ] T006 Add migration 005_check_in_tasks: create check_in_tasks table with user_id, application_id, due_at, status (enum pending|completed|dismissed), created_at, completed_at in packages/database/supabase/migrations/
-- [ ] T007 Add migration 005_applications_extend: add submitted_at, last_progress_at (timestamptz, nullable) to applications if missing in packages/database/supabase/migrations/
+- [ ] T007 Add migration 005_applications_extend: add momentum_score, submitted_at, last_progress_at, confirmed_at (per 002 FR-013a) to applications if missing in packages/database/supabase/migrations/
 - [ ] T008 Add migration 005_profiles_preferences: add preferences JSONB (nullable) to profiles for snooze in packages/database/supabase/migrations/
 - [ ] T009 [P] Implement coachStateToDb and dbToCoachState mapping functions in apps/agent/lib/coach/state-mapper.ts per data-model.md
 - [ ] T010 [P] Implement Momentum Score calculation (Deadline Proximity × 0.6 + Trust Score × 0.4) in apps/agent/lib/coach/momentum-score.ts
@@ -58,7 +58,7 @@
 ### Implementation for User Story 1
 
 - [ ] T013 [US1] Implement Inngest function tuition-lift/coach.game-plan.daily with cron trigger (e.g., 0 6 * * *) in apps/web/lib/inngest/functions/coach.ts
-- [ ] T014 [US1] Implement game plan batch logic: load users with applications, compute Momentum Score, persist priority_score to applications, update active_milestones in apps/agent/lib/coach/game-plan.ts
+- [ ] T014 [US1] Implement game plan batch logic: load users with applications, compute Momentum Score, persist momentum_score to applications (002), update active_milestones in apps/agent/lib/coach/game-plan.ts
 - [ ] T015 [US1] Implement zero-apps path: return suggestion "Add applications or run discovery" when user has no tracked apps (FR-001a) in apps/agent/lib/coach/game-plan.ts
 - [ ] T016 [US1] Implement GET /api/coach/game-plan in apps/web/app/api/coach/game-plan/route.ts: auth, load Top 3 from active_milestones or compute on demand, return JSON per contract
 - [ ] T017 [US1] Create React Email template Top3GamePlan in apps/web/lib/email/coach-templates/Top3GamePlan.tsx with Coach persona micro-copy (FR-014, FR-015)
@@ -94,7 +94,7 @@
 
 - [ ] T022 [US3] Implement POST /api/coach/confirm-outcome in apps/web/app/api/coach/confirm-outcome/route.ts: auth, validate applicationId and outcomeType
 - [ ] T023 [US3] On confirmed Submitted: transition status to submitted, set submitted_at, update applications, update active_milestones in same flow (FR-005) in apps/web/app/api/coach/confirm-outcome/route.ts
-- [ ] T024 [US3] On confirmed Won: transition status to awarded, update Total Debt Lifted (compute from scholarships or profiles.total_debt_lifted), set confirmed_at if column exists, update active_milestones in same flow in apps/web/app/api/coach/confirm-outcome/route.ts
+- [ ] T024 [US3] On confirmed Won: transition status to awarded, set confirmed_at (required for 006 Debt Lifted), update Total Debt Lifted (compute from applications where status='awarded' AND confirmed_at IS NOT NULL), update active_milestones in same flow in apps/web/app/api/coach/confirm-outcome/route.ts
 - [ ] T025 [US3] On declined: return success false, no DB changes in apps/web/app/api/coach/confirm-outcome/route.ts
 
 **Checkpoint**: User Story 3 complete—HITL verification works for Submitted and Won
