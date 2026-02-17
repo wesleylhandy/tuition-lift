@@ -23,10 +23,10 @@
 
 **Purpose**: Project initialization, dependencies, and directory structure
 
-- [ ] T001 Create apps/agent directory structure (lib/, lib/nodes/) and apps/web/lib/inngest/ per plan.md
-- [ ] T002 Add @langchain/langgraph @langchain/langgraph-checkpoint-postgres to apps/agent/package.json; add inngest to apps/web/package.json
-- [ ] T003 [P] Add DATABASE_URL, INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY, LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY to .env.example
-- [ ] T004 [P] Add Inngest client and serve route at apps/web/app/api/inngest/route.ts per Inngest docs
+- [x] T001 Create apps/agent directory structure (lib/, lib/nodes/) and apps/web/lib/inngest/ per plan.md
+- [x] T002 Add @langchain/langgraph @langchain/langgraph-checkpoint-postgres to apps/agent/package.json; add inngest to apps/web/package.json
+- [x] T003 [P] Add DATABASE_URL, INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY, LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY to .env.example
+- [x] T004 [P] Add Inngest client and serve route at apps/web/app/api/inngest/route.ts per Inngest docs
 
 **Checkpoint**: Dependencies installed; Inngest serve route available; env vars documented
 
@@ -42,7 +42,7 @@
 - [ ] T008 Create graph skeleton (StateGraph with START, END) in apps/agent/lib/graph.ts with placeholder nodes Advisor_Search, Advisor_Verify, Coach_Prioritization, SafeRecovery; compile with checkpointer
 - [ ] T009 Implement profile loader: fetch user_profile and financial_profile from @repo/db profiles table by user_id; compute household_income_bracket from SAI; export from apps/agent/lib/load-profile.ts
 - [ ] T010 Create financial anonymization helper: map financial_profile to search-safe strings (household_income_bracket → "Low Income"|etc, is_pell_eligible → "Pell Eligible"|etc); use placeholders for geo ({{USER_STATE}}, {{USER_CITY}}) per FR-007a in apps/agent/lib/anonymize-financial.ts
-- [ ] T010a Implement application-level encryption for financial profile fields (SAI) in profiles table; encrypt on write, decrypt in load-profile per FR-014 in packages/database or apps/agent/lib/load-profile.ts (household_income_bracket not stored—computed from SAI per 002)
+- [ ] T010a Implement application-level encryption for financial profile fields (SAI): add encrypt/decrypt helpers in packages/database (env key); use decrypt in apps/agent/lib/load-profile.ts on read; use encrypt on profile write paths (e.g. onboarding). household_income_bracket not stored—computed from SAI per 002 (FR-014)
 
 **Checkpoint**: Graph compiles; state schema defined; checkpointer persists; profile loader, anonymization, and encryption ready
 
@@ -67,7 +67,7 @@
 - [ ] T019 [US1] Implement GET /api/discovery/results: auth; load checkpoint state for thread_id; return discoveryRunId (top-level), discoveryResults (each with discoveryRunId), and activeMilestones per contract in apps/web/app/api/discovery/results/route.ts
 - [ ] T020 [US1] Add discovery_completions table migration: id, discovery_run_id (uuid NOT NULL UNIQUE), user_id, thread_id, status, completed_at, created_at; RLS user_id=auth.uid() in packages/database/supabase/migrations/
 - [ ] T021 [US1] Update Inngest discovery function: on run start create discovery_completions row with discovery_run_id; on graph completion upsert status=completed, completed_at=now for notification (FR-013b)
-- [ ] T022 [US1] Add status polling + "Discovery in progress…" UI state and notification (bell/toaster) when status=completed in apps/web/app/discovery/page.tsx (or main discovery UI component)
+- [ ] T022 [US1] Add status polling + "Discovery in progress…" UI state and notification (bell/toaster) when status=completed in apps/web — create apps/web/app/discovery/page.tsx if not present
 
 **Checkpoint**: User Story 1 complete; discovery triggers, runs async, returns results; status poll + notification work
 
@@ -117,7 +117,7 @@
 
 - [ ] T033 [US4] Create Inngest function tuition-lift/prioritization.scheduled with cron trigger (e.g., 0 6 * * * daily) in apps/web/lib/inngest/functions.ts
 - [ ] T034 [US4] Implement batch load: fetch users/threads with discovery_results; for each, invoke Coach_Prioritization with existing state (no Advisor run) in apps/web/lib/inngest/functions.ts
-- [ ] T035 [US4] Add Coach_Prioritization standalone invoke: accept thread_id + existing state; run only Coach node to refresh active_milestones in apps/agent/lib/nodes/coach-prioritization.ts
+- [ ] T035 [US4] Add scheduled_refresh entry point to graph: route directly to Coach_Prioritization; Inngest loads checkpoint via graph.getState(), invokes with entrypoint "scheduled_refresh" and existing state; Coach recalculates active_milestones; no Advisor nodes run (see plan.md Coach_Prioritization Standalone)
 
 **Checkpoint**: User Story 4 complete; daily cron refreshes milestones
 
@@ -133,8 +133,9 @@
 - [ ] T039 Run quickstart.md validation: verify checkpointer setup, graph invoke, Inngest trigger work end-to-end
 - [ ] T040 [P] Add inline comments referencing LangGraph JS, Inngest, and contract docs in key files
 - [ ] T041 Run Lighthouse on discovery flow (trigger, status poll, results view); verify Performance and Best Practices ≥ 90 each (SC-007)
+- [ ] T042 Verify SC-001: run discovery end-to-end under normal conditions (single-user, sequential); assert completion within 5 minutes
 
-**Checkpoint**: Observability enabled; security validated; quickstart passes; Lighthouse 90+ verified
+**Checkpoint**: Observability enabled; security validated; quickstart passes; Lighthouse 90+ verified; SC-001 validated
 
 ---
 
@@ -203,13 +204,13 @@ T010a: Application-level encryption for financial fields
 
 | Metric | Value |
 |--------|-------|
-| Total tasks | 42 |
+| Total tasks | 41 |
 | Phase 1 (Setup) | 4 |
 | Phase 2 (Foundational) | 7 |
 | Phase 3 (US1) | 12 |
 | Phase 4 (US2) | 4 |
-| Phase 5 (US3) | 5 |
+| Phase 5 (US3) | 4 |
 | Phase 6 (US4) | 3 |
-| Phase 7 (Polish) | 6 |
+| Phase 7 (Polish) | 7 |
 | Parallel opportunities | T003, T004; T005, T009, T010, T010a; T036, T040 |
 | MVP scope | Phases 1–3 (User Story 1) |

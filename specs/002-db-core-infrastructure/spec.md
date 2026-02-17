@@ -15,6 +15,11 @@
 - Q: Should 002 applications schema include submitted_at, last_progress_at, and confirmed_at for Coach Execution Engine (005)? → A: Add all three columns to 002 applications schema
 - Q: Should priority_score be renamed to momentum_score for cross-spec consistency (005, 006)? → A: Rename priority_score to momentum_score in 002
 - Q: Should profiles include household_income_bracket column for orchestration (003)? → A: Compute from SAI at read; no new column; consumers (e.g. agent) derive bracket from SAI
+- Q: Should 002 explicitly require application-level encryption for SAI to align with 003 and constitution? → A: Add assumption only—002 owns schema; 003 implements encryption layer in this package
+- Q: Should 002 define which profile fields (intended_major, state) are required vs optional? → A: 002 schemas allow optional profile fields; consumers (e.g. 003) validate required fields for their use case (e.g. discovery)
+- Q: When a user joins with referred_by, who updates the referrer's referral_count? → A: Application logic—Server Action that inserts waitlist record also increments referrer's referral_count in the same transaction
+- Q: Who creates the checkpoints table—002 migration or LangGraph? → A: LangGraph PostgresSaver.setup() creates the table on first use; 002 documents that setup() must run
+- Q: How should profile updates validate—full schema or partial? → A: Partial validation—profileSchema.partial() or equivalent validates only fields present in update payload
 
 ### Session 2025-02-13
 
@@ -143,19 +148,22 @@ As a student, I need my profile to store my Student Aid Index (SAI), Pell-eligib
 - **FR-004**: The system MUST export a shared database client that automatically initializes with environment-appropriate configuration for server vs. client contexts.
 - **FR-004a**: In client (browser) contexts, connection or query errors MUST expose only a safe, user-facing message; stack traces and internal error details MUST remain server-side and be logged safely, never exposed to the browser.
 - **FR-005**: The waitlist entity MUST support `referral_code` (unique per user) and `referred_by` (link to referrer) to enable viral referral tracking.
+- **FR-005c**: When a waitlist record is inserted with a valid referred_by, the Server Action MUST increment the referrer's referral_count in the same transaction. No database trigger; application logic ensures consistency.
 - **FR-005b**: The waitlist entity MUST support `segment` (optional self-categorization: high_school, undergraduate, masters, doctoral), `referral_count` (default 0; for position jump), and `unlock_sent_at` (nullable; when share-to-unlock email was sent) to align with 001 Waitlist Launch.
 - **FR-005a**: When a user joins the waitlist with an invalid or unknown referral code, the system MUST allow signup, leave referred_by empty, and NOT surface an error to the user.
 - **FR-006**: All tables MUST enforce Row Level Security policies so that access is restricted to authorized users only.
 - **FR-006a**: Waitlist INSERT MUST be service-role only (no direct anon INSERT). Anyone with the signup link may join, but inserts MUST go through Server Actions to ensure validation, rate limiting, and fraud checks. SELECT/UPDATE for waitlist remain service-role or admin only.
 - **FR-007**: Profile data MUST be readable only by the authenticated owner; no other user or system role may access another user's profile.
 - **FR-008**: The system MUST NOT store sensitive PII such as Social Security numbers or full home addresses in this schema. Compliance is enforced via PR review checklist—migrations must not add such columns.
-- **FR-009**: The system MUST support persistence of agent checkpoints (thread_id, checkpoint_id, checkpoint payload) for resumable agent sessions.
+- **FR-009**: The system MUST support persistence of agent checkpoints (thread_id, checkpoint_id, checkpoint payload) for resumable agent sessions. The checkpoints table is created by LangGraph PostgresSaver.setup() on first use; 002 documents that setup() must run before agent invocation.
 - **FR-010**: The scholarships entity MUST support fields for title, amount, deadline, URL, trust score, and category to support the Trust Filter and discovery workflows.
 - **FR-011**: Records that support concurrent writes (e.g., Profiles, Applications) MUST use optimistic locking (version or timestamp); writes MUST fail when the record has changed since read, and callers MUST retry with fresh data. The package provides `updated_at` and typed client; consuming applications implement the `.eq('updated_at', oldValue)` check and retry logic.
 - **FR-012**: Schema migrations MUST be backward-compatible only—additive changes (new columns nullable, new tables allowed); removal or renaming of columns/tables MUST be done in separate steps after all consumers are upgraded.
 - **FR-013**: Applications MUST enforce uniqueness per (user, scholarship, academic_year). At most one application per combination; drafts are allowed before submission; a user may apply to the same scholarship again when it is offered in a future academic year.
 - **FR-013a**: The applications entity MUST support `momentum_score` (Coach prioritization; replaces former priority_score), `submitted_at` (set when status→submitted; for 21-day check-in), `last_progress_at` (updated on status change; for 48h staleness), and `confirmed_at` (HITL confirmation for Won; Total Debt Lifted updated only after confirmed) to align with Coach Execution Engine (005) and Dashboard (006).
 - **FR-014**: The profiles entity MUST support a Financial Aid Layer: Student Aid Index (SAI) in range -1500 to 999999, Pell-eligibility markers (eligible, ineligible, unknown), household size, and number in college. All fields nullable; validation MUST reject out-of-range SAI.
+- **FR-014b**: Profile schema (profileSchema) MUST allow intended_major and state as optional to support incremental onboarding. Consumers (e.g. orchestration 003) enforce required-field validation for their use case (e.g. discovery trigger returns 400 if major or state missing).
+- **FR-014c**: For profile updates, validation MUST support partial payloads—e.g. profileSchema.partial() or equivalent—so only the fields present in the update are validated; full schema not required for PATCH-style updates.
 - **FR-014a**: The system MUST NOT add a `household_income_bracket` column to profiles. Consumers (e.g. orchestration, agent) derive household_income_bracket (Low/Moderate/Middle/Upper-Middle/High) from SAI at read time per federal tiers. Profiles remain the single source for SAI and related fields.
 
 ### Key Entities
@@ -171,10 +179,11 @@ As a student, I need my profile to store my Student Aid Index (SAI), Pell-eligib
 - The monorepo layout includes a shared packages directory where this package will live; consuming applications (frontend and agent) are configured to depend on it.
 - All five entities (Waitlist, Profiles, Scholarships, Applications, Checkpoints) are in scope for the initial release; additional entities will be added via subsequent specs.
 - Referral codes are unique per user and sufficiently distinguishable to avoid collisions at expected waitlist scale.
-- Checkpoint payloads are opaque; the package stores and retrieves them without interpreting their contents.
+- Checkpoint payloads are opaque; the package stores and retrieves them without interpreting their contents. The checkpoints table is created by LangGraph PostgresSaver.setup() at runtime; 002 does not include a Supabase migration for it.
 - Observability (logging, metrics, tracing) is delegated to consuming applications; the package does not log or emit metrics.
 - Developer quickstart documentation lives in specs/002-db-core-infrastructure/quickstart.md; the package README MUST link to it.
 - SAI (Student Aid Index) replaces EFC per federal aid rules; valid range is -1500 to 999999. Pell-eligibility status reflects FAFSA-derived or user-entered determination; thresholds vary by academic year and are computed by consuming applications.
+- Financial fields (SAI) in profiles may be encrypted at rest; orchestration (003) implements the application-level encryption layer in this package.
 
 ## Success Criteria *(mandatory)*
 

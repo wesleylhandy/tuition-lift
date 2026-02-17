@@ -11,7 +11,7 @@ Build a durable, stateful orchestration layer using LangGraph JS that coordinate
 
 **Language/Version**: TypeScript 5.x (Node 18+)
 **Primary Dependencies**: LangGraph JS (@langchain/langgraph), @langchain/langgraph-checkpoint-postgres, Inngest, Supabase
-**Storage**: Supabase (PostgreSQL) — checkpoints table via PostgresSaver; profiles, scholarships from @repo/db; discovery_completions table (includes discovery_run_id)
+**Storage**: Supabase (PostgreSQL) — checkpoints table via PostgresSaver (created by setup() per 002 FR-009); profiles, scholarships from @repo/db; discovery_completions table (includes discovery_run_id)
 **Testing**: Vitest or Jest for unit; Inngest test utilities for workflow
 **Target Platform**: Vercel (apps/web, apps/agent or shared functions)
 **Project Type**: Turborepo monorepo (web + agent)
@@ -84,11 +84,16 @@ packages/
 - load-profile: Derive household_income_bracket from profiles.sai at read; no column in profiles.
 - discovery_run_id: Generate uuid at run start; include in discovery_completions and discovery_results; expose via GET /api/discovery/results and status for 006 dismissals.
 
+**Coach_Prioritization Standalone (US4 scheduled refresh)**:
+Add a graph entry point `scheduled_refresh` that routes directly to Coach_Prioritization. Inngest function loads checkpoint for thread_id via `graph.getState()`, retrieves existing discovery_results and user_profile, then invokes graph with `{ configurable: { thread_id }, input: existingState }` and `entrypoint: "scheduled_refresh"`. Coach node runs with existing state, recalculates active_milestones by ROI, checkpoints, then transitions to END. No Advisor nodes run.
+
 ## Schema Alignment (2025-02-16)
 
 | Item | Source | Notes |
 |------|--------|-------|
 | household_income_bracket | 002 FR-014a | Compute from SAI at read; not stored |
+| profile optionality | 002 FR-014b | profileSchema allows major, state optional; 003 validates required at trigger |
+| checkpoints table | 002 FR-009 | Created by PostgresSaver.setup() on first use; 003 T007 calls setup() on init |
 | discovery_run_id | FR-009a | discovery_completions, DiscoveryResult; 006 scoping |
 | discovery_completions | 003 | Add migration in packages/database or 003 |
 
