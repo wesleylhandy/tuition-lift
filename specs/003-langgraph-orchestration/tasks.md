@@ -98,10 +98,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Wrap Advisor_Search, Advisor_Verify, and Coach_Prioritization in try/catch; on error append error_log, return Command({ goto: "SafeRecovery", update: { error_log } }) in apps/agent/lib/nodes/advisor-search.ts, advisor-verify.ts, and coach-prioritization.ts
-- [ ] T029 [US3] Implement SafeRecovery node: add Coach persona message to state notifying user of error; update discovery_completions status=failed; transition to END in apps/agent/lib/nodes/safe-recovery.ts
-- [ ] T030 [US3] Add conditional edges from Advisor_Search, Advisor_Verify, and Coach_Prioritization to SafeRecovery (on Command goto) in apps/agent/lib/graph.ts
-- [ ] T031 [US3] Verify resume from checkpoint after verification failure: load checkpoint, continue from Advisor_Verify or Coach_Prioritization; no search re-run (Advisor_Search and Advisor_Verify are separate nodes; checkpoint occurs between them per FR-003)
+- [x] T028 [US3] Wrap Advisor_Search, Advisor_Verify, and Coach_Prioritization in try/catch; on error append error_log, return Command({ goto: "SafeRecovery", update: { error_log } }) in apps/agent/lib/nodes/advisor-search.ts, advisor-verify.ts, and coach-prioritization.ts
+- [x] T029 [US3] Implement SafeRecovery node: add Coach persona message to state notifying user of error; update discovery_completions status=failed; transition to END in apps/agent/lib/nodes/safe-recovery.ts
+- [x] T030 [US3] Add conditional edges from Advisor_Search, Advisor_Verify, and Coach_Prioritization to SafeRecovery (on Command goto) in apps/agent/lib/graph.ts
+- [x] T031 [US3] Verify resume from checkpoint after verification failure: load checkpoint, continue from Advisor_Verify or Coach_Prioritization; no search re-run (Advisor_Search and Advisor_Verify are separate nodes; checkpoint occurs between them per FR-003)
 
 **Checkpoint**: User Story 3 complete; failures route to SafeRecovery; user notified; no duplicate search on resume
 

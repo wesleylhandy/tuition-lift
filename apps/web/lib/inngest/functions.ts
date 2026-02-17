@@ -72,17 +72,29 @@ export const discoveryRequested = inngest.createFunction(
       return { status: "waiting_sai_confirmation", threadId: thread_id, discoveryRunId };
     }
 
-    await step.run("mark-completed", async () => {
-      await db
-        .from("discovery_completions")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("discovery_run_id", discoveryRunId);
-    });
+    const endedAtSafeRecovery =
+      result && typeof result === "object" && "last_active_node" in result
+        ? result.last_active_node === "SafeRecovery"
+        : false;
 
-    return { status: "completed", threadId: thread_id, discoveryRunId };
+    await step.run(
+      endedAtSafeRecovery ? "mark-failed" : "mark-completed",
+      async () => {
+        await db
+          .from("discovery_completions")
+          .update({
+            status: endedAtSafeRecovery ? "failed" : "completed",
+            completed_at: new Date().toISOString(),
+          })
+          .eq("discovery_run_id", discoveryRunId);
+      }
+    );
+
+    return {
+      status: endedAtSafeRecovery ? "failed" : "completed",
+      threadId: thread_id,
+      discoveryRunId,
+    };
   }
 );
 

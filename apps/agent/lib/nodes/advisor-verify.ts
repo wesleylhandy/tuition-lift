@@ -2,11 +2,13 @@
  * Advisor_Verify node: score results, apply Trust Filter, hand off to Coach.
  * Constitution §10: .edu/.gov 2×, auto-fail fees, 0-100 scoring.
  * Reads discovery_run_id from config.configurable; attaches to each result.
+ * US3 (T028): on error append error_log, route to SafeRecovery.
  * @see data-model.md, plan.md
  */
 import { Command } from "@langchain/langgraph";
 import type { TuitionLiftStateType } from "../state";
 import type { DiscoveryResult } from "../schemas";
+import { createErrorEntry } from "../error-log";
 import { anonymizeFinancial } from "../anonymize-financial";
 
 const FEE_PATTERNS = [
@@ -60,45 +62,56 @@ export type AdvisorVerifyConfig = {
 
 /**
  * Advisor_Verify: scores discovery_results, applies Trust Filter, returns Command to Coach.
+ * US3: On error append error_log and route to SafeRecovery.
  */
 export async function advisorVerifyNode(
   state: TuitionLiftStateType,
   config?: AdvisorVerifyConfig
 ): Promise<Command> {
-  const discoveryRunId = config?.configurable?.discovery_run_id ?? "";
-  const rawResults = state.discovery_results ?? [];
-  const financialProfile = state.financial_profile;
-  const anonymized = financialProfile
-    ? anonymizeFinancial(financialProfile)
-    : { household_income: "Unknown", pell_status: "Unknown" };
+  try {
+    const discoveryRunId = config?.configurable?.discovery_run_id ?? "";
+    const rawResults = state.discovery_results ?? [];
+    const financialProfile = state.financial_profile;
+    const anonymized = financialProfile
+      ? anonymizeFinancial(financialProfile)
+      : { household_income: "Unknown", pell_status: "Unknown" };
 
-  const verified: DiscoveryResult[] = [];
-  for (const r of rawResults) {
-    const runId = discoveryRunId || r.discovery_run_id;
-    const trustScore = computeTrustScore(
-      r.url,
-      r.title,
-      r.content ?? ""
-    );
-    if (trustScore === 0) continue;
+    const verified: DiscoveryResult[] = [];
+    for (const r of rawResults) {
+      const runId = discoveryRunId || r.discovery_run_id;
+      const trustScore = computeTrustScore(
+        r.url,
+        r.title,
+        r.content ?? ""
+      );
+      if (trustScore === 0) continue;
 
-    const needMatchScore = computeNeedMatchScore(r.content ?? "", anonymized);
+      const needMatchScore = computeNeedMatchScore(r.content ?? "", anonymized);
 
-    verified.push({
-      id: r.id,
-      discovery_run_id: runId,
-      title: r.title,
-      url: r.url,
-      trust_score: trustScore,
-      need_match_score: needMatchScore,
+      verified.push({
+        id: r.id,
+        discovery_run_id: runId,
+        title: r.title,
+        url: r.url,
+        trust_score: trustScore,
+        need_match_score: needMatchScore,
+      });
+    }
+
+    return new Command({
+      goto: "Coach_Prioritization",
+      update: {
+        discovery_results: verified,
+        last_active_node: "Advisor_Verify",
+      },
+    });
+  } catch (err) {
+    return new Command({
+      goto: "SafeRecovery",
+      update: {
+        error_log: [createErrorEntry("Advisor_Verify", err)],
+        last_active_node: "Advisor_Verify",
+      },
     });
   }
-
-  return new Command({
-    goto: "Coach_Prioritization",
-    update: {
-      discovery_results: verified,
-      last_active_node: "Advisor_Verify",
-    },
-  });
 }
