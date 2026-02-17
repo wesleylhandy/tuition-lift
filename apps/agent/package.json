@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./lib/graph.ts",
+  "types": "./lib/graph.ts",
+  "exports": {
+    ".": "./lib/graph.ts",
+    "./load-profile": "./lib/load-profile.ts"
+  },
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
@@ -13,6 +19,7 @@
     "@repo/db": "workspace:*",
     "@langchain/langgraph": "^1.1.0",
     "@langchain/langgraph-checkpoint-postgres": "^1.0.0",
+    "@langchain/tavily": "^1.2.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {

@@ -42,6 +42,7 @@ export const DiscoveryResultSchema = z.object({
   url: z.string(),
   trust_score: z.number().min(0).max(100),
   need_match_score: z.number().min(0).max(100),
+  content: z.string().optional(),
 });
 
 export type DiscoveryResult = z.infer<typeof DiscoveryResultSchema>;
