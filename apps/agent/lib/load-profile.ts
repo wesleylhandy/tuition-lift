@@ -4,8 +4,8 @@
  * SAI decrypted on read via @repo/db decryptSai (FR-014).
  */
 import { createDbClient, decryptSai } from "@repo/db";
-import { FinancialProfileSchema, UserProfileSchema } from "./schemas.js";
-import type { FinancialProfile, UserProfile } from "./schemas.js";
+import { FinancialProfileSchema, UserProfileSchema } from "./schemas";
+import type { FinancialProfile, UserProfile } from "./schemas";
 
 export type HouseholdIncomeBracket =
   | "Low"

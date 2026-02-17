@@ -3,7 +3,7 @@
  * Single source of truth for types, schemas, and client.
  */
 
-export { createDbClient } from './client.js';
+export { createDbClient } from './client';
 export type {
   Database,
   Tables,
@@ -11,9 +11,9 @@ export type {
   TablesUpdate,
   Enums,
   CompositeTypes,
-} from './generated/database.types.js';
+} from './generated/database.types';
 
-export { Constants } from './generated/database.types.js';
+export { Constants } from './generated/database.types';
 
 export {
   waitlistSchema,
@@ -27,7 +27,7 @@ export {
   applicationSchema,
   applicationStatusEnum,
   parseOrThrow,
-} from './schema/index.js';
+} from './schema/index';
 
 export type {
   WaitlistSchema,
@@ -36,10 +36,10 @@ export type {
   ProfileUpdateSchema,
   ScholarshipSchema,
   ApplicationSchema,
-} from './schema/index.js';
+} from './schema/index';
 
 export {
   encryptSai,
   decryptSai,
   withEncryptedSai,
-} from './encryption.js';
+} from './encryption';

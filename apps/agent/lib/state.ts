@@ -11,7 +11,7 @@ import type {
   ErrorLogEntry,
   FinancialProfile,
   UserProfile,
-} from "./schemas.js";
+} from "./schemas";
 
 /**
  * Canonical node names — last_active_node value set by each node on transition.
@@ -21,6 +21,7 @@ export const NODE_NAMES = [
   "Advisor_Search",
   "Advisor_Verify",
   "Coach_Prioritization",
+  "Coach_SAIConfirm",
   "SafeRecovery",
 ] as const;
 
@@ -31,6 +32,12 @@ export type NodeName = (typeof NODE_NAMES)[number];
  * - overwrite: user_profile, discovery_results, active_milestones, last_active_node, financial_profile
  * - append: messages, error_log
  */
+/** US2: Pending SAI range confirmation; Coach prompts before Advisor uses SAI bands. */
+export type PendingSaiConfirmation = boolean;
+
+/** US2: User-approved flag for SAI range in search; undefined until confirmed. */
+export type SaiRangeApproved = boolean | undefined;
+
 export const TuitionLiftState = Annotation.Root({
   user_profile: Annotation<UserProfile | undefined>({ reducer: (_, y) => y }),
   discovery_results: Annotation<DiscoveryResult[]>({
@@ -52,6 +59,16 @@ export const TuitionLiftState = Annotation.Root({
   error_log: Annotation<ErrorLogEntry[]>({
     reducer: (x, y) => x.concat(y),
     default: () => [],
+  }),
+  /** US2: Set when Advisor determines SAI range would help; Coach asks confirmation. */
+  pending_sai_confirmation: Annotation<PendingSaiConfirmation>({
+    reducer: (_, y) => y,
+    default: () => false,
+  }),
+  /** US2: true = include SAI band in search; false = income tiers only; undefined = not yet confirmed. */
+  sai_range_approved: Annotation<SaiRangeApproved>({
+    reducer: (_, y) => y,
+    default: () => undefined,
   }),
 });
 

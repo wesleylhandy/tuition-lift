@@ -13,6 +13,8 @@ export type DiscoveryStatus = {
   lastActiveNode: string | null;
   completedAt: string | null;
   errorMessage: string | null;
+  /** US2: true when graph awaits POST /api/discovery/confirm-sai */
+  waitingSaiConfirmation?: boolean;
 };
 
 export async function resolveDiscoveryStatus(
@@ -40,6 +42,7 @@ export async function resolveDiscoveryStatus(
       const values = state?.values as { last_active_node?: string } | undefined;
       const lastActiveNode = values?.last_active_node ?? null;
       if (state?.next?.length) {
+        const values = state?.values as { pending_sai_confirmation?: boolean } | undefined;
         return {
           threadId,
           discoveryRunId: null,
@@ -47,6 +50,9 @@ export async function resolveDiscoveryStatus(
           lastActiveNode,
           completedAt: null,
           errorMessage: null,
+          ...(Boolean(values?.pending_sai_confirmation) && {
+            waitingSaiConfirmation: true,
+          }),
         };
       }
       return null;
@@ -56,11 +62,20 @@ export async function resolveDiscoveryStatus(
   }
 
   let lastActiveNode: string | null = null;
+  let waitingSaiConfirmation = false;
   try {
     const config = { configurable: { thread_id: threadId } };
     const state = await graph.getState(config);
-    const values = state?.values as { last_active_node?: string } | undefined;
+    const values = state?.values as {
+      last_active_node?: string;
+      pending_sai_confirmation?: boolean;
+    } | undefined;
     lastActiveNode = values?.last_active_node ?? null;
+    waitingSaiConfirmation = Boolean(values?.pending_sai_confirmation);
+    const meta = state?.metadata as { interrupts?: unknown } | undefined;
+    if (!waitingSaiConfirmation && meta?.interrupts) {
+      waitingSaiConfirmation = true;
+    }
   } catch {
     // Ignore
   }
@@ -72,5 +87,6 @@ export async function resolveDiscoveryStatus(
     lastActiveNode,
     completedAt: row.completed_at,
     errorMessage: row.status === "failed" ? "Discovery failed." : null,
+    ...(waitingSaiConfirmation && { waitingSaiConfirmation: true }),
   };
 }

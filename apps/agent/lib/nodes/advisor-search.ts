@@ -1,19 +1,26 @@
 /**
  * Advisor_Search node: web search using Tavily with anonymized financial context.
  * FR-006, FR-007, FR-007a: anonymized profile only; placeholders for geo.
- * Returns raw results in discovery_results (placeholder scores); Advisor_Verify scores them.
+ * US2 (T026): if sai_range_approved, include SAI band in query; else income tiers only.
+ * US2 (T024): when useSaiRange and SAI present and not yet confirmed, transition to Coach_SAIConfirm.
  * @see data-model.md, plan.md
  */
+import { Command } from "@langchain/langgraph";
 import { TavilySearch } from "@langchain/tavily";
-import type { TuitionLiftStateType } from "../state.js";
-import type { DiscoveryResult } from "../schemas.js";
-import { anonymizeFinancial, GEO_PLACEHOLDERS } from "../anonymize-financial.js";
+import type { TuitionLiftStateType } from "../state";
+import type { DiscoveryResult } from "../schemas";
+import {
+  anonymizeFinancial,
+  GEO_PLACEHOLDERS,
+  saiToBandString,
+} from "../anonymize-financial";
 import { randomUUID } from "node:crypto";
 
 export type AdvisorSearchConfig = {
   configurable?: {
     discovery_run_id?: string;
     thread_id?: string;
+    useSaiRange?: boolean;
   };
 };
 
@@ -27,28 +34,52 @@ interface TavilyResult {
 
 /**
  * Advisor_Search: performs Tavily web search with anonymized context.
- * Uses user_profile.major, financial_profile (anonymized), {{USER_STATE}}, {{USER_CITY}}.
- * Returns discovery_results with placeholder trust_score/need_match_score; Advisor_Verify scores them.
+ * US2: If useSaiRange and SAI present but not confirmed, transitions to Coach_SAIConfirm.
+ * US2: If sai_range_approved, includes SAI band in query; else income tiers only.
  */
 export async function advisorSearchNode(
   state: TuitionLiftStateType,
   config?: AdvisorSearchConfig
-): Promise<Partial<TuitionLiftStateType>> {
+): Promise<Partial<TuitionLiftStateType> | Command> {
   const discoveryRunId =
     config?.configurable?.discovery_run_id ?? randomUUID();
+  const useSaiRange = config?.configurable?.useSaiRange ?? false;
   const userProfile = state.user_profile;
   const financialProfile = state.financial_profile;
+  const saiRangeApproved = state.sai_range_approved;
+
+  if (
+    useSaiRange &&
+    financialProfile &&
+    typeof financialProfile.estimated_sai === "number" &&
+    saiRangeApproved === undefined
+  ) {
+    return new Command({
+      goto: "Coach_SAIConfirm",
+      update: {
+        pending_sai_confirmation: true,
+        last_active_node: "Advisor_Search",
+      },
+    });
+  }
 
   const major = userProfile?.major ?? "undecided";
   const anonymized = financialProfile
     ? anonymizeFinancial(financialProfile)
     : { household_income: "Unknown" as const, pell_status: "Unknown" as const };
 
+  const incomeContext =
+    saiRangeApproved === true &&
+    financialProfile &&
+    typeof financialProfile.estimated_sai === "number"
+      ? `SAI ${saiToBandString(financialProfile.estimated_sai)}`
+      : anonymized.household_income;
+
   const query = [
     "scholarships",
     `for ${major} major`,
     `in ${GEO_PLACEHOLDERS.USER_STATE}`,
-    anonymized.household_income,
+    incomeContext,
     anonymized.pell_status,
     "need-based financial aid",
   ].join(" ");
@@ -67,7 +98,7 @@ export async function advisorSearchNode(
       ? []
       : [];
 
-  const discoveryResults: DiscoveryResult[] = results.map((r, i) => ({
+  const discoveryResults: DiscoveryResult[] = results.map((r) => ({
     id: randomUUID(),
     discovery_run_id: discoveryRunId,
     title: r.title ?? "Untitled",
@@ -77,8 +108,11 @@ export async function advisorSearchNode(
     content: r.content,
   }));
 
-  return {
-    discovery_results: discoveryResults,
-    last_active_node: "Advisor_Search",
-  };
+  return new Command({
+    goto: "Advisor_Verify",
+    update: {
+      discovery_results: discoveryResults,
+      last_active_node: "Advisor_Search",
+    },
+  });
 }

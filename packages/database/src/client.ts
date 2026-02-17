@@ -5,7 +5,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './generated/database.types.js';
+import type { Database } from './generated/database.types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'NEXT_PUBLIC_SUPABASE_URL';

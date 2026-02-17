@@ -1,15 +1,16 @@
 /**
  * TuitionLift orchestration graph.
  * FR-003: Advisor_Search and Advisor_Verify are separate nodes; checkpoint between them.
+ * US2 (T027): Coach_SAIConfirm HITL node; Advisor_Search can goto Coach_SAIConfirm or Advisor_Verify.
  * @see plan.md, data-model.md
  */
 import { StateGraph, START, END } from "@langchain/langgraph";
-import { checkpointer } from "./checkpointer.js";
-import { TuitionLiftState } from "./state.js";
-import { advisorSearchNode } from "./nodes/advisor-search.js";
-import { advisorVerifyNode } from "./nodes/advisor-verify.js";
-import { coachPrioritizationNode } from "./nodes/coach-prioritization.js";
-import { safeRecoveryPlaceholder } from "./nodes/safe-recovery.js";
+import { checkpointer } from "./checkpointer";
+import { TuitionLiftState } from "./state";
+import { advisorSearchNode } from "./nodes/advisor-search";
+import { advisorVerifyNode } from "./nodes/advisor-verify";
+import { coachPrioritizationNode } from "./nodes/coach-prioritization";
+import { coachSAIConfirmNode } from "./nodes/coach-sai-confirm";
 
 async function wrapSearch(
   state: Parameters<typeof advisorSearchNode>[0],
@@ -26,12 +27,15 @@ async function wrapVerify(
 }
 
 const builder = new StateGraph(TuitionLiftState)
-  .addNode("Advisor_Search", wrapSearch)
-  .addNode("Advisor_Verify", wrapVerify)
+  .addNode("Advisor_Search", wrapSearch, {
+    ends: ["Advisor_Verify", "Coach_SAIConfirm"],
+  })
+  .addNode("Advisor_Verify", wrapVerify, { ends: ["Coach_Prioritization"] })
   .addNode("Coach_Prioritization", coachPrioritizationNode)
-  .addNode("SafeRecovery", safeRecoveryPlaceholder)
+  .addNode("Coach_SAIConfirm", coachSAIConfirmNode, {
+    ends: ["Advisor_Search"],
+  })
   .addEdge(START, "Advisor_Search")
-  .addEdge("Advisor_Search", "Advisor_Verify")
   .addEdge("Advisor_Verify", "Coach_Prioritization")
   .addEdge("Coach_Prioritization", END);
 

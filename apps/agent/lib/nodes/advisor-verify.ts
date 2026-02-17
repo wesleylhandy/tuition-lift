@@ -5,9 +5,9 @@
  * @see data-model.md, plan.md
  */
 import { Command } from "@langchain/langgraph";
-import type { TuitionLiftStateType } from "../state.js";
-import type { DiscoveryResult } from "../schemas.js";
-import { anonymizeFinancial } from "../anonymize-financial.js";
+import type { TuitionLiftStateType } from "../state";
+import type { DiscoveryResult } from "../schemas";
+import { anonymizeFinancial } from "../anonymize-financial";
 
 const FEE_PATTERNS = [
   /application fee/i,

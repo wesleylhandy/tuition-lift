@@ -1,21 +1,23 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "ENCRYPTION_KEY",
+    "TAVILY_API_KEY",
+    "LANGCHAIN_TRACING_V2",
+    "LANGCHAIN_API_KEY",
+    "INNGEST_SIGNING_KEY",
+    "INNGEST_EVENT_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    }
+    "lint": {"dependsOn": ["^lint"]},
+    "check-types": {"dependsOn": ["^check-types"]},
+    "dev": {"cache": false, "persistent": true}
   }
 }

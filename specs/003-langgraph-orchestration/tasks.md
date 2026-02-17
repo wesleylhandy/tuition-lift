@@ -81,10 +81,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Add useSaiRange to discovery state/trigger flow: when Advisor determines SAI range would help, set pending_sai_confirmation in state; Coach emits message asking user to confirm
-- [ ] T025 [US2] Implement POST /api/discovery/confirm-sai: auth; validate threadId owned by user; update state with approved flag; resume graph if waiting in apps/web/app/api/discovery/confirm-sai/route.ts
-- [ ] T026 [US2] Update Advisor_Search: if useSaiRange approved, include SAI band (e.g., "0-2000") in search query; else use only income tiers in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T027 [US2] Add HITL flow: when Advisor needs SAI range, transition to human-in-the-loop; Coach prompts via messages; wait for confirm-sai before continuing in apps/agent/lib/graph.ts
+- [x] T024 [US2] Add useSaiRange to discovery state/trigger flow: when Advisor determines SAI range would help, set pending_sai_confirmation in state; Coach emits message asking user to confirm
+- [x] T025 [US2] Implement POST /api/discovery/confirm-sai: auth; validate threadId owned by user; update state with approved flag; resume graph if waiting in apps/web/app/api/discovery/confirm-sai/route.ts
+- [x] T026 [US2] Update Advisor_Search: if useSaiRange approved, include SAI band (e.g., "0-2000") in search query; else use only income tiers in apps/agent/lib/nodes/advisor-search.ts
+- [x] T027 [US2] Add HITL flow: when Advisor needs SAI range, transition to human-in-the-loop; Coach prompts via messages; wait for confirm-sai before continuing in apps/agent/lib/graph.ts
 
 **Checkpoint**: User Story 2 complete; HITL confirmation prevents SAI range use without approval
 

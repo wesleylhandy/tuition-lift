@@ -118,6 +118,11 @@ export default function DiscoveryPage() {
           <p>Discovery in progress…</p>
           <p className="text-sm text-muted-foreground mt-1">
             You&apos;ll be notified when results are ready.
+            {discoveryRunId && (
+              <span className="block mt-1 font-mono text-xs">
+                Run: {discoveryRunId}
+              </span>
+            )}
           </p>
         </div>
       )}

@@ -4,8 +4,8 @@
  * FR-012b: empty results → "No matches yet" message, explain why, suggest next steps.
  * @see data-model.md, plan.md
  */
-import type { TuitionLiftStateType } from "../state.js";
-import type { ActiveMilestone, DiscoveryResult } from "../schemas.js";
+import type { TuitionLiftStateType } from "../state";
+import type { ActiveMilestone, DiscoveryResult } from "../schemas";
 import { HumanMessage } from "@langchain/core/messages";
 
 /** ROI proxy: trust_score + need_match_score (higher = better fit). */

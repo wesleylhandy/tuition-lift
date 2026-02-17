@@ -7,7 +7,6 @@
 import { encryptSai, decryptSai } from "../dist/encryption.js";
 
 const testValues = [-1500, 0, 5000, 999999];
-let passed = 0;
 let failed = 0;
 
 for (const val of testValues) {
@@ -16,7 +15,6 @@ for (const val of testValues) {
     const dec = decryptSai(enc);
     if (dec === val) {
       console.log(`✓ encrypt/decrypt ${val} → OK`);
-      passed++;
     } else {
       console.error(`✗ encrypt/decrypt ${val} → got ${dec}`);
       failed++;
@@ -31,7 +29,6 @@ for (const val of testValues) {
 const leg = decryptSai("12345");
 if (leg === 12345) {
   console.log("✓ legacy plaintext '12345' → OK");
-  passed++;
 } else {
   console.error(`✗ legacy plaintext → got ${leg}`);
   failed++;

@@ -1,6 +1,7 @@
 /**
  * POST /api/discovery/trigger — Start discovery or return in-progress status.
  * FR-012a: Validate required profile fields; FR-013a: Return status if run in progress.
+ * US2 (T024): Accept useSaiRange; passes to Inngest for HITL flow when true.
  * @see contracts/api-discovery.md
  */
 import { NextResponse } from "next/server";
@@ -10,7 +11,7 @@ import { createDbClient } from "@repo/db";
 import { loadProfile } from "agent/load-profile";
 import { randomUUID } from "node:crypto";
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createServerSupabaseClient();
   const {
     data: { user },
@@ -24,7 +25,7 @@ export async function POST() {
   const userId = user.id;
   const threadId = `user_${userId}`;
 
-  const { user_profile, financial_profile } = await loadProfile(userId);
+  const { user_profile } = await loadProfile(userId);
 
   if (!user_profile?.major || !user_profile?.state) {
     return NextResponse.json(
@@ -58,6 +59,13 @@ export async function POST() {
   }
 
   const discoveryRunId = randomUUID();
+  let useSaiRange = false;
+  try {
+    const body = await request.json().catch(() => ({}));
+    useSaiRange = Boolean(body?.useSaiRange);
+  } catch {
+    // Keep default false
+  }
 
   await inngest.send({
     name: "tuition-lift/discovery.requested",
@@ -65,7 +73,7 @@ export async function POST() {
       userId,
       threadId,
       discoveryRunId,
-      useSaiRange: false,
+      useSaiRange,
     },
   });
 
