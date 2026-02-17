@@ -12,6 +12,7 @@ import type { TuitionLiftStateType } from "../state";
 import type { DiscoveryResult } from "../schemas";
 import { createErrorEntry } from "../error-log";
 import { anonymizeFinancial } from "../anonymize-financial";
+import { verify as verifyCycle } from "../discovery/cycle-verifier";
 
 const FEE_PATTERNS = [
   /application fee/i,
@@ -89,6 +90,10 @@ export async function advisorVerifyNode(
       if (trustScore === 0) continue;
 
       const needMatchScore = computeNeedMatchScore(r.content ?? "", anonymized);
+      const cycleResult = verifyCycle({
+        deadline: r.deadline ?? null,
+        url: r.url,
+      });
 
       verified.push({
         id: r.id,
@@ -97,6 +102,8 @@ export async function advisorVerifyNode(
         url: r.url,
         trust_score: trustScore,
         need_match_score: needMatchScore,
+        verification_status: cycleResult.verification_status,
+        deadline: cycleResult.deadline ?? undefined,
       });
     }
 

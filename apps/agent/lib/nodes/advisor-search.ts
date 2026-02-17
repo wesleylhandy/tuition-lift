@@ -1,25 +1,19 @@
 /**
- * Advisor_Search node: web search using Tavily with anonymized financial context.
- * FR-006, FR-007, FR-007a: anonymized profile only; placeholders for geo.
- * US2 (T026): if sai_range_approved, include SAI band in query; else income tiers only.
- * US2 (T024): when useSaiRange and SAI present and not yet confirmed, transition to Coach_SAIConfirm.
- * US3 (T028): on error append error_log, route to SafeRecovery.
- *
- * @see data-model.md, plan.md
- * @see LangGraph JS: Command({ goto, update }) for dynamic node transitions
+ * Advisor_Search node: privacy-safe scholarship search via QueryGenerator, Tavily, Deduplicator.
+ * Per T016: load profile, scrub PII, 3–5 queries, rate-limited Tavily, dedupe, write raw results.
+ * No PII leaves system (FR-002, FR-003). Zero results → empty discovery_results (T031).
+ * Tavily timeout/failure → error_log, route to SafeRecovery (T032).
  */
 import { Command } from "@langchain/langgraph";
-import { TavilySearch } from "@langchain/tavily";
+import { randomUUID } from "node:crypto";
+
 import type { TuitionLiftStateType } from "../state";
 import type { DiscoveryResult } from "../schemas";
 import { createErrorEntry } from "../error-log";
-import {
-  anonymizeFinancial,
-  buildSearchQuery,
-  assertNoRawPiiInSearchQuery,
-  saiToBandString,
-} from "../anonymize-financial";
-import { randomUUID } from "node:crypto";
+import { scrubPiiFromProfile } from "../discovery/pii-scrub";
+import { generateQueries } from "../discovery/query-generator";
+import { searchBatch } from "../discovery/tavily-client";
+import { deduplicate } from "../discovery/deduplicator";
 
 export type AdvisorSearchConfig = {
   configurable?: {
@@ -29,19 +23,26 @@ export type AdvisorSearchConfig = {
   };
 };
 
-/** Raw search result shape from Tavily API. */
-interface TavilyResult {
-  title?: string;
-  url?: string;
-  content?: string;
-  score?: number;
+/**
+ * Extracts unique domains from result URLs for Live Pulse (006).
+ */
+function extractDomainsFromResults(
+  results: Array<{ url: string }>
+): string[] {
+  const domains = new Set<string>();
+  for (const r of results) {
+    try {
+      const u = new URL(r.url);
+      domains.add(u.hostname.replace(/^www\./, ""));
+    } catch {
+      // skip invalid URLs
+    }
+  }
+  return Array.from(domains);
 }
 
 /**
- * Advisor_Search: performs Tavily web search with anonymized context.
- * US2: If useSaiRange and SAI present but not confirmed, transitions to Coach_SAIConfirm.
- * US2: If sai_range_approved, includes SAI band in query; else income tiers only.
- * US3: On error append error_log and route to SafeRecovery.
+ * Advisor_Search: QueryGenerator → Tavily (rate-limited) → Deduplicator → state.
  */
 export async function advisorSearchNode(
   state: TuitionLiftStateType,
@@ -55,6 +56,7 @@ export async function advisorSearchNode(
     const financialProfile = state.financial_profile;
     const saiRangeApproved = state.sai_range_approved;
 
+    // US2: SAI confirmation gate — defer to Coach before using SAI bands
     if (
       useSaiRange &&
       financialProfile &&
@@ -70,49 +72,38 @@ export async function advisorSearchNode(
       });
     }
 
-    const major = userProfile?.major ?? "undecided";
-    const anonymized = financialProfile
-      ? anonymizeFinancial(financialProfile)
-      : { household_income: "Unknown" as const, pell_status: "Unknown" as const };
-
-    const incomeContext =
-      saiRangeApproved === true &&
-      financialProfile &&
-      typeof financialProfile.estimated_sai === "number"
-        ? `SAI ${saiToBandString(financialProfile.estimated_sai)}`
-        : anonymized.household_income;
-
-    const query = buildSearchQuery({
-      major,
-      incomeContext,
-      pellStatus: anonymized.pell_status,
+    const profile = scrubPiiFromProfile({
+      user_profile: userProfile ?? undefined,
+      financial_profile: financialProfile ?? undefined,
     });
 
-    assertNoRawPiiInSearchQuery(query, financialProfile ?? null);
+    const queries = await generateQueries(profile);
+    if (queries.length === 0) {
+      return new Command({
+        goto: "Advisor_Verify",
+        update: {
+          discovery_results: [],
+          last_active_node: "Advisor_Search",
+        },
+      });
+    }
 
-    const tool = new TavilySearch({
-      maxResults: 10,
-      topic: "general",
-      searchDepth: "basic",
-    });
+    const batchResults = await searchBatch(queries);
+    const rawResults = batchResults.flat();
+    const deduped = deduplicate(rawResults);
 
-    const response = await tool.invoke({ query });
-    const apiResponse = response as { results?: TavilyResult[] } | { error?: string };
-    const results = "results" in apiResponse && Array.isArray(apiResponse.results)
-      ? apiResponse.results
-      : "error" in apiResponse
-        ? []
-        : [];
-
-    const discoveryResults: DiscoveryResult[] = results.map((r) => ({
+    const discoveryResults: DiscoveryResult[] = deduped.map((r) => ({
       id: randomUUID(),
       discovery_run_id: discoveryRunId,
-      title: r.title ?? "Untitled",
-      url: r.url ?? "",
+      title: r.title,
+      url: r.url,
       trust_score: 0,
       need_match_score: 0,
-      content: r.content,
+      content: r.content || undefined,
     }));
+
+    // Domains extracted for Live Pulse (006)
+    void extractDomainsFromResults(deduped);
 
     return new Command({
       goto: "Advisor_Verify",

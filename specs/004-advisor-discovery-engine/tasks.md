@@ -57,14 +57,14 @@
 
 **Note (003 alignment)**: 003 delivered stub implementations in advisor-search and advisor-verify. T016 replaces inline logic with lib/discovery modules; remove single-query buildSearchQuery path and inline Tavily call.
 
-- [ ] T011 [P] [US1] Create QueryGenerator that accepts AnonymizedProfile and returns 3–5 query strings via LLM in apps/agent/lib/discovery/query-generator.ts
-- [ ] T012 [P] [US1] Create TavilyClient with search(query) method calling POST https://api.tavily.com/search; search_depth advanced, max_results 10 in apps/agent/lib/discovery/tavily-client.ts
-- [ ] T013 [US1] Add rate-limit delay (DISCOVERY_SEARCH_BATCH_DELAY_MS, default 2000ms) between Tavily calls in apps/agent/lib/discovery/tavily-client.ts
-- [ ] T014 [P] [US1] Create Deduplicator that merges by URL, keeps highest Tavily relevance score and merges snippets (runs pre-TrustScorer; trust_score applied later in Verify) in apps/agent/lib/discovery/deduplicator.ts
-- [ ] T015 [P] [US1] Create CycleVerifier that computes academic year from Date, verifies deadline in cycle, returns verification_status (verified|ambiguous_deadline|needs_manual_review|potentially_expired) and active (false when deadline past today per Constitution §8) in apps/agent/lib/discovery/cycle-verifier.ts
-- [ ] T016 [US1] Implement Advisor_Search node: load profile, scrub PII, call QueryGenerator, TavilyClient (rate-limited), Deduplicator; extract domains from result URLs for Live Pulse (006); write raw results to state.discovery_results in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T017 [US1] Ensure graph checkpoints after Advisor_Search (separate node from Advisor_Verify) in apps/agent/lib/graph.ts
-- [ ] T018 [US1] Wire CycleVerifier into Advisor_Verify for each result; set verification_status; flag ambiguous for manual review in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T011 [P] [US1] Create QueryGenerator that accepts AnonymizedProfile and returns 3–5 query strings via LLM in apps/agent/lib/discovery/query-generator.ts
+- [x] T012 [P] [US1] Create TavilyClient with search(query) method calling POST https://api.tavily.com/search; search_depth advanced, max_results 10 in apps/agent/lib/discovery/tavily-client.ts
+- [x] T013 [US1] Add rate-limit delay (DISCOVERY_SEARCH_BATCH_DELAY_MS, default 2000ms) between Tavily calls in apps/agent/lib/discovery/tavily-client.ts
+- [x] T014 [P] [US1] Create Deduplicator that merges by URL, keeps highest Tavily relevance score and merges snippets (runs pre-TrustScorer; trust_score applied later in Verify) in apps/agent/lib/discovery/deduplicator.ts
+- [x] T015 [P] [US1] Create CycleVerifier that computes academic year from Date, verifies deadline in cycle, returns verification_status (verified|ambiguous_deadline|needs_manual_review|potentially_expired) and active (false when deadline past today per Constitution §8) in apps/agent/lib/discovery/cycle-verifier.ts
+- [x] T016 [US1] Implement Advisor_Search node: load profile, scrub PII, call QueryGenerator, TavilyClient (rate-limited), Deduplicator; extract domains from result URLs for Live Pulse (006); write raw results to state.discovery_results in apps/agent/lib/nodes/advisor-search.ts
+- [x] T017 [US1] Ensure graph checkpoints after Advisor_Search (separate node from Advisor_Verify) in apps/agent/lib/graph.ts
+- [x] T018 [US1] Wire CycleVerifier into Advisor_Verify for each result; set verification_status; flag ambiguous for manual review in apps/agent/lib/nodes/advisor-verify.ts
 
 **Checkpoint**: User Story 1—privacy-safe search with cycle verification works independently
 
