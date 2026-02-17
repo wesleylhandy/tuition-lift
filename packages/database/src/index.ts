@@ -37,3 +37,9 @@ export type {
   ScholarshipSchema,
   ApplicationSchema,
 } from './schema/index.js';
+
+export {
+  encryptSai,
+  decryptSai,
+  withEncryptedSai,
+} from './encryption.js';

@@ -92,15 +92,20 @@ const supabase = createDbClient();
 ### apps/web — Profiles (Server Component / Server Action)
 
 ```typescript
-import { createDbClient } from '@repo/db';
-import { profileSchema, parseOrThrow } from '@repo/db';
+import {
+  createDbClient,
+  parseOrThrow,
+  withEncryptedSai,
+  profileSchema,
+} from '@repo/db';
 
 const supabase = createDbClient(); // server context
 const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
-// Before insert/update (validates SAI range -1500..999999, Pell status, etc.):
+// Validate (SAI -1500..999999, Pell status, etc.), then encrypt SAI before write (FR-014):
 const validated = parseOrThrow(profileSchema, payload);
-await supabase.from('profiles').upsert(validated);
+const forDb = withEncryptedSai(validated);
+await supabase.from('profiles').upsert(forDb);
 ```
 
 ### apps/web — Waitlist (Server Action, service-role)

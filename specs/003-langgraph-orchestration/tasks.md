@@ -36,13 +36,13 @@
 
 **Purpose**: Core graph state, checkpointer, and schema—must complete before any user story
 
-- [ ] T005 [P] Define Zod schemas (FinancialProfileSchema, UserProfileSchema, DiscoveryResultSchema with discovery_run_id, ActiveMilestoneSchema, ErrorLogEntrySchema) in apps/agent/lib/schemas.ts per data-model.md
-- [ ] T006 Define TuitionLiftState using Annotation.Root with user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile, error_log in apps/agent/lib/state.ts
-- [ ] T007 Create PostgresSaver checkpointer using DATABASE_URL, call setup() on init, export from apps/agent/lib/checkpointer.ts
-- [ ] T008 Create graph skeleton (StateGraph with START, END) in apps/agent/lib/graph.ts with placeholder nodes Advisor_Search, Advisor_Verify, Coach_Prioritization, SafeRecovery; compile with checkpointer
-- [ ] T009 Implement profile loader: fetch user_profile and financial_profile from @repo/db profiles table by user_id; compute household_income_bracket from SAI; export from apps/agent/lib/load-profile.ts
-- [ ] T010 Create financial anonymization helper: map financial_profile to search-safe strings (household_income_bracket → "Low Income"|etc, is_pell_eligible → "Pell Eligible"|etc); use placeholders for geo ({{USER_STATE}}, {{USER_CITY}}) per FR-007a in apps/agent/lib/anonymize-financial.ts
-- [ ] T010a Implement application-level encryption for financial profile fields (SAI): add encrypt/decrypt helpers in packages/database (env key); use decrypt in apps/agent/lib/load-profile.ts on read; use encrypt on profile write paths (e.g. onboarding). household_income_bracket not stored—computed from SAI per 002 (FR-014)
+- [x] T005 [P] Define Zod schemas (FinancialProfileSchema, UserProfileSchema, DiscoveryResultSchema with discovery_run_id, ActiveMilestoneSchema, ErrorLogEntrySchema) in apps/agent/lib/schemas.ts per data-model.md
+- [x] T006 Define TuitionLiftState using Annotation.Root with user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile, error_log in apps/agent/lib/state.ts
+- [x] T007 Create PostgresSaver checkpointer using DATABASE_URL, call setup() on init, export from apps/agent/lib/checkpointer.ts
+- [x] T008 Create graph skeleton (StateGraph with START, END) in apps/agent/lib/graph.ts with placeholder nodes Advisor_Search, Advisor_Verify, Coach_Prioritization, SafeRecovery; compile with checkpointer
+- [x] T009 Implement profile loader: fetch user_profile and financial_profile from @repo/db profiles table by user_id; compute household_income_bracket from SAI; export from apps/agent/lib/load-profile.ts
+- [x] T010 Create financial anonymization helper: map financial_profile to search-safe strings (household_income_bracket → "Low Income"|etc, is_pell_eligible → "Pell Eligible"|etc); use placeholders for geo ({{USER_STATE}}, {{USER_CITY}}) per FR-007a in apps/agent/lib/anonymize-financial.ts
+- [x] T010a Implement application-level encryption for financial profile fields (SAI): add encrypt/decrypt helpers in packages/database (env key); use decrypt in apps/agent/lib/load-profile.ts on read; use encrypt on profile write paths (e.g. onboarding). household_income_bracket not stored—computed from SAI per 002 (FR-014)
 
 **Checkpoint**: Graph compiles; state schema defined; checkpointer persists; profile loader, anonymization, and encryption ready
 
