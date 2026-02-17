@@ -36,12 +36,12 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete. Requires 002 packages/database with scholarships table.
 
-- [ ] T005 Create migration adding metadata JSONB and UNIQUE(url) partial index to scholarships table in packages/database/supabase/migrations/
-- [ ] T006 [P] Create AnonymizedProfileSchema (gpa, major, incomeBracket, pellStatus; no PII) in apps/agent/lib/discovery/schemas.ts
-- [ ] T007 [P] Extend DiscoveryResultSchema in apps/agent/lib/schemas.ts: add trust_report, verification_status, categories, discovery_run_id (uuid, optional). Keep trust_score 0-100.
-- [ ] T008 [P] Create ScholarshipMetadataSchema for metadata JSONB shape (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/schemas.ts
-- [ ] T009 [P] Create PII scrub utility that strips full_name and SSN from profile before external calls in apps/agent/lib/discovery/pii-scrub.ts
-- [ ] T010 Extend DiscoveryResult in apps/agent/lib/schemas.ts (add trust_report, verification_status, categories); ensure TuitionLiftState discovery_results uses extended type. Do not redefine state—build on 003 baseline. Align with data-model.md.
+- [x] T005 Create migration adding metadata JSONB and UNIQUE(url) partial index to scholarships table in packages/database/supabase/migrations/
+- [x] T006 [P] Create AnonymizedProfileSchema (gpa, major, incomeBracket, pellStatus; no PII) in apps/agent/lib/discovery/schemas.ts
+- [x] T007 [P] Extend DiscoveryResultSchema in apps/agent/lib/schemas.ts: add trust_report, verification_status, categories, discovery_run_id (uuid, optional). Keep trust_score 0-100.
+- [x] T008 [P] Create ScholarshipMetadataSchema for metadata JSONB shape (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/schemas.ts
+- [x] T009 [P] Create PII scrub utility that strips full_name and SSN from profile before external calls in apps/agent/lib/discovery/pii-scrub.ts
+- [x] T010 Extend DiscoveryResult in apps/agent/lib/schemas.ts (add trust_report, verification_status, categories); ensure TuitionLiftState discovery_results uses extended type. Do not redefine state—build on 003 baseline. Align with data-model.md.
 
 **Checkpoint**: Foundation ready—user story implementation can begin
 

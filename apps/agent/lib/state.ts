@@ -42,6 +42,7 @@ export type SaiRangeApproved = boolean | undefined;
 
 export const TuitionLiftState = Annotation.Root({
   user_profile: Annotation<UserProfile | undefined>({ reducer: (_, y) => y }),
+  /** Per data-model §1: DiscoveryResult includes trust_report, verification_status, categories, deadline, amount. */
   discovery_results: Annotation<DiscoveryResult[]>({
     reducer: (_, y) => y,
     default: () => [],
