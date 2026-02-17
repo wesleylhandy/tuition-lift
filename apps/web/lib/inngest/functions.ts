@@ -9,6 +9,9 @@ import { graph } from "agent";
 import { loadProfile } from "agent/load-profile";
 import { randomUUID } from "node:crypto";
 
+/** Input flag for scheduled refresh — routes directly to Coach_Prioritization (no Advisor nodes). */
+const SCHEDULED_REFRESH_FLAG = "__scheduled_refresh" as const;
+
 export const discoveryRequested = inngest.createFunction(
   {
     id: "discovery-requested",
@@ -153,4 +156,70 @@ export const discoveryConfirmSai = inngest.createFunction(
   }
 );
 
-export const functions = [discoveryRequested, discoveryConfirmSai] as const;
+/** Default: 6 AM UTC daily. Override via PRIORITIZATION_CRON_SCHEDULE (unix-cron). */
+const PRIORITIZATION_CRON =
+  process.env.PRIORITIZATION_CRON_SCHEDULE ?? "0 6 * * *";
+
+/**
+ * US4 (T033–T034): Daily cron triggers Coach_Prioritization for users with discovery results.
+ * Loads checkpoint state, invokes graph with scheduled_refresh entry point; no Advisor nodes run.
+ */
+export const prioritizationScheduled = inngest.createFunction(
+  {
+    id: "prioritization-scheduled",
+    timeouts: { finish: "10m" },
+  },
+  { cron: PRIORITIZATION_CRON },
+  async ({ step }) => {
+    const db = createDbClient();
+
+    const completions = await step.run("fetch-completions", async () => {
+      const { data, error } = await db
+        .from("discovery_completions")
+        .select("thread_id, user_id")
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false });
+      if (error) throw error;
+      const rows = data ?? [];
+      const seen = new Set<string>();
+      return rows.filter((r) => {
+        if (seen.has(r.thread_id)) return false;
+        seen.add(r.thread_id);
+        return true;
+      });
+    });
+
+    let processed = 0;
+    let skipped = 0;
+
+    for (const { thread_id } of completions) {
+      const result = await step.run(`refresh-${thread_id}`, async () => {
+        const config = { configurable: { thread_id } };
+        const state = await graph.getState(config);
+        const values = (state?.values ?? {}) as {
+          discovery_results?: unknown[];
+          user_profile?: unknown;
+        };
+        if (!values.discovery_results?.length) {
+          return { refreshed: false };
+        }
+        const input = {
+          ...values,
+          [SCHEDULED_REFRESH_FLAG]: true,
+        };
+        await graph.invoke(input as Parameters<typeof graph.invoke>[0], config);
+        return { refreshed: true };
+      });
+      if (result?.refreshed) processed++;
+      else skipped++;
+    }
+
+    return { processed, skipped, total: completions.length };
+  }
+);
+
+export const functions = [
+  discoveryRequested,
+  discoveryConfirmSai,
+  prioritizationScheduled,
+] as const;

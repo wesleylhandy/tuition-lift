@@ -115,9 +115,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Create Inngest function tuition-lift/prioritization.scheduled with cron trigger (e.g., 0 6 * * * daily) in apps/web/lib/inngest/functions.ts
-- [ ] T034 [US4] Implement batch load: fetch users/threads with discovery_results; for each, invoke Coach_Prioritization with existing state (no Advisor run) in apps/web/lib/inngest/functions.ts
-- [ ] T035 [US4] Add scheduled_refresh entry point to graph: route directly to Coach_Prioritization; Inngest loads checkpoint via graph.getState(), invokes with entrypoint "scheduled_refresh" and existing state; Coach recalculates active_milestones; no Advisor nodes run (see plan.md Coach_Prioritization Standalone)
+- [x] T033 [US4] Create Inngest function tuition-lift/prioritization.scheduled with cron trigger (e.g., 0 6 * * * daily) in apps/web/lib/inngest/functions.ts
+- [x] T034 [US4] Implement batch load: fetch users/threads with discovery_results; for each, invoke Coach_Prioritization with existing state (no Advisor run) in apps/web/lib/inngest/functions.ts
+- [x] T035 [US4] Add scheduled_refresh entry point to graph: route directly to Coach_Prioritization; Inngest loads checkpoint via graph.getState(), invokes with entrypoint "scheduled_refresh" and existing state; Coach recalculates active_milestones; no Advisor nodes run (see plan.md Coach_Prioritization Standalone)
 
 **Checkpoint**: User Story 4 complete; daily cron refreshes milestones
 

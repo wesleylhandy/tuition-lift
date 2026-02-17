@@ -157,7 +157,19 @@ pnpm --filter web dev
 npx inngest dev
 ```
 
-## 10. References
+## 10. Verify Checkpoints (US1–US4)
+
+Run from repo root with `.env` loaded:
+
+```bash
+pnpm verify-checkpoints
+```
+
+Verifies: checkpointer setup, state persistence (scheduled refresh path), and `discovery_completions` table. Requires `DATABASE_URL`; Supabase vars needed for the table check.
+
+---
+
+## 11. References
 
 - [LangGraph JS State](https://langchain-ai.github.io/langgraphjs/concepts/state/)
 - [LangGraph Persistence](https://langchain-ai.github.io/langgraphjs/how-tos/persistence/)
