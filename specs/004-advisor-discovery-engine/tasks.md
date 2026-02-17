@@ -23,10 +23,10 @@
 
 **Purpose**: Project initialization for discovery engine; extend existing structure
 
-- [ ] T001 Create apps/agent package structure with lib/ and lib/discovery/ per plan in apps/agent/
-- [ ] T002 Add dependencies to apps/agent: @langchain/langgraph, @langchain/langgraph-checkpoint-postgres, @supabase/supabase-js, zod in apps/agent/package.json
-- [ ] T003 [P] Add TAVILY_API_KEY and DISCOVERY_SEARCH_BATCH_DELAY_MS to env schema in apps/agent/ or .env.example
-- [ ] T004 [P] Add workspace dependency from apps/agent to packages/database (if database package exists) in pnpm-workspace.yaml and apps/agent/package.json
+- [x] T001 Create apps/agent package structure with lib/ and lib/discovery/ per plan in apps/agent/
+- [x] T002 Add dependencies to apps/agent: @langchain/langgraph, @langchain/langgraph-checkpoint-postgres, @supabase/supabase-js, zod in apps/agent/package.json
+- [x] T003 [P] Add TAVILY_API_KEY and DISCOVERY_SEARCH_BATCH_DELAY_MS to env schema in apps/agent/ or .env.example
+- [x] T004 [P] Add workspace dependency from apps/agent to packages/database (if database package exists) in pnpm-workspace.yaml and apps/agent/package.json
 
 ---
 
@@ -38,10 +38,10 @@
 
 - [ ] T005 Create migration adding metadata JSONB and UNIQUE(url) partial index to scholarships table in packages/database/supabase/migrations/
 - [ ] T006 [P] Create AnonymizedProfileSchema (gpa, major, incomeBracket, pellStatus; no PII) in apps/agent/lib/discovery/schemas.ts
-- [ ] T007 [P] Create DiscoveryResultSchema with trust_score 0-100, trust_report, verification_status, categories, discovery_run_id (uuid, optional) in apps/agent/lib/discovery/schemas.ts
+- [ ] T007 [P] Extend DiscoveryResultSchema in apps/agent/lib/schemas.ts: add trust_report, verification_status, categories, discovery_run_id (uuid, optional). Keep trust_score 0-100.
 - [ ] T008 [P] Create ScholarshipMetadataSchema for metadata JSONB shape (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/schemas.ts
 - [ ] T009 [P] Create PII scrub utility that strips full_name and SSN from profile before external calls in apps/agent/lib/discovery/pii-scrub.ts
-- [ ] T010 Wire TuitionLiftState and discovery_results type extensions in apps/agent/lib/state.ts (align with 003 data-model; requires 003 graph and state)
+- [ ] T010 Extend DiscoveryResult in apps/agent/lib/schemas.ts (add trust_report, verification_status, categories); ensure TuitionLiftState discovery_results uses extended type. Do not redefine state—build on 003 baseline. Align with data-model.md.
 
 **Checkpoint**: Foundation ready—user story implementation can begin
 
@@ -54,6 +54,8 @@
 **Independent Test**: Run discovery with profile containing name and SSN; verify (a) no name/SSN in outbound logs, (b) 3–5 queries generated, (c) all results verified or flagged.
 
 ### Implementation for User Story 1
+
+**Note (003 alignment)**: 003 delivered stub implementations in advisor-search and advisor-verify. T016 replaces inline logic with lib/discovery modules; remove single-query buildSearchQuery path and inline Tavily call.
 
 - [ ] T011 [P] [US1] Create QueryGenerator that accepts AnonymizedProfile and returns 3–5 query strings via LLM in apps/agent/lib/discovery/query-generator.ts
 - [ ] T012 [P] [US1] Create TavilyClient with search(query) method calling POST https://api.tavily.com/search; search_depth advanced, max_results 10 in apps/agent/lib/discovery/tavily-client.ts
@@ -123,8 +125,8 @@
 
 **Purpose**: Final integration, edge cases, documentation
 
-- [ ] T031 [P] Handle zero search results: return empty discovery_results without error in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T032 [P] Handle Tavily timeout/failure: log error, update error_log, route to SafeRecovery per 003 in apps/agent/lib/nodes/advisor-search.ts
+- [ ] T031 [P] Handle zero search results: return empty discovery_results without error in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: When Tavily returns empty or no results, set discovery_results: [] and goto Advisor_Verify (no error; Coach will handle empty state per FR-012b).
+- [ ] T032 [P] Handle Tavily timeout/failure: log error, update error_log, route to SafeRecovery per 003 in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: Wrap Tavily calls in try/catch; on timeout/network/API error, append createErrorEntry("Advisor_Search", err), return Command({ goto: "SafeRecovery", update: { error_log } }). Consider explicit timeout (e.g. AbortController) if Tavily has no built-in limit.
 - [ ] T033 [P] Add updated_at to scholarship upsert for conflict update in apps/agent/lib/discovery/scholarship-upsert.ts
 - [ ] T034 Run quickstart.md validation; verify env vars and local discovery flow in specs/004-advisor-discovery-engine/quickstart.md
 - [ ] T035 Validate SC-006 (discovery results within 5 min): run end-to-end discovery under normal load and document timing; defer formal load test if infra not ready

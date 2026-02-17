@@ -16,10 +16,11 @@
   },
   "dependencies": {
     "@langchain/core": "^0.3.0",
-    "@repo/db": "workspace:*",
     "@langchain/langgraph": "^1.1.0",
     "@langchain/langgraph-checkpoint-postgres": "^1.0.0",
     "@langchain/tavily": "^1.2.0",
+    "@repo/db": "workspace:*",
+    "@supabase/supabase-js": "^2.90.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
