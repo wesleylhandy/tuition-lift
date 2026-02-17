@@ -27,14 +27,16 @@ The shared orchestration state. Serialized into checkpoints by LangGraph. All fi
 
 ## 2. UserProfile (Embedded)
 
-| Field        | Type    | Notes                                           |
-|-------------|---------|-------------------------------------------------|
-| id          | uuid    | auth.users.id / profiles.id                     |
-| gpa         | number  | 0–4.00; from profiles.gpa                      |
-| major       | string  | profiles.intended_major                         |
-| state       | string  | US state code; profiles.state                   |
+| Field        | Type    | Required for discovery | Notes                                           |
+|-------------|---------|------------------------|-------------------------------------------------|
+| id          | uuid    | yes                   | auth.users.id / profiles.id                     |
+| major       | string  | yes                   | profiles.intended_major                         |
+| state       | string  | yes                   | US state code; profiles.state                   |
+| gpa         | number  | no                    | 0–4.00; from profiles.gpa                      |
 
 **Source**: `profiles` table. Loaded when thread starts or onboarding completes.
+
+**Required for discovery (FR-012a)**: major, state. If missing, trigger returns 400 with instructions. gpa optional; financial_profile fields optional with warnings.
 
 ---
 
@@ -149,8 +151,9 @@ For notification delivery (bell/toaster) when discovery completes. Includes disc
 Define Zod schemas for:
 
 - `FinancialProfileSchema` — estimated_sai (-1500..999999), is_pell_eligible, household_income_bracket enum
-- `UserProfileSchema` — gpa, major, state
+- `UserProfileSchema` — gpa, major (required), state (required)
 - `DiscoveryResultSchema` — discovery_run_id (uuid), trust_score 0–100, need_match_score 0–100
 - `ActiveMilestoneSchema` — priority, status
+- `ErrorLogEntrySchema` — node (string), message (string), timestamp (ISO string)
 
 Use for validation before writing to state or external APIs.

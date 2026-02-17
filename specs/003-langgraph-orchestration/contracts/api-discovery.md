@@ -30,6 +30,7 @@ APIs for triggering scholarship discovery, polling status, HITL confirmation, an
 ```json
 {
   "threadId": "user_abc123",
+  "discoveryRunId": "uuid",
   "status": "running",
   "message": "Discovery in progress. You'll be notified when results are ready."
 }
@@ -39,6 +40,7 @@ APIs for triggering scholarship discovery, polling status, HITL confirmation, an
 ```json
 {
   "threadId": "user_abc123",
+  "discoveryRunId": "uuid",
   "status": "running",
   "message": "Discovery already in progress. Refresh or check back for updates."
 }
@@ -65,7 +67,7 @@ APIs for triggering scholarship discovery, polling status, HITL confirmation, an
   "threadId": "user_abc123",
   "discoveryRunId": "uuid",
   "status": "running" | "completed" | "failed",
-  "lastActiveNode": "Advisor_Discovery" | "Coach_Prioritization" | "SafeRecovery" | null,
+  "lastActiveNode": "Advisor_Search" | "Advisor_Verify" | "Coach_Prioritization" | "SafeRecovery" | null,
   "completedAt": "2025-02-13T12:00:00Z" | null,
   "errorMessage": null
 }
@@ -153,10 +155,10 @@ If `approved: false`, Advisor proceeds with income tiers only.
 
 ## 5. Inngest Events (Internal)
 
-| Event Name                     | Trigger        | Payload                              |
-|--------------------------------|----------------|--------------------------------------|
-| tuition-lift/discovery.requested | POST trigger   | { userId, threadId, useSaiRange }    |
-| tuition-lift/prioritization.scheduled | Cron (daily) | { } — batches active users           |
+| Event Name                     | Trigger        | Payload                                                                    |
+|--------------------------------|----------------|----------------------------------------------------------------------------|
+| tuition-lift/discovery.requested | POST trigger   | { userId, threadId, discoveryRunId, useSaiRange } — discoveryRunId from trigger |
+| tuition-lift/prioritization.scheduled | Cron (daily) | { } — batches active users                                                  |
 
 ---
 

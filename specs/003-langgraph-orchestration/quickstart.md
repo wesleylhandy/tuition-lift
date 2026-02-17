@@ -157,7 +157,51 @@ pnpm --filter web dev
 npx inngest dev
 ```
 
-## 10. References
+## 10. Verify Checkpoints (US1–US4)
+
+Run from repo root with `.env` loaded:
+
+```bash
+pnpm verify-checkpoints
+```
+
+Verifies: checkpointer setup, state persistence (scheduled refresh path), and `discovery_completions` table. Requires `DATABASE_URL`; Supabase vars needed for the table check.
+
+**Full e2e (including Inngest serve route)**: With `pnpm --filter web dev` running, run:
+
+```bash
+WEB_URL=http://localhost:3000 pnpm verify-checkpoints
+```
+
+This confirms the Inngest serve route at `/api/inngest` is reachable for event ingestion.
+
+### 10a. Verify SC-001 (5-Minute SLA)
+
+```bash
+pnpm verify-sc001
+```
+
+Runs discovery end-to-end (graph.invoke) and asserts completion within 5 minutes. Requires a test profile with `intended_major` and `state`; optionally set `SC001_TEST_USER_ID` to target a specific user. Skips gracefully if no profile available.
+
+---
+
+## 11. Lighthouse (SC-007 / T041)
+
+Verify discovery flow meets Performance and Best Practices scores ≥ 90 each (Constitution Section 6).
+
+**Trigger view (automated)** — With dev server running (`pnpm --filter web dev`):
+
+```bash
+pnpm --filter web lighthouse:discovery
+```
+
+Defaults to `http://localhost:3000/discovery`. Pass a custom URL or set `LIGHTHOUSE_URL` if needed.
+
+**All three views (manual)** — For full SC-007 verification of trigger, status poll, and results views, run Lighthouse manually in Chrome DevTools (F12 → Lighthouse tab) while logged in: load `/discovery`, run audit; click "New Search", run audit before completion; wait for results, run audit.
+
+---
+
+## 12. References
 
 - [LangGraph JS State](https://langchain-ai.github.io/langgraphjs/concepts/state/)
 - [LangGraph Persistence](https://langchain-ai.github.io/langgraphjs/how-tos/persistence/)

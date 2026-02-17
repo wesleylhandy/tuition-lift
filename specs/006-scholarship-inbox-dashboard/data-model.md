@@ -74,7 +74,7 @@ CREATE POLICY "Users can delete own dismissals"
 
 | Entity       | Source       | Usage                                              |
 |--------------|--------------|----------------------------------------------------|
-| profiles     | 002 data-model | Coach's Prep Checklist (GPA, intended_major, SAI)   |
+| profiles     | 002 data-model | Coach's Prep Checklist (intended_major, state, GPA per 002 FR-014b; SAI for financial profile) |
 | scholarships | 002 data-model | Match cards, trust_score for Trust Shield          |
 | applications | 002 data-model | Application Tracker, Top 3, Debt Lifted           |
 | discovery_results | Orchestration / Advisor (003) | Match Inbox feed; need_match_score, trust_score, discovery_run_id |

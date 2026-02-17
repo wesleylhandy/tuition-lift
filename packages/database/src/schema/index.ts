@@ -5,32 +5,32 @@
 
 import type { ZodSchema } from 'zod';
 
-export { waitlistSchema, waitlistSegmentEnum } from './waitlist.js';
-export type { WaitlistSchema } from './waitlist.js';
+export { waitlistSchema, waitlistSegmentEnum } from './waitlist';
+export type { WaitlistSchema } from './waitlist';
 
 export {
   profileSchema,
   profileInsertSchema,
   profileUpdateSchema,
   pellEligibilityStatusEnum,
-} from './profiles.js';
+} from './profiles';
 export type {
   ProfileSchema,
   ProfileInsertSchema,
   ProfileUpdateSchema,
-} from './profiles.js';
+} from './profiles';
 
 export {
   scholarshipSchema,
   scholarshipCategoryEnum,
-} from './scholarships.js';
-export type { ScholarshipSchema } from './scholarships.js';
+} from './scholarships';
+export type { ScholarshipSchema } from './scholarships';
 
 export {
   applicationSchema,
   applicationStatusEnum,
-} from './applications.js';
-export type { ApplicationSchema } from './applications.js';
+} from './applications';
+export type { ApplicationSchema } from './applications';
 
 /**
  * Validates data against schema; throws ZodError on failure.

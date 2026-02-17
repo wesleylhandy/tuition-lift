@@ -16,7 +16,7 @@
 ### Session 2025-02-13
 
 - Q: What trust_score ranges map to Trust Shield badge colors (Green/Amber/Red)? → A: Four levels—Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39.
-- Q: How should Coach's Prep Checklist items be determined? → A: Dynamic—items derived from profile completeness and discovery state (e.g., missing GPA → "Complete your GPA"; no discovery run → "Start discovery"). Aligns with Orchestration and Advisor specs: discovery requires user_profile (GPA, major) and financial_profile (SAI); incomplete data routes to onboarding/prompt.
+- Q: How should Coach's Prep Checklist items be determined? → A: Dynamic—items derived from profile completeness and discovery state (e.g., missing major/state → "Complete your profile"; missing GPA → "Complete your GPA"; no discovery run → "Start discovery"). Aligns with 002 FR-014b: discovery requires user_profile (major, state); checklist also encourages GPA and SAI for better matches.
 - Q: How should the Application Tracker display lifecycle stages? → A: Full 5 stages per Coach spec—Tracked, Drafting, Review, Submitted, Outcome Pending; Won/Lost shown as outcome states. **Note**: Cross-spec alignment (Coach spec, DB application_status enum, Dashboard UI) should be revisited to establish a single canonical lifecycle.
 - Q: When a student dismisses a scholarship, can it reappear in their Match Inbox? → A: Soft dismiss—hidden for current discovery run; may reappear if a new discovery run returns the same scholarship. A simple dismissals table (user_id, scholarship_id, optionally scoped by run) suffices; a full events DB would be overengineering for this scope.
 - Q: What should the user see when data is loading or when a server action fails? → A: Skeletons/placeholders during load; toast for action failures with retry option.
@@ -100,7 +100,7 @@ A student can take quick actions on scholarship cards and applications: Track (a
 
 ### User Story 5 - Zero-State: Coach's Prep Checklist (Priority: P2)
 
-When a student has no matches in the Match Inbox (discovery not run, or zero results), the system displays a "Coach's Prep Checklist" instead of an empty state. Checklist items are dynamic: derived from profile completeness (e.g., missing GPA → "Complete your GPA"; missing SAI → "Add your financial profile") and discovery state (e.g., no discovery run → "Start discovery"; zero results → "Review eligibility" or "Broaden criteria"). Aligns with Orchestration and Advisor specs: discovery requires user_profile (GPA, major) and financial_profile (SAI).
+When a student has no matches in the Match Inbox (discovery not run, or zero results), the system displays a "Coach's Prep Checklist" instead of an empty state. Checklist items are dynamic: derived from profile completeness (e.g., missing major → "Complete your major"; missing state → "Complete your state"; missing GPA → "Complete your GPA"; missing SAI → "Add your financial profile") and discovery state (e.g., no discovery run → "Start discovery"; zero results → "Review eligibility" or "Broaden criteria"). Aligns with 002 FR-014b: discovery requires user_profile (major, state); checklist also encourages GPA and SAI for better matches.
 
 **Why this priority**: Engagement during cold start—empty states cause drop-off; a checklist maintains momentum and clarity.
 
@@ -109,7 +109,7 @@ When a student has no matches in the Match Inbox (discovery not run, or zero res
 **Acceptance Scenarios**:
 
 1. **Given** the Match Inbox has zero matches, **When** the student views it, **Then** a Coach's Prep Checklist is displayed instead of a blank or generic empty state.
-2. **Given** the checklist is shown, **When** the student reads it, **Then** it contains specific, actionable next steps derived from profile completeness and discovery state (e.g., missing GPA → "Complete your GPA"; no discovery run → "Start discovery").
+2. **Given** the checklist is shown, **When** the student reads it, **Then** it contains specific, actionable next steps derived from profile completeness and discovery state (e.g., missing major or state → "Complete your profile"; missing GPA → "Complete your GPA"; no discovery run → "Start discovery").
 3. **Given** the student completes a checklist item, **When** the condition is met (e.g., profile complete), **Then** the checklist updates to reflect progress or transitions to showing matches when available.
 
 ---
@@ -170,7 +170,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 - **FR-014**: System MUST provide "Verify Submission" quick action to trigger the verification flow for applications; upon confirmation, status updates to Submitted.
 
 **Zero-State**
-- **FR-015**: When the Match Inbox has zero matches, System MUST display a "Coach's Prep Checklist" with actionable next steps instead of a blank empty state. Checklist items MUST be derived dynamically from profile completeness (user_profile: GPA, major; financial_profile: SAI per Orchestration/Advisor specs) and discovery state (not run, zero results).
+- **FR-015**: When the Match Inbox has zero matches, System MUST display a "Coach's Prep Checklist" with actionable next steps instead of a blank empty state. Checklist items MUST be derived dynamically from profile completeness (user_profile: major, state, GPA per 002 FR-014b—required for discovery: major, state; financial_profile: SAI) and discovery state (not run, zero results).
 
 **Loading & Error States**
 - **FR-016**: System MUST display skeletons or placeholders during initial data load; no blank white space.
@@ -194,7 +194,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 - **Top 3 Tasks**: The three applications a student should focus on today; ordered by momentum_score per Coach Execution Engine.
 - **Application**: A tracked scholarship application. Has lifecycle status (Tracked, Drafting, Review, Submitted, Outcome Pending) and outcome states (Won, Lost); deadline; links to scholarship metadata.
 - **Debt Lifted**: Aggregate dollar amount from confirmed Won scholarships; updated only after verification protocol.
-- **Coach's Prep Checklist**: Zero-state content when no matches exist; items derived dynamically from profile completeness (GPA, major, SAI) and discovery state (not run, zero results). Aligns with Orchestration and Advisor specs.
+- **Coach's Prep Checklist**: Zero-state content when no matches exist; items derived dynamically from profile completeness (major, state, GPA per 002 FR-014b; SAI for financial profile) and discovery state (not run, zero results).
 
 ### Assumptions
 
@@ -205,7 +205,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 - Server-side actions for state transitions integrate with the shared data layer and Coach Execution Engine verification protocol.
 - Application lifecycle states (Tracked, Drafting, Review, Submitted, Outcome Pending; Won/Lost as outcomes) align with the Coach Execution Engine spec. **Cross-spec alignment**: Coach spec, DB application_status enum (draft, submitted, awarded, rejected, withdrawn), and Dashboard UI terminology should be revisited to establish a single canonical lifecycle.
 - "Active Scouting" status and domain ticker are derived from the Advisor Discovery Engine's checkpoint or progress state when Scout phase is running.
-- Coach's Prep Checklist required profile fields (GPA, major, SAI) align with Orchestration spec FR-005/FR-006 and Advisor spec FR-001: discovery requires complete user_profile and financial_profile.
+- Discovery requires major and state per 002 FR-014b; Coach's Prep Checklist encourages these plus GPA and SAI for better matches. Aligns with Orchestration and Advisor specs.
 - Dismissals are persisted in a lightweight table (user_id, scholarship_id, discovery_run_id nullable). When orchestration provides discovery_run_id with results (003), store it on dismiss for run-scoped filtering. A full events DB for audit/analytics would be overengineering for this feature.
 
 ## Success Criteria *(mandatory)*

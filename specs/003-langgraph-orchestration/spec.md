@@ -11,6 +11,7 @@
 
 - Q: Source of household_income_bracket for FinancialProfile (002 alignment)? → A: Compute from SAI at read; NOT stored in profiles; orchestration derives at load per 002 FR-014a
 - Q: Should 003 expose discovery_run_id with discovery results for downstream consumers (e.g., 006 dismissals)? → A: Add discovery_run_id to discovery_completions and/or discovery results payload so 006 can scope dismissals by run
+- Q: Profile optionality alignment with 002? → A: 002 FR-014b allows intended_major, state optional in profileSchema; 003 enforces required fields (major, state) at discovery trigger per consumer responsibility
 
 ### Session 2025-02-13
 
@@ -110,7 +111,7 @@ On a defined schedule (e.g., daily), Coach_Prioritization runs to refresh the mi
 - **FR-003**: System MUST checkpoint state after search completes but before verification so that failed verification does not trigger re-execution of the search step.
 - **FR-004**: System MUST track which persona (Advisor or Coach) last modified the state via last_active_node.
 
-**Discovery (Advisor)**
+**Discovery (Advisor)** *(Advisor_Discovery = discovery phase; implemented by Advisor_Search and Advisor_Verify nodes)*
 - **FR-005**: Advisor_Discovery MUST trigger on onboarding complete or explicit "New Search" request.
 - **FR-006**: Advisor_Discovery MUST perform web search using financial_profile as primary filter (e.g., need-based scholarships for low SAI).
 - **FR-007**: Advisor_Discovery MUST anonymize financial data before sending to third-party search APIs; raw income numbers, SSNs, or tax data must never be sent externally. Use broad brackets only (e.g., "Low Income", "Pell Eligible").
@@ -145,7 +146,7 @@ On a defined schedule (e.g., daily), Coach_Prioritization runs to refresh the mi
 
 ### Key Entities
 
-- **TuitionLiftState**: Central orchestration state. Includes: user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile.
+- **TuitionLiftState**: Central orchestration state. Includes: user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile, error_log.
 - **user_profile**: Validated student data (GPA, Major, State) sourced from profiles; used for scholarship matching.
 - **discovery_results**: Array of scholarship objects. Each has trust_score, source_url, and need_match_score (comparing requirements to financial_profile).
 - **active_milestones**: Prioritized list of upcoming tasks for the Coach; ordered by ROI (Lift relative to financial gap).
@@ -166,8 +167,9 @@ On a defined schedule (e.g., daily), Coach_Prioritization runs to refresh the mi
 - need_match_score is a comparative score (e.g., 0–100) derived from financial_profile vs. scholarship requirements; exact formula is implementation-defined.
 - Scheduled prioritization default is daily (24-hour); exact schedule is configurable.
 - SC-001 (5-minute SLA) applies under single-user / sequential conditions; concurrent load and throughput targets are deferred to a later phase.
-- Required user_profile fields (e.g., major, state) are defined in the data model; financial_profile fields are optional for initial discovery and may be added later to refine results.
-- Application-level encryption for financial profile fields (SAI, income bracket) is required per FR-014; implementation details in plan.
+- Required user_profile fields (major, state) per 002 FR-014b; 003 validates at discovery trigger. financial_profile fields are optional for initial discovery and may be added later to refine results.
+- "Onboarding complete" is signaled by profile completion (required fields present) or an explicit event; exact mechanism is implementation-defined.
+- Application-level encryption for financial profile fields (SAI) is required per FR-014; 003 implements encryption layer in packages/database per 002 assumption.
 
 ## Success Criteria *(mandatory)*
 

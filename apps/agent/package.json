@@ -1,0 +1,32 @@
+{
+  "name": "agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./lib/graph.ts",
+  "types": "./lib/graph.ts",
+  "exports": {
+    ".": "./lib/graph.ts",
+    "./load-profile": "./lib/load-profile.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.0",
+    "@repo/db": "workspace:*",
+    "@langchain/langgraph": "^1.1.0",
+    "@langchain/langgraph-checkpoint-postgres": "^1.0.0",
+    "@langchain/tavily": "^1.2.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.39.1",
+    "typescript": "5.9.2"
+  }
+}

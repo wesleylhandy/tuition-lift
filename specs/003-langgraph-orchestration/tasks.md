@@ -23,10 +23,10 @@
 
 **Purpose**: Project initialization, dependencies, and directory structure
 
-- [ ] T001 Create apps/agent directory structure (lib/, lib/nodes/) and apps/web/lib/inngest/ per plan.md
-- [ ] T002 Add @langchain/langgraph @langchain/langgraph-checkpoint-postgres to apps/agent/package.json; add inngest to apps/web/package.json
-- [ ] T003 [P] Add DATABASE_URL, INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY, LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY to .env.example
-- [ ] T004 [P] Add Inngest client and serve route at apps/web/app/api/inngest/route.ts per Inngest docs
+- [x] T001 Create apps/agent directory structure (lib/, lib/nodes/) and apps/web/lib/inngest/ per plan.md
+- [x] T002 Add @langchain/langgraph @langchain/langgraph-checkpoint-postgres to apps/agent/package.json; add inngest to apps/web/package.json
+- [x] T003 [P] Add DATABASE_URL, INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY, LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY to .env.example
+- [x] T004 [P] Add Inngest client and serve route at apps/web/app/api/inngest/route.ts per Inngest docs
 
 **Checkpoint**: Dependencies installed; Inngest serve route available; env vars documented
 
@@ -36,13 +36,13 @@
 
 **Purpose**: Core graph state, checkpointer, and schema—must complete before any user story
 
-- [ ] T005 [P] Define Zod schemas (FinancialProfileSchema, UserProfileSchema, DiscoveryResultSchema with discovery_run_id, ActiveMilestoneSchema, ErrorLogEntrySchema) in apps/agent/lib/schemas.ts per data-model.md
-- [ ] T006 Define TuitionLiftState using Annotation.Root with user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile, error_log in apps/agent/lib/state.ts
-- [ ] T007 Create PostgresSaver checkpointer using DATABASE_URL, call setup() on init, export from apps/agent/lib/checkpointer.ts
-- [ ] T008 Create graph skeleton (StateGraph with START, END) in apps/agent/lib/graph.ts with placeholder nodes Advisor_Search, Advisor_Verify, Coach_Prioritization, SafeRecovery; compile with checkpointer
-- [ ] T009 Implement profile loader: fetch user_profile and financial_profile from @repo/db profiles table by user_id; compute household_income_bracket from SAI; export from apps/agent/lib/load-profile.ts
-- [ ] T010 Create financial anonymization helper: map financial_profile to search-safe strings (household_income_bracket → "Low Income"|etc, is_pell_eligible → "Pell Eligible"|etc); use placeholders for geo ({{USER_STATE}}, {{USER_CITY}}) per FR-007a in apps/agent/lib/anonymize-financial.ts
-- [ ] T010a Implement application-level encryption for financial profile fields (SAI) in profiles table; encrypt on write, decrypt in load-profile per FR-014 in packages/database or apps/agent/lib/load-profile.ts (household_income_bracket not stored—computed from SAI per 002)
+- [x] T005 [P] Define Zod schemas (FinancialProfileSchema, UserProfileSchema, DiscoveryResultSchema with discovery_run_id, ActiveMilestoneSchema, ErrorLogEntrySchema) in apps/agent/lib/schemas.ts per data-model.md
+- [x] T006 Define TuitionLiftState using Annotation.Root with user_profile, discovery_results, active_milestones, messages, last_active_node, financial_profile, error_log in apps/agent/lib/state.ts
+- [x] T007 Create PostgresSaver checkpointer using DATABASE_URL, call setup() on init, export from apps/agent/lib/checkpointer.ts
+- [x] T008 Create graph skeleton (StateGraph with START, END) in apps/agent/lib/graph.ts with placeholder nodes Advisor_Search, Advisor_Verify, Coach_Prioritization, SafeRecovery; compile with checkpointer
+- [x] T009 Implement profile loader: fetch user_profile and financial_profile from @repo/db profiles table by user_id; compute household_income_bracket from SAI; export from apps/agent/lib/load-profile.ts
+- [x] T010 Create financial anonymization helper: map financial_profile to search-safe strings (household_income_bracket → "Low Income"|etc, is_pell_eligible → "Pell Eligible"|etc); use placeholders for geo ({{USER_STATE}}, {{USER_CITY}}) per FR-007a in apps/agent/lib/anonymize-financial.ts
+- [x] T010a Implement application-level encryption for financial profile fields (SAI): add encrypt/decrypt helpers in packages/database (env key); use decrypt in apps/agent/lib/load-profile.ts on read; use encrypt on profile write paths (e.g. onboarding). household_income_bracket not stored—computed from SAI per 002 (FR-014)
 
 **Checkpoint**: Graph compiles; state schema defined; checkpointer persists; profile loader, anonymization, and encryption ready
 
@@ -56,18 +56,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement Advisor_Search node: web search (e.g., Tavily) using anonymized financial_profile and placeholders; return raw results in state in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T012 [US1] Implement Advisor_Verify node: score results (trust_score, need_match_score), apply Trust Filter (.edu/.gov 2×, auto-fail fees); read discovery_run_id from graph config.configurable, attach to each DiscoveryResult; return Command({ goto: "Coach_Prioritization", update: { discovery_results, last_active_node } }) in apps/agent/lib/nodes/advisor-verify.ts
-- [ ] T013 [US1] Implement Coach_Prioritization node: map discovery_results to active_milestones ordered by ROI; when discovery_results empty, present "No matches yet" message, explain why, suggest next steps (FR-012b); set last_active_node; transition to END in apps/agent/lib/nodes/coach-prioritization.ts
-- [ ] T014 [US1] Wire graph edges: START → Advisor_Search; Advisor_Search → Advisor_Verify; Advisor_Verify → Coach_Prioritization; Coach_Prioritization → END in apps/agent/lib/graph.ts
-- [ ] T015 [US1] Create Inngest function tuition-lift/discovery.requested: import graph from apps/agent; receive discoveryRunId from event payload; load profile; invoke graph.invoke with thread_id=user_${userId}, config.configurable.discovery_run_id for nodes to use, 5m timeout in apps/web/lib/inngest/functions.ts
-- [ ] T016 [US1] Implement POST /api/discovery/trigger: auth check; validate required user_profile fields per FR-012a (return 400 with instructions if missing); surface warnings for optional/financial fields; check if run in progress (FR-013a); if yes return status; else generate discovery_run_id (uuid), send Inngest event with discoveryRunId, return threadId, discoveryRunId, status in apps/web/app/api/discovery/trigger/route.ts
-- [ ] T017 [US1] Implement status resolver: read discovery_completions or checkpoint for thread_id; return status, discoveryRunId, lastActiveNode, completedAt in apps/web/lib/discovery-status.ts
-- [ ] T018 [US1] Implement GET /api/discovery/status: auth; validate thread_id owned by user; return status JSON per contract in apps/web/app/api/discovery/status/route.ts
-- [ ] T019 [US1] Implement GET /api/discovery/results: auth; load checkpoint state for thread_id; return discoveryRunId (top-level), discoveryResults (each with discoveryRunId), and activeMilestones per contract in apps/web/app/api/discovery/results/route.ts
-- [ ] T020 [US1] Add discovery_completions table migration: id, discovery_run_id (uuid NOT NULL UNIQUE), user_id, thread_id, status, completed_at, created_at; RLS user_id=auth.uid() in packages/database/supabase/migrations/
-- [ ] T021 [US1] Update Inngest discovery function: on run start create discovery_completions row with discovery_run_id; on graph completion upsert status=completed, completed_at=now for notification (FR-013b)
-- [ ] T022 [US1] Add status polling + "Discovery in progress…" UI state and notification (bell/toaster) when status=completed in apps/web/app/discovery/page.tsx (or main discovery UI component)
+- [x] T011 [US1] Implement Advisor_Search node: web search (e.g., Tavily) using anonymized financial_profile and placeholders; return raw results in state in apps/agent/lib/nodes/advisor-search.ts
+- [x] T012 [US1] Implement Advisor_Verify node: score results (trust_score, need_match_score), apply Trust Filter (.edu/.gov 2×, auto-fail fees); read discovery_run_id from graph config.configurable, attach to each DiscoveryResult; return Command({ goto: "Coach_Prioritization", update: { discovery_results, last_active_node } }) in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T013 [US1] Implement Coach_Prioritization node: map discovery_results to active_milestones ordered by ROI; when discovery_results empty, present "No matches yet" message, explain why, suggest next steps (FR-012b); set last_active_node; transition to END in apps/agent/lib/nodes/coach-prioritization.ts
+- [x] T014 [US1] Wire graph edges: START → Advisor_Search; Advisor_Search → Advisor_Verify; Advisor_Verify → Coach_Prioritization; Coach_Prioritization → END in apps/agent/lib/graph.ts
+- [x] T015 [US1] Create Inngest function tuition-lift/discovery.requested: import graph from apps/agent; receive discoveryRunId from event payload; load profile; invoke graph.invoke with thread_id=user_${userId}, config.configurable.discovery_run_id for nodes to use, 5m timeout in apps/web/lib/inngest/functions.ts
+- [x] T016 [US1] Implement POST /api/discovery/trigger: auth check; validate required user_profile fields per FR-012a (return 400 with instructions if missing); surface warnings for optional/financial fields; check if run in progress (FR-013a); if yes return status; else generate discovery_run_id (uuid), send Inngest event with discoveryRunId, return threadId, discoveryRunId, status in apps/web/app/api/discovery/trigger/route.ts
+- [x] T017 [US1] Implement status resolver: read discovery_completions or checkpoint for thread_id; return status, discoveryRunId, lastActiveNode, completedAt in apps/web/lib/discovery-status.ts
+- [x] T018 [US1] Implement GET /api/discovery/status: auth; validate thread_id owned by user; return status JSON per contract in apps/web/app/api/discovery/status/route.ts
+- [x] T019 [US1] Implement GET /api/discovery/results: auth; load checkpoint state for thread_id; return discoveryRunId (top-level), discoveryResults (each with discoveryRunId), and activeMilestones per contract in apps/web/app/api/discovery/results/route.ts
+- [x] T020 [US1] Add discovery_completions table migration: id, discovery_run_id (uuid NOT NULL UNIQUE), user_id, thread_id, status, completed_at, created_at; RLS user_id=auth.uid() in packages/database/supabase/migrations/
+- [x] T021 [US1] Update Inngest discovery function: on run start create discovery_completions row with discovery_run_id; on graph completion upsert status=completed, completed_at=now for notification (FR-013b)
+- [x] T022 [US1] Add status polling + "Discovery in progress…" UI state and notification (bell/toaster) when status=completed in apps/web — create apps/web/app/discovery/page.tsx if not present
 
 **Checkpoint**: User Story 1 complete; discovery triggers, runs async, returns results; status poll + notification work
 
@@ -81,10 +81,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Add useSaiRange to discovery state/trigger flow: when Advisor determines SAI range would help, set pending_sai_confirmation in state; Coach emits message asking user to confirm
-- [ ] T025 [US2] Implement POST /api/discovery/confirm-sai: auth; validate threadId owned by user; update state with approved flag; resume graph if waiting in apps/web/app/api/discovery/confirm-sai/route.ts
-- [ ] T026 [US2] Update Advisor_Search: if useSaiRange approved, include SAI band (e.g., "0-2000") in search query; else use only income tiers in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T027 [US2] Add HITL flow: when Advisor needs SAI range, transition to human-in-the-loop; Coach prompts via messages; wait for confirm-sai before continuing in apps/agent/lib/graph.ts
+- [x] T024 [US2] Add useSaiRange to discovery state/trigger flow: when Advisor determines SAI range would help, set pending_sai_confirmation in state; Coach emits message asking user to confirm
+- [x] T025 [US2] Implement POST /api/discovery/confirm-sai: auth; validate threadId owned by user; update state with approved flag; resume graph if waiting in apps/web/app/api/discovery/confirm-sai/route.ts
+- [x] T026 [US2] Update Advisor_Search: if useSaiRange approved, include SAI band (e.g., "0-2000") in search query; else use only income tiers in apps/agent/lib/nodes/advisor-search.ts
+- [x] T027 [US2] Add HITL flow: when Advisor needs SAI range, transition to human-in-the-loop; Coach prompts via messages; wait for confirm-sai before continuing in apps/agent/lib/graph.ts
 
 **Checkpoint**: User Story 2 complete; HITL confirmation prevents SAI range use without approval
 
@@ -98,10 +98,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Wrap Advisor_Search, Advisor_Verify, and Coach_Prioritization in try/catch; on error append error_log, return Command({ goto: "SafeRecovery", update: { error_log } }) in apps/agent/lib/nodes/advisor-search.ts, advisor-verify.ts, and coach-prioritization.ts
-- [ ] T029 [US3] Implement SafeRecovery node: add Coach persona message to state notifying user of error; update discovery_completions status=failed; transition to END in apps/agent/lib/nodes/safe-recovery.ts
-- [ ] T030 [US3] Add conditional edges from Advisor_Search, Advisor_Verify, and Coach_Prioritization to SafeRecovery (on Command goto) in apps/agent/lib/graph.ts
-- [ ] T031 [US3] Verify resume from checkpoint after verification failure: load checkpoint, continue from Advisor_Verify or Coach_Prioritization; no search re-run (Advisor_Search and Advisor_Verify are separate nodes; checkpoint occurs between them per FR-003)
+- [x] T028 [US3] Wrap Advisor_Search, Advisor_Verify, and Coach_Prioritization in try/catch; on error append error_log, return Command({ goto: "SafeRecovery", update: { error_log } }) in apps/agent/lib/nodes/advisor-search.ts, advisor-verify.ts, and coach-prioritization.ts
+- [x] T029 [US3] Implement SafeRecovery node: add Coach persona message to state notifying user of error; update discovery_completions status=failed; transition to END in apps/agent/lib/nodes/safe-recovery.ts
+- [x] T030 [US3] Add conditional edges from Advisor_Search, Advisor_Verify, and Coach_Prioritization to SafeRecovery (on Command goto) in apps/agent/lib/graph.ts
+- [x] T031 [US3] Verify resume from checkpoint after verification failure: load checkpoint, continue from Advisor_Verify or Coach_Prioritization; no search re-run (Advisor_Search and Advisor_Verify are separate nodes; checkpoint occurs between them per FR-003)
 
 **Checkpoint**: User Story 3 complete; failures route to SafeRecovery; user notified; no duplicate search on resume
 
@@ -115,9 +115,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Create Inngest function tuition-lift/prioritization.scheduled with cron trigger (e.g., 0 6 * * * daily) in apps/web/lib/inngest/functions.ts
-- [ ] T034 [US4] Implement batch load: fetch users/threads with discovery_results; for each, invoke Coach_Prioritization with existing state (no Advisor run) in apps/web/lib/inngest/functions.ts
-- [ ] T035 [US4] Add Coach_Prioritization standalone invoke: accept thread_id + existing state; run only Coach node to refresh active_milestones in apps/agent/lib/nodes/coach-prioritization.ts
+- [x] T033 [US4] Create Inngest function tuition-lift/prioritization.scheduled with cron trigger (e.g., 0 6 * * * daily) in apps/web/lib/inngest/functions.ts
+- [x] T034 [US4] Implement batch load: fetch users/threads with discovery_results; for each, invoke Coach_Prioritization with existing state (no Advisor run) in apps/web/lib/inngest/functions.ts
+- [x] T035 [US4] Add scheduled_refresh entry point to graph: route directly to Coach_Prioritization; Inngest loads checkpoint via graph.getState(), invokes with entrypoint "scheduled_refresh" and existing state; Coach recalculates active_milestones; no Advisor nodes run (see plan.md Coach_Prioritization Standalone)
 
 **Checkpoint**: User Story 4 complete; daily cron refreshes milestones
 
@@ -128,13 +128,14 @@
 **Purpose**: Observability, security, and documentation
 
 - [ ] T036 [P] Enable LangSmith tracing: set LANGCHAIN_TRACING_V2=true, LANGCHAIN_API_KEY in agent env; verify traces in LangSmith (FR-019)
-- [ ] T037 Validate SAI range (-1500 to 999999) before loading financial_profile; reject invalid in profile loader in apps/agent/lib/load-profile.ts
-- [ ] T038 Ensure no raw SAI, SSN, tax data, names, or addresses sent to search APIs; verify placeholders ({{USER_STATE}}, {{USER_CITY}}) used; audit anonymize-financial and Advisor_Search calls (FR-007, FR-007a, SC-003)
-- [ ] T039 Run quickstart.md validation: verify checkpointer setup, graph invoke, Inngest trigger work end-to-end
-- [ ] T040 [P] Add inline comments referencing LangGraph JS, Inngest, and contract docs in key files
-- [ ] T041 Run Lighthouse on discovery flow (trigger, status poll, results view); verify Performance and Best Practices ≥ 90 each (SC-007)
+- [x] T037 Validate SAI range (-1500 to 999999) before loading financial_profile; reject invalid in profile loader in apps/agent/lib/load-profile.ts
+- [x] T038 Ensure no raw SAI, SSN, tax data, names, or addresses sent to search APIs; verify placeholders ({{USER_STATE}}, {{USER_CITY}}) used; audit anonymize-financial and Advisor_Search calls (FR-007, FR-007a, SC-003)
+- [x] T039 Run quickstart.md validation: verify checkpointer setup, graph invoke, Inngest trigger work end-to-end
+- [x] T040 [P] Add inline comments referencing LangGraph JS, Inngest, and contract docs in key files
+- [x] T041 Run Lighthouse on discovery flow (trigger, status poll, results view); verify Performance and Best Practices ≥ 90 each (SC-007)
+- [x] T042 Verify SC-001: run discovery end-to-end under normal conditions (single-user, sequential); assert completion within 5 minutes
 
-**Checkpoint**: Observability enabled; security validated; quickstart passes; Lighthouse 90+ verified
+**Checkpoint**: Observability enabled; security validated; quickstart passes; Lighthouse 90+ verified; SC-001 validated
 
 ---
 
@@ -203,13 +204,13 @@ T010a: Application-level encryption for financial fields
 
 | Metric | Value |
 |--------|-------|
-| Total tasks | 42 |
+| Total tasks | 41 |
 | Phase 1 (Setup) | 4 |
 | Phase 2 (Foundational) | 7 |
 | Phase 3 (US1) | 12 |
 | Phase 4 (US2) | 4 |
-| Phase 5 (US3) | 5 |
+| Phase 5 (US3) | 4 |
 | Phase 6 (US4) | 3 |
-| Phase 7 (Polish) | 6 |
+| Phase 7 (Polish) | 7 |
 | Parallel opportunities | T003, T004; T005, T009, T010, T010a; T036, T040 |
 | MVP scope | Phases 1–3 (User Story 1) |

@@ -119,7 +119,7 @@
 **Independent Test**: View inbox with zero matches; verify checklist with actionable items from profile completeness and discovery state
 
 - [ ] T035 [P] [US5] Create Coach's Prep Checklist component at apps/web/components/dashboard/coaches-prep-checklist.tsx
-- [ ] T036 [US5] Implement dynamic checklist items: derive from profile (GPA, intended_major, SAI) completeness and discovery state (not run, zero results) per FR-015; e.g., missing GPA → "Complete your GPA", no discovery → "Start discovery"
+- [ ] T036 [US5] Implement dynamic checklist items: derive from profile (intended_major, state, GPA per 002 FR-014b; SAI for financial profile) completeness and discovery state (not run, zero results) per FR-015; e.g., missing major/state → "Complete your profile", missing GPA → "Complete your GPA", no discovery → "Start discovery"
 - [ ] T037 [US5] Wire Match Inbox to show Coach's Prep Checklist when matches array is empty; fetch profile from shared layer to compute checklist items
 - [ ] T038 [US5] Add links/actions to checklist items (e.g., navigate to profile edit, trigger discovery) where applicable
 
