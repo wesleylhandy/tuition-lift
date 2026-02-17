@@ -1,7 +1,8 @@
 /**
  * GET /api/discovery/status — Poll discovery status.
  * Auth: thread_id must belong to user (user_${userId}).
- * @see contracts/api-discovery.md
+ *
+ * @see specs/003-langgraph-orchestration/contracts/api-discovery.md §2 — response shape
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../../../lib/supabase/server";

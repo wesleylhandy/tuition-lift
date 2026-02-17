@@ -1,6 +1,8 @@
 /**
  * Inngest functions — discovery (T015, T021), confirm-sai (US2), scheduled prioritization (T033–T035).
- * @see contracts/api-discovery.md
+ *
+ * @see specs/003-langgraph-orchestration/contracts/api-discovery.md — event names, payloads, cron
+ * @see Inngest: https://www.inngest.com/docs — createFunction, step.run, event triggers, cron
  */
 import { Command } from "@langchain/langgraph";
 import { inngest } from "./client";
@@ -12,11 +14,13 @@ import { randomUUID } from "node:crypto";
 /** Input flag for scheduled refresh — routes directly to Coach_Prioritization (no Advisor nodes). */
 const SCHEDULED_REFRESH_FLAG = "__scheduled_refresh" as const;
 
+// Event-triggered function; payload from POST /api/discovery/trigger — contracts/api-discovery.md §5
 export const discoveryRequested = inngest.createFunction(
   {
     id: "discovery-requested",
     timeouts: { finish: "5m" },
   },
+  // Event name per contracts/api-discovery.md §5 — Inngest event triggers
   { event: "tuition-lift/discovery.requested" },
   async ({ event, step }) => {
     const { userId, threadId, discoveryRunId: payloadRunId, useSaiRange } = event.data;
@@ -67,6 +71,7 @@ export const discoveryRequested = inngest.createFunction(
       financial_profile: financial_profile ?? undefined,
     };
 
+    // graph.invoke with thread_id checkpointing — LangGraph JS persistence; config per plan.md
     const result = await step.run("invoke-graph", async () => {
       return await graph.invoke(input, config);
     });
@@ -134,6 +139,7 @@ export const discoveryConfirmSai = inngest.createFunction(
       },
     };
 
+    // LangGraph JS: Command({ resume }) continues from interrupt — HITL docs
     const result = await step.run("resume-graph", async () => {
       return await graph.invoke(new Command({ resume: approved }), config);
     });
@@ -169,6 +175,7 @@ export const prioritizationScheduled = inngest.createFunction(
     id: "prioritization-scheduled",
     timeouts: { finish: "10m" },
   },
+  // Cron trigger per contracts/api-discovery.md §5 — Inngest cron docs
   { cron: PRIORITIZATION_CRON },
   async ({ step }) => {
     const db = createDbClient();
@@ -194,6 +201,7 @@ export const prioritizationScheduled = inngest.createFunction(
 
     for (const { thread_id } of completions) {
       const result = await step.run(`refresh-${thread_id}`, async () => {
+        // LangGraph JS: getState loads checkpoint; invoke with __scheduled_refresh routes to Coach only
         const config = { configurable: { thread_id } };
         const state = await graph.getState(config);
         const values = (state?.values ?? {}) as {

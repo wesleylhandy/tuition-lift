@@ -4,7 +4,9 @@
  * US2 (T026): if sai_range_approved, include SAI band in query; else income tiers only.
  * US2 (T024): when useSaiRange and SAI present and not yet confirmed, transition to Coach_SAIConfirm.
  * US3 (T028): on error append error_log, route to SafeRecovery.
+ *
  * @see data-model.md, plan.md
+ * @see LangGraph JS: Command({ goto, update }) for dynamic node transitions
  */
 import { Command } from "@langchain/langgraph";
 import { TavilySearch } from "@langchain/tavily";
@@ -13,7 +15,8 @@ import type { DiscoveryResult } from "../schemas";
 import { createErrorEntry } from "../error-log";
 import {
   anonymizeFinancial,
-  GEO_PLACEHOLDERS,
+  buildSearchQuery,
+  assertNoRawPiiInSearchQuery,
   saiToBandString,
 } from "../anonymize-financial";
 import { randomUUID } from "node:crypto";
@@ -79,14 +82,13 @@ export async function advisorSearchNode(
         ? `SAI ${saiToBandString(financialProfile.estimated_sai)}`
         : anonymized.household_income;
 
-    const query = [
-      "scholarships",
-      `for ${major} major`,
-      `in ${GEO_PLACEHOLDERS.USER_STATE}`,
+    const query = buildSearchQuery({
+      major,
       incomeContext,
-      anonymized.pell_status,
-      "need-based financial aid",
-    ].join(" ");
+      pellStatus: anonymized.pell_status,
+    });
+
+    assertNoRawPiiInSearchQuery(query, financialProfile ?? null);
 
     const tool = new TavilySearch({
       maxResults: 10,

@@ -128,12 +128,12 @@
 **Purpose**: Observability, security, and documentation
 
 - [ ] T036 [P] Enable LangSmith tracing: set LANGCHAIN_TRACING_V2=true, LANGCHAIN_API_KEY in agent env; verify traces in LangSmith (FR-019)
-- [ ] T037 Validate SAI range (-1500 to 999999) before loading financial_profile; reject invalid in profile loader in apps/agent/lib/load-profile.ts
-- [ ] T038 Ensure no raw SAI, SSN, tax data, names, or addresses sent to search APIs; verify placeholders ({{USER_STATE}}, {{USER_CITY}}) used; audit anonymize-financial and Advisor_Search calls (FR-007, FR-007a, SC-003)
-- [ ] T039 Run quickstart.md validation: verify checkpointer setup, graph invoke, Inngest trigger work end-to-end
-- [ ] T040 [P] Add inline comments referencing LangGraph JS, Inngest, and contract docs in key files
-- [ ] T041 Run Lighthouse on discovery flow (trigger, status poll, results view); verify Performance and Best Practices ≥ 90 each (SC-007)
-- [ ] T042 Verify SC-001: run discovery end-to-end under normal conditions (single-user, sequential); assert completion within 5 minutes
+- [x] T037 Validate SAI range (-1500 to 999999) before loading financial_profile; reject invalid in profile loader in apps/agent/lib/load-profile.ts
+- [x] T038 Ensure no raw SAI, SSN, tax data, names, or addresses sent to search APIs; verify placeholders ({{USER_STATE}}, {{USER_CITY}}) used; audit anonymize-financial and Advisor_Search calls (FR-007, FR-007a, SC-003)
+- [x] T039 Run quickstart.md validation: verify checkpointer setup, graph invoke, Inngest trigger work end-to-end
+- [x] T040 [P] Add inline comments referencing LangGraph JS, Inngest, and contract docs in key files
+- [x] T041 Run Lighthouse on discovery flow (trigger, status poll, results view); verify Performance and Best Practices ≥ 90 each (SC-007)
+- [x] T042 Verify SC-001: run discovery end-to-end under normal conditions (single-user, sequential); assert completion within 5 minutes
 
 **Checkpoint**: Observability enabled; security validated; quickstart passes; Lighthouse 90+ verified; SC-001 validated
 

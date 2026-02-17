@@ -67,3 +67,55 @@ export function saiToBandString(sai: number): string {
   if (sai <= 35000) return "15000-35000";
   return "35000+";
 }
+
+/**
+ * Builds a search query using only anonymized inputs. Single point of construction
+ * for third-party search APIs — ensures no raw SAI, SSN, tax data, names, or addresses.
+ * FR-007, FR-007a, SC-003: geo uses placeholders only; income uses brackets or bands.
+ */
+export function buildSearchQuery(params: {
+  major: string;
+  incomeContext: AnonymizedIncomeBracket | string;
+  pellStatus: AnonymizedPellStatus | string;
+}): string {
+  const { major, incomeContext, pellStatus } = params;
+  return [
+    "scholarships",
+    `for ${major} major`,
+    `in ${GEO_PLACEHOLDERS.USER_STATE} ${GEO_PLACEHOLDERS.USER_CITY}`,
+    incomeContext,
+    pellStatus,
+    "need-based financial aid",
+  ].join(" ");
+}
+
+/**
+ * Runtime guard: throws if query may contain raw PII. Call before invoking search APIs.
+ * FR-007, SC-003: ensures no raw SAI (standalone 4–6 digit numbers in SAI range).
+ */
+export function assertNoRawPiiInSearchQuery(
+  query: string,
+  financialProfile: { estimated_sai: number } | null
+): void {
+  if (!query.includes(GEO_PLACEHOLDERS.USER_STATE)) {
+    throw new Error(
+      "PII guard: query must use {{USER_STATE}} placeholder (FR-007a)"
+    );
+  }
+  if (!query.includes(GEO_PLACEHOLDERS.USER_CITY)) {
+    throw new Error(
+      "PII guard: query must use {{USER_CITY}} placeholder (FR-007a)"
+    );
+  }
+  if (financialProfile && typeof financialProfile.estimated_sai === "number") {
+    const raw = String(financialProfile.estimated_sai);
+    const asStandalone = new RegExp(
+      `(^|\\s)${raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s|$)`
+    );
+    if (asStandalone.test(query)) {
+      throw new Error(
+        "PII guard: query must not contain raw SAI (FR-007, SC-003)"
+      );
+    }
+  }
+}

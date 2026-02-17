@@ -1,7 +1,8 @@
 /**
  * GET /api/discovery/results — Retrieve discovery results and milestones.
  * Auth: thread_id must belong to user.
- * @see contracts/api-discovery.md
+ *
+ * @see specs/003-langgraph-orchestration/contracts/api-discovery.md §4 — discoveryRunId, discoveryResults, activeMilestones
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../../../lib/supabase/server";
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // LangGraph JS: getState(config) retrieves checkpoint — contracts §4 response shape
   const config = { configurable: { thread_id: threadId } };
   const state = await graph.getState(config);
   const values = (state?.values ?? {}) as {

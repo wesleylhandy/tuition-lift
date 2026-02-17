@@ -3,7 +3,9 @@
  * FR-011: prioritize by Lift relative to financial gap.
  * FR-012b: empty results → "No matches yet" message, explain why, suggest next steps.
  * US3 (T028): on error append error_log, route to SafeRecovery.
+ *
  * @see data-model.md, plan.md
+ * @see LangGraph JS: nodes return partial state or Command for dynamic routing
  */
 import { Command } from "@langchain/langgraph";
 import type { TuitionLiftStateType } from "../state";

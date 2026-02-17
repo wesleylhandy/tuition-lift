@@ -2,6 +2,9 @@
  * PostgresSaver checkpointer for LangGraph checkpoint persistence.
  * Per plan.md, 002 FR-009 — creates checkpoints table via setup() on first use.
  * Ignores 23505 (unique violation) if schema already exists from prior setup.
+ *
+ * @see LangGraph JS: https://langchain-ai.github.io/langgraphjs/ — PostgresSaver, checkpointer setup
+ * @see @langchain/langgraph-checkpoint-postgres
  */
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 

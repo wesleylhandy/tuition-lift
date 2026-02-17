@@ -2,6 +2,7 @@
  * Profile loader: fetch user_profile and financial_profile from @repo/db.
  * household_income_bracket computed from SAI at read (002 FR-014a); not stored.
  * SAI decrypted on read via @repo/db decryptSai (FR-014).
+ * Used by Inngest discovery function as graph input — contracts/api-discovery.md
  */
 import { createDbClient, decryptSai } from "@repo/db";
 import { FinancialProfileSchema, UserProfileSchema } from "./schemas";
@@ -16,6 +17,19 @@ export type HouseholdIncomeBracket =
 
 const SAI_MIN = -1500;
 const SAI_MAX = 999999;
+
+/**
+ * Validates SAI is within federal Student Aid Index range (-1500 to 999999).
+ * Per FAFSA 2026-2027; FR-014, T037: reject invalid before loading financial_profile.
+ */
+export function isSaiInValidRange(sai: number): boolean {
+  return (
+    typeof sai === "number" &&
+    Number.isFinite(sai) &&
+    sai >= SAI_MIN &&
+    sai <= SAI_MAX
+  );
+}
 
 /**
  * Maps SAI to federal tier (Low/Moderate/Middle/Upper-Middle/High).
@@ -44,7 +58,8 @@ export interface LoadProfileResult {
 /**
  * Fetches profile by user_id; returns user_profile and financial_profile.
  * - user_profile: id, major (intended_major), state, gpa. Null if missing required fields (major, state).
- * - financial_profile: estimated_sai, is_pell_eligible, household_income_bracket. Null if sai missing or invalid.
+ * - financial_profile: estimated_sai, is_pell_eligible, household_income_bracket. Null if sai missing or
+ *   out of valid range (-1500 to 999999); invalid SAI is rejected per T037.
  */
 export async function loadProfile(userId: string): Promise<LoadProfileResult> {
   const db = createDbClient();
@@ -88,7 +103,7 @@ function buildFinancialProfile(row: {
   pell_eligibility_status: "eligible" | "ineligible" | "unknown" | null;
 }): FinancialProfile | null {
   const sai = decryptSai(row.sai);
-  if (sai === null) return null;
+  if (sai === null || !isSaiInValidRange(sai)) return null;
 
   try {
     const household_income_bracket = saiToHouseholdIncomeBracket(sai);

@@ -1,7 +1,9 @@
 /**
  * Discovery status resolver — reads discovery_completions and checkpoint state.
  * T017; used by GET /api/discovery/status.
- * @see contracts/api-discovery.md
+ *
+ * @see specs/003-langgraph-orchestration/contracts/api-discovery.md §2 — status, lastActiveNode, completedAt
+ * @see LangGraph JS: graph.getState(config) for checkpoint state
  */
 import { createDbClient } from "@repo/db";
 import { graph } from "agent";

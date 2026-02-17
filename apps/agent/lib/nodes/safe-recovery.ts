@@ -1,7 +1,9 @@
 /**
  * SafeRecovery node: Coach persona notifies user of error; transitions to END.
  * T029: Add Coach message, update discovery_completions status=failed.
+ *
  * @see data-model.md, plan.md
+ * @see LangGraph JS: terminal node (no Command) — graph routes here on node errors
  */
 import { HumanMessage } from "@langchain/core/messages";
 import { createDbClient } from "@repo/db";

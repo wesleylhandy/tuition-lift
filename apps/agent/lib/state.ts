@@ -2,6 +2,8 @@
  * TuitionLiftState — LangGraph state schema.
  * Per data-model.md §1; persisted via checkpoints.
  * Reducers: overwrite for scalar/object fields; append for messages and error_log.
+ *
+ * @see LangGraph JS: https://langchain-ai.github.io/langgraphjs/ — Annotation.Root, reducers
  */
 import type { BaseMessage } from "@langchain/core/messages";
 import { Annotation } from "@langchain/langgraph";

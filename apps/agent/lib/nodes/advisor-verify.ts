@@ -3,7 +3,9 @@
  * Constitution §10: .edu/.gov 2×, auto-fail fees, 0-100 scoring.
  * Reads discovery_run_id from config.configurable; attaches to each result.
  * US3 (T028): on error append error_log, route to SafeRecovery.
+ *
  * @see data-model.md, plan.md
+ * @see LangGraph JS: Command for node-to-node handoff; config.configurable for run-scoped data
  */
 import { Command } from "@langchain/langgraph";
 import type { TuitionLiftStateType } from "../state";

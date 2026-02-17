@@ -2,7 +2,8 @@
  * POST /api/discovery/trigger — Start discovery or return in-progress status.
  * FR-012a: Validate required profile fields; FR-013a: Return status if run in progress.
  * US2 (T024): Accept useSaiRange; passes to Inngest for HITL flow when true.
- * @see contracts/api-discovery.md
+ *
+ * @see specs/003-langgraph-orchestration/contracts/api-discovery.md §1 — request/response shape
  */
 import { NextResponse } from "next/server";
 import { inngest } from "../../../../lib/inngest/client";
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
     // Keep default false
   }
 
+  // Event per contracts/api-discovery.md §5 — Inngest.send triggers discovery function
   await inngest.send({
     name: "tuition-lift/discovery.requested",
     data: {

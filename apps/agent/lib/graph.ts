@@ -4,7 +4,9 @@
  * US2 (T027): Coach_SAIConfirm HITL node; Advisor_Search can goto Coach_SAIConfirm or Advisor_Verify.
  * US3 (T030): Advisor_Search, Advisor_Verify, Coach_Prioritization can goto SafeRecovery on error.
  * US4 (T035): scheduled_refresh entry point routes START → Coach_Prioritization; no Advisor nodes run.
+ *
  * @see plan.md, data-model.md
+ * @see LangGraph JS: https://langchain-ai.github.io/langgraphjs/ — StateGraph, checkpointer, conditional edges
  */
 import { StateGraph, START, END } from "@langchain/langgraph";
 import { checkpointer } from "./checkpointer";
@@ -36,6 +38,7 @@ async function wrapSafeRecovery(
   return safeRecoveryNode(state, config);
 }
 
+// StateGraph per LangGraph JS docs; nodes emit Command for dynamic routing
 const builder = new StateGraph(TuitionLiftState)
   .addNode("Advisor_Search", wrapSearch, {
     ends: ["Advisor_Verify", "Coach_SAIConfirm", "SafeRecovery"],
@@ -62,4 +65,5 @@ const builder = new StateGraph(TuitionLiftState)
   .addEdge("Coach_Prioritization", END)
   .addEdge("SafeRecovery", END);
 
+// Checkpointer required for persistence and human-in-the-loop (interrupt) — LangGraph JS docs
 export const graph = builder.compile({ checkpointer });

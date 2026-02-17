@@ -2,7 +2,9 @@
  * Coach_SAIConfirm node: HITL for SAI range (FR-016).
  * When Advisor needs SAI band in search, Coach asks user to confirm.
  * Interrupts until user calls POST /api/discovery/confirm-sai.
- * @see data-model.md, plan.md, contracts/api-discovery.md
+ *
+ * @see data-model.md, plan.md, specs/003-langgraph-orchestration/contracts/api-discovery.md
+ * @see LangGraph JS: interrupt() for human-in-the-loop; resume via Command({ resume }) — HITL docs
  */
 import { Command, interrupt } from "@langchain/langgraph";
 import { HumanMessage } from "@langchain/core/messages";

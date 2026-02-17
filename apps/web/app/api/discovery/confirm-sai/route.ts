@@ -2,7 +2,8 @@
  * POST /api/discovery/confirm-sai — HITL confirmation for SAI range (FR-016).
  * When Coach asks user to approve using SAI bands in search.
  * Validates thread owned by user; sends event to resume graph.
- * @see contracts/api-discovery.md
+ *
+ * @see specs/003-langgraph-orchestration/contracts/api-discovery.md §3 — request/response
  */
 import { NextResponse } from "next/server";
 import { inngest } from "../../../../lib/inngest/client";
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // Triggers confirm-sai Inngest function; graph resumes with Command({ resume: approved })
   await inngest.send({
     name: "tuition-lift/discovery.confirm-sai",
     data: { userId, threadId, approved },

@@ -8,13 +8,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
-    "check-types": "next typegen && tsc --noEmit"
+    "check-types": "next typegen && tsc --noEmit",
+    "lighthouse:discovery": "tsx scripts/lighthouse-discovery.ts"
   },
   "dependencies": {
     "@langchain/langgraph": "^1.1.0",
-    "agent": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
+    "agent": "workspace:*",
     "inngest": "^3.52.0",
     "next": "16.1.5",
     "react": "^19.2.0",
@@ -26,7 +27,10 @@
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "chrome-launcher": "^1.2.1",
     "eslint": "^9.39.1",
+    "lighthouse": "^13.0.3",
+    "tsx": "^4.19.2",
     "typescript": "5.9.2"
   }
 }
