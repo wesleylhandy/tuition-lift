@@ -14,6 +14,7 @@ import {
   useRealtimeMatches,
 } from "@/lib/hooks/use-realtime-matches";
 import { getDismissedScholarshipIds } from "@/lib/actions/get-dismissed-ids";
+import { getTrackedScholarshipIds } from "@/lib/actions/get-tracked-scholarship-ids";
 
 function sortMatches(matches: DiscoveryMatch[]): DiscoveryMatch[] {
   return [...matches].sort((a, b) => {
@@ -26,6 +27,7 @@ function sortMatches(matches: DiscoveryMatch[]): DiscoveryMatch[] {
 export function MatchInbox() {
   const [userId, setUserId] = useState<string | null>(null);
   const [matches, setMatches] = useState<DiscoveryMatch[]>([]);
+  const [trackedScholarshipIds, setTrackedScholarshipIds] = useState<Set<string>>(new Set());
   const [, setDiscoveryRunId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,8 +82,12 @@ export function MatchInbox() {
       };
       const runId = data.discoveryRunId ?? null;
       setDiscoveryRunId(runId);
-      const dismissedIds = await getDismissedScholarshipIds(runId);
+      const [dismissedIds, trackedIds] = await Promise.all([
+        getDismissedScholarshipIds(runId),
+        getTrackedScholarshipIds(),
+      ]);
       const dismissedSet = new Set(dismissedIds);
+      setTrackedScholarshipIds(new Set(trackedIds));
       const raw = (data.discoveryResults ?? []).map((r) => ({
         id: r.id,
         scholarshipId: r.scholarshipId ?? r.id,
@@ -172,12 +178,23 @@ export function MatchInbox() {
             <li key={m.id} role="listitem">
               <MatchCard
                 id={m.id}
+                scholarshipId={m.scholarshipId}
                 title={m.title}
                 url={m.url}
                 trustScore={m.trustScore}
                 coachTakeText={coachTakeFallback(m)}
                 amount={m.amount}
                 deadline={m.deadline}
+                discoveryRunId={m.discoveryRunId}
+                isTracked={trackedScholarshipIds.has(m.scholarshipId)}
+                onTrackSuccess={() => {
+                  setTrackedScholarshipIds((prev) =>
+                    new Set(prev).add(m.scholarshipId)
+                  );
+                }}
+                onDismissSuccess={() => {
+                  setMatches((prev) => prev.filter((x) => x.id !== m.id));
+                }}
               />
             </li>
           ))}

@@ -73,7 +73,7 @@ export async function verifySubmission(
 
   const now = new Date().toISOString();
 
-  const { error: updateError } = await db
+  const { data: updated, error: updateError } = await db
     .from("applications")
     .update({
       status: "submitted",
@@ -81,13 +81,20 @@ export async function verifySubmission(
       updated_at: now,
     })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("status", "draft")
+    .select("id")
+    .maybeSingle();
 
   if (updateError) {
     return {
       success: false,
       error: "Failed to update application",
     };
+  }
+
+  if (!updated) {
+    return { success: false, error: "Invalid status transition" };
   }
 
   return { success: true };

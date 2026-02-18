@@ -43,6 +43,7 @@ function renderColumn(
           deadline={app.deadline}
           amount={app.amount}
           coachState={app.coachState}
+          showVerifySubmission={app.status === "draft"}
         />
       ))}
     </TrackerColumn>

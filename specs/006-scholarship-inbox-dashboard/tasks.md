@@ -103,10 +103,10 @@
 
 **Independent Test**: Click Track, Dismiss, Verify Submission; verify state updates; on server error, toast shows with retry
 
-- [ ] T031 [US4] Add Quick Actions component or buttons to Match Card: Track, Dismiss; wire to trackScholarship and dismissScholarship Server Actions; pass discovery_run_id from match to dismissScholarship when available (003); toast on error and retry per FR-017
-- [ ] T032 [US4] Add Verify Submission button to Application Card for Drafting/Review status; wire to verifySubmission Server Action with confirmation flow (per Coach spec); use React 19 useActionState where form-based; toast on error with retry
-- [ ] T033 [US4] Ensure card state does not change until action succeeds; use startTransition for optimistic UX where appropriate; reject duplicate/conflicting rapid actions server-side
-- [ ] T034 [US4] Add Quick Actions to Application Tracker application cards where context permits (e.g., Track if not yet tracked, Verify Submission if draft/review)
+- [x] T031 [US4] Add Quick Actions component or buttons to Match Card: Track, Dismiss; wire to trackScholarship and dismissScholarship Server Actions; pass discovery_run_id from match to dismissScholarship when available (003); toast on error and retry per FR-017
+- [x] T032 [US4] Add Verify Submission button to Application Card for Drafting/Review status; wire to verifySubmission Server Action with confirmation flow (per Coach spec); use React 19 useActionState where form-based; toast on error with retry
+- [x] T033 [US4] Ensure card state does not change until action succeeds; use startTransition for optimistic UX where appropriate; reject duplicate/conflicting rapid actions server-side
+- [x] T034 [US4] Add Quick Actions to Application Tracker application cards where context permits (e.g., Track if not yet tracked, Verify Submission if draft/review)
 
 **Checkpoint**: Track, Dismiss, Verify Submission work from Match Inbox and Application Tracker; toast + retry on failure
 

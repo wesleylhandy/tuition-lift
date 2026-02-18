@@ -2,9 +2,13 @@
 
 /**
  * Application Card — displays application/scholarship info, status, deadline.
- * Per T027 [US3]: Application Tracker Lifecycle View.
+ * Quick Actions: Verify Submission for draft status (T032, T034).
+ * Per T027 [US3], T032, T034.
  */
+import { useRef, useTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { verifySubmission } from "@/lib/actions/verify-submission";
 
 export interface ApplicationCardProps {
   applicationId: string;
@@ -15,6 +19,8 @@ export interface ApplicationCardProps {
   amount?: number | null;
   /** Coach display state for badge styling */
   coachState?: string;
+  /** When true, show Verify Submission button (draft status) */
+  showVerifySubmission?: boolean;
 }
 
 function formatAmount(amount: number | null | undefined): string | null {
@@ -48,9 +54,38 @@ export function ApplicationCard({
   deadline,
   amount,
   coachState,
+  showVerifySubmission = false,
 }: ApplicationCardProps) {
+  const [pending, startTransition] = useTransition();
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const amountStr = formatAmount(amount);
   const deadlineStr = formatDeadline(deadline);
+
+  const handleVerifyClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pending || !showVerifySubmission) return;
+    dialogRef.current?.showModal();
+  };
+
+  const handleVerifyConfirm = () => {
+    if (pending) return;
+    dialogRef.current?.close();
+    startTransition(async () => {
+      const result = await verifySubmission(applicationId, true);
+      if (!result.success) {
+        toast.error(result.error ?? "Failed to verify", {
+          action: { label: "Retry", onClick: handleVerifyConfirm },
+        });
+      }
+    });
+  };
+
+  const handleVerifyCancel = () => {
+    dialogRef.current?.close();
+  };
+
+  const canVerify = showVerifySubmission && status === "draft";
 
   const content = (
     <div className="flex flex-col gap-1.5 rounded-lg border bg-card p-3 shadow-sm transition-shadow hover:shadow-md">
@@ -82,6 +117,50 @@ export function ApplicationCard({
           </span>
         )}
       </div>
+      {canVerify && (
+        <div className="flex gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={handleVerifyClick}
+            disabled={pending}
+            className="rounded px-2 py-1 text-xs font-medium text-navy bg-electric-mint/30 hover:bg-electric-mint/50 focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Verify submission"
+          >
+            Verify Submission
+          </button>
+        </div>
+      )}
+      <dialog
+        ref={dialogRef}
+        className="max-w-md rounded-lg border bg-background p-4 shadow-lg [&::backdrop]:bg-black/50"
+        aria-labelledby="verify-dialog-title"
+        aria-describedby="verify-dialog-desc"
+        onCancel={handleVerifyCancel}
+      >
+        <h2 id="verify-dialog-title" className="text-lg font-semibold">
+          Verify submission
+        </h2>
+        <p id="verify-dialog-desc" className="mt-2 text-sm text-muted-foreground">
+          Have you submitted this application? This will mark it as Submitted.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={handleVerifyCancel}
+            className="rounded px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleVerifyConfirm}
+            disabled={pending}
+            className="rounded px-3 py-1.5 text-sm font-medium text-navy bg-electric-mint hover:bg-electric-mint/90 disabled:opacity-50"
+          >
+            {pending ? "Verifying…" : "Confirm"}
+          </button>
+        </div>
+      </dialog>
     </div>
   );
 
