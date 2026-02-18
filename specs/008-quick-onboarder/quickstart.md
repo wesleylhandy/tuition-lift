@@ -57,3 +57,26 @@
 - After Step 2: Check `profiles.intended_major`, `profiles.state`, `profiles.gpa_weighted`, `profiles.gpa_unweighted`.
 - After Step 3: Check `profiles.onboarding_complete = true`; discovery run triggered (check `discovery_completions` or Inngest dashboard).
 - Navigate to /onboard when onboarded → redirect to /dashboard.
+
+## Module Boundary (Replaceable Unit)
+
+See [plan.md](./plan.md) § Module Boundary (Replaceable Unit per FR-011) for the list of files that constitute the replaceable onboarding unit. To swap the wizard for a different flow, replace only those files.
+
+## Lighthouse (T032)
+
+To verify Performance, Best Practices, and Accessibility ≥ 90 on `/onboard`:
+
+```bash
+# Production build recommended for accurate Performance scores (dev mode often scores lower)
+pnpm --filter web build && pnpm --filter web start -- -p 3001   # in one terminal
+LIGHTHOUSE_URL=http://localhost:3001/onboard pnpm --filter web lighthouse:onboard   # in another
+```
+
+For dev-mode verification (Best Practices and Accessibility typically pass; Performance may be lower):
+
+```bash
+pnpm --filter web dev
+pnpm --filter web lighthouse:onboard
+```
+
+Report saved to `apps/web/.lighthouse/onboard-report.html`.

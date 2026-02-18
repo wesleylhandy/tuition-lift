@@ -128,9 +128,9 @@
 
 **Purpose**: Final integration and validation
 
-- [ ] T032 [P] Run quickstart.md verification: apply migrations, complete full flow, verify profile and discovery in apps/web. Include Lighthouse run on /onboard (Performance, Best Practices, Accessibility) per constitution §6; target 90+ each
-- [ ] T033 Regenerate Supabase types after migration: pnpm --filter @repo/db db:generate
-- [ ] T034 Document onboarding module boundaries in specs/008-quick-onboarder/plan.md or quickstart: list files that constitute replaceable unit per FR-011
+- [x] T032 [P] Run quickstart.md verification: apply migrations, complete full flow, verify profile and discovery in apps/web. Include Lighthouse run on /onboard (Performance, Best Practices, Accessibility) per constitution §6; target 90+ each
+- [x] T033 Regenerate Supabase types after migration: pnpm --filter @repo/db db:generate
+- [x] T034 Document onboarding module boundaries in specs/008-quick-onboarder/plan.md or quickstart: list files that constitute replaceable unit per FR-011
 
 ---
 

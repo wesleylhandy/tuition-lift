@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
-    "lighthouse:discovery": "tsx scripts/lighthouse-discovery.ts"
+    "lighthouse:discovery": "tsx scripts/lighthouse-discovery.ts",
+    "lighthouse:onboard": "tsx scripts/lighthouse-onboard.ts"
   },
   "dependencies": {
     "@langchain/langgraph": "^1.1.0",

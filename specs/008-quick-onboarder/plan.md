@@ -74,6 +74,25 @@ packages/database/
 
 **Structure Decision**: Turborepo monorepo. Onboarding lives entirely in apps/web. packages/database receives one additive migration. Agent (load-profile) updated to read new GPA columns.
 
+### Module Boundary (Replaceable Unit per FR-011)
+
+The onboarding wizard is a replaceable unit. To swap it for a different flow, replace these files only. Discovery, dashboard, and profile persistence logic stay unchanged.
+
+| Path | Purpose |
+|------|---------|
+| `apps/web/app/(onboard)/onboard/page.tsx` | Route page; renders OnboardWizard |
+| `apps/web/app/(onboard)/onboard/layout.tsx` | Resume step resolution; redirect if complete; OnboardStepProvider |
+| `apps/web/components/onboard/onboard-wizard.tsx` | 3-step shell (Identity → Academic → Financial) |
+| `apps/web/components/onboard/onboard-step-provider.tsx` | Context for initial step (resume support) |
+| `apps/web/components/onboard/step1-form.tsx` | Identity: email + password signup |
+| `apps/web/components/onboard/step2-form.tsx` | Academic: major, state, GPA |
+| `apps/web/components/onboard/step3-form.tsx` | Financial: SAI, Pell, Finish CTA |
+| `apps/web/components/onboard/progress-bar.tsx` | Progress indicator (1 of 3, 2 of 3, 3 of 3) |
+| `apps/web/lib/actions/onboarding.ts` | Server Actions: signUp, saveAcademicProfile, finishOnboarding |
+| `apps/web/middleware.ts` | /onboard redirect when onboarding_complete (T029); extend matcher if other onboard-only logic added |
+
+**Integration points** (do not change when replacing onboarding): `profiles` table (onboarding_complete, etc.), `POST /api/discovery/trigger`, redirect target `/dashboard`, `@repo/db` withEncryptedSai.
+
 **Visual Style**: Centered card 450px max-width, soft shadow; progress bar Electric Mint (#00FFAB); mobile-friendly (44px touch targets). Per spec Assumptions.
 
 ## Phase 0: Research
