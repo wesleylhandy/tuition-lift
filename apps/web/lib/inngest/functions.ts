@@ -1,12 +1,15 @@
 /**
- * Inngest functions — discovery (T015, T021), confirm-sai (US2), scheduled prioritization (T033–T035).
+ * Inngest functions — discovery (T015, T021), confirm-sai (US2), scheduled prioritization (T033–T035),
+ * Coach Execution Engine (005): game plan, deadline check, check-in, micro-task.
  *
  * @see specs/003-langgraph-orchestration/contracts/api-discovery.md — event names, payloads, cron
+ * @see specs/005-coach-execution-engine/contracts/coach-api.md §7 — Coach events, cron
  * @see Inngest: https://www.inngest.com/docs — createFunction, step.run, event triggers, cron
  */
 import { Command } from "@langchain/langgraph";
 import { inngest } from "./client";
 import { createDbClient } from "@repo/db";
+import { coachFunctions } from "./functions/coach";
 import { graph } from "agent";
 import { loadProfile } from "agent/load-profile";
 import { randomUUID } from "node:crypto";
@@ -230,4 +233,5 @@ export const functions = [
   discoveryRequested,
   discoveryConfirmSai,
   prioritizationScheduled,
+  ...coachFunctions,
 ] as const;

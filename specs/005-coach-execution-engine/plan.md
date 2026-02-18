@@ -89,6 +89,17 @@ packages/database/
 
 **Structure Decision**: Option 4 (Turborepo). Coach logic in apps/agent and apps/web; APIs in apps/web; migrations in packages/database. Coach_Prioritization node in apps/agent (003 graph); Inngest functions in apps/web.
 
+## Coach–Orchestration Integration (003 Alignment)
+
+**Storage model for Top 3 Game Plan**: Applications table is the source of truth. GET /api/coach/game-plan computes Top 3 on demand by querying applications (with momentum_score) for the authenticated user, ordered by momentum_score desc. No write to LangGraph checkpoint state for game plan display—API routes cannot update checkpoint state directly.
+
+**Precedence with 003 prioritization**:
+- **003 `prioritization.scheduled`**: Uses discovery_results (scholarship-based ROI); populates active_milestones in checkpoint for users with discovery results but no tracked applications.
+- **005 `coach.game-plan.daily`**: Uses applications (application-based momentum_score); persists momentum_score to applications; does not write active_milestones.
+- **Precedence**: When user has tracked applications, 006 Coach's Game Plan and GET /api/coach/game-plan read from applications (momentum_score). When user has discovery results but no applications, orchestration's active_milestones (003) remains the source. Cron schedule: 003 at 06:00; 005 at 06:30 to avoid contention.
+
+**Status change flow (FR-005)**: API routes persist to applications only (status, last_progress_at, submitted_at, confirmed_at). No checkpoint update on status change—active_milestones in checkpoint is for discovery flow; application state lives in applications table. Dashboard (006) and Coach Game Plan read from applications.
+
 ## Complexity Tracking
 
 No violations. Coach Execution Engine integrates with existing orchestration (003), Advisor (004), and Dashboard (006) per alignment clarifications.

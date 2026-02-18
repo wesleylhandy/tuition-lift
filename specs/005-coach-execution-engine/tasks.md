@@ -21,10 +21,10 @@
 
 **Purpose**: Project initialization and Coach-specific dependencies
 
-- [ ] T001 [P] Add Resend, React Email to apps/web/package.json (if not from 001)
-- [ ] T002 [P] Add Coach env vars to apps/web/.env.example: RESEND_API_KEY, COACH_GAME_PLAN_CRON, COACH_DEADLINE_CHECK_CRON, COACH_MICRO_TASK_CHECK_CRON
-- [ ] T003 Create apps/web/lib/email/coach-templates/ directory for React Email Coach templates
-- [ ] T004 Create apps/agent/lib/coach/ directory (or packages/database/src/coach/) for state mapper and Momentum logic
+- [x] T001 [P] Add Resend, React Email to apps/web/package.json (if not from 001)
+- [x] T002 [P] Add Coach env vars to apps/web/.env.example: RESEND_API_KEY, COACH_GAME_PLAN_CRON, COACH_DEADLINE_CHECK_CRON, COACH_MICRO_TASK_CHECK_CRON
+- [x] T003 Create apps/web/lib/email/coach-templates/ directory for React Email Coach templates
+- [x] T004 Create apps/agent/lib/coach/ directory (or packages/database/src/coach/) for state mapper and Momentum logic
 
 **Checkpoint**: Coach structure and dependencies ready
 
@@ -36,14 +36,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Add migration 005_notification_log: create notification_log table with user_id, channel (enum email|dashboard_toast), sent_at, notification_type, template_name (SC-008), application_ids in packages/database/supabase/migrations/
-- [ ] T006 Add migration 005_check_in_tasks: create check_in_tasks table with user_id, application_id, due_at, status (enum pending|completed|dismissed), created_at, completed_at in packages/database/supabase/migrations/
-- [ ] T007 Add migration 005_applications_extend: add momentum_score, submitted_at, last_progress_at, confirmed_at (per 002 FR-013a) to applications if missing in packages/database/supabase/migrations/
-- [ ] T008 Add migration 005_profiles_preferences: add preferences JSONB (nullable) to profiles for snooze in packages/database/supabase/migrations/
-- [ ] T009 [P] Implement coachStateToDb and dbToCoachState mapping functions in apps/agent/lib/coach/state-mapper.ts per data-model.md
-- [ ] T010 [P] Implement Momentum Score calculation (Deadline Proximity × 0.6 + Trust Score × 0.4) in apps/agent/lib/coach/momentum-score.ts
-- [ ] T011 [P] Add Zod schemas: NotificationLogSchema, CheckInTaskSchema, CoachStateMappingSchema in packages/database/src/schemas/ or apps/agent/lib/coach/schemas.ts
-- [ ] T012 Register Coach Inngest functions module in apps/web/lib/inngest/functions.ts (import and export coach functions)
+- [x] T005 Add migration 005_notification_log: create notification_log table with user_id, channel (enum email|dashboard_toast), sent_at, notification_type, template_name (SC-008), application_ids in packages/database/supabase/migrations/
+- [x] T006 Add migration 005_check_in_tasks: create check_in_tasks table with user_id, application_id, due_at, status (enum pending|completed|dismissed), created_at, completed_at in packages/database/supabase/migrations/
+- [x] T007 Add migration 005_applications_extend: add momentum_score, submitted_at, last_progress_at, confirmed_at (per 002 FR-013a) to applications if missing in packages/database/supabase/migrations/
+- [x] T008 Add migration 005_profiles_preferences: add preferences JSONB (nullable) to profiles for snooze in packages/database/supabase/migrations/
+- [x] T009 [P] Implement coachStateToDb and dbToCoachState mapping functions in apps/agent/lib/coach/state-mapper.ts per data-model.md
+- [x] T010 [P] Implement Momentum Score calculation (Deadline Proximity × 0.6 + Trust Score × 0.4) in apps/agent/lib/coach/momentum-score.ts
+- [x] T011 [P] Add Zod schemas: NotificationLogSchema, CheckInTaskSchema, CoachStateMappingSchema in packages/database/src/schemas/ or apps/agent/lib/coach/schemas.ts
+- [x] T012 Register Coach Inngest functions module in apps/web/lib/inngest/functions.ts (import and export coach functions)
+- [x] T012a [P] Verify Coach–Orchestration integration: game-plan API reads from applications only; no checkpoint/active_milestones writes in Coach code paths; add comment referencing plan.md Coach–Orchestration Integration in game-plan.ts and game-plan route
 
 **Checkpoint**: Foundation ready—user story implementation can begin
 
@@ -57,11 +58,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Implement Inngest function tuition-lift/coach.game-plan.daily with cron trigger (e.g., 0 6 * * *) in apps/web/lib/inngest/functions/coach.ts
-- [ ] T014 [US1] Implement game plan batch logic: load users with applications, compute Momentum Score, persist momentum_score to applications (002), update active_milestones in apps/agent/lib/coach/game-plan.ts
-- [ ] T015 [US1] Implement zero-apps path: return suggestion "Add applications or run discovery" when user has no tracked apps (FR-001a) in apps/agent/lib/coach/game-plan.ts
-- [ ] T016 [US1] Implement GET /api/coach/game-plan in apps/web/app/api/coach/game-plan/route.ts: auth, load Top 3 from active_milestones or compute on demand, return JSON per contract
-- [ ] T017 [US1] Create React Email template Top3GamePlan in apps/web/lib/email/coach-templates/Top3GamePlan.tsx with Coach persona micro-copy (FR-014, FR-015)
+- [x] T013 [US1] Implement Inngest function tuition-lift/coach.game-plan.daily with cron trigger (e.g., 30 6 * * * — after 003 prioritization at 06:00) in apps/web/lib/inngest/functions/coach.ts
+- [x] T014 [US1] Implement game plan batch logic: load users with applications, compute Momentum Score, persist momentum_score to applications (002) only—no checkpoint write; zero-apps users skipped in apps/agent/lib/coach/game-plan.ts
+- [x] T015 [US1] Implement zero-apps path: return suggestion "Add applications or run discovery" when user has no tracked apps (FR-001a) in apps/agent/lib/coach/game-plan.ts
+- [x] T016 [US1] Implement GET /api/coach/game-plan in apps/web/app/api/coach/game-plan/route.ts: auth, compute Top 3 on demand from applications (ordered by momentum_score desc), include pending check-in tasks, return JSON per contract
+- [x] T017 [US1] Create React Email template Top3GamePlan in apps/web/lib/email/coach-templates/Top3GamePlan.tsx with Coach persona micro-copy (FR-014, FR-015)
 
 **Checkpoint**: User Story 1 complete—Top 3 Game Plan and zero-apps suggestion work independently
 
@@ -69,16 +70,16 @@
 
 ## Phase 4: User Story 2 - Application Lifecycle Management (Priority: P1)
 
-**Goal**: Student tracks application through Tracked→Drafting→Review→Submitted→Outcome Pending; valid transitions enforced; active_milestones in sync (FR-003, FR-004, FR-005)
+**Goal**: Student tracks application through Tracked→Drafting→Review→Submitted→Outcome Pending; valid transitions enforced; applications table persisted immediately (FR-003, FR-004, FR-005)
 
 **Independent Test**: Move application through each stage; verify only valid transitions succeed; invalid transitions rejected.
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implement lifecycle transition validation (valid transitions matrix) in apps/agent/lib/coach/lifecycle.ts
-- [ ] T019 [US2] Implement POST /api/coach/application/status in apps/web/app/api/coach/application/status/route.ts: auth, ownership check, validate transition, for Submitted/Won return requiresConfirmation (do not persist yet)
-- [ ] T020 [US2] Persist status for non-HITL transitions: map Coach state to DB enum via state-mapper, update applications table, set last_progress_at on status change, update active_milestones in same flow (FR-005) in apps/web/app/api/coach/application/status/route.ts
-- [ ] T021 [US2] Emit tuition-lift/coach.progress.recorded event on status change only (progress = status change only) for Micro-Task staleness in apps/web/app/api/coach/application/status/route.ts
+- [x] T018 [US2] Implement lifecycle transition validation (valid transitions matrix) in apps/agent/lib/coach/lifecycle.ts
+- [x] T019 [US2] Implement POST /api/coach/application/status in apps/web/app/api/coach/application/status/route.ts: auth, ownership check, validate transition, for Submitted/Won return requiresConfirmation (do not persist yet)
+- [x] T020 [US2] Persist status for non-HITL transitions: map Coach state to DB enum via state-mapper, update applications table, set last_progress_at on status change (FR-005) in apps/web/app/api/coach/application/status/route.ts
+- [x] T021 [US2] Emit tuition-lift/coach.progress.recorded event on status change only (progress = status change only) for Micro-Task staleness in apps/web/app/api/coach/application/status/route.ts
 
 **Checkpoint**: User Story 2 complete—lifecycle transitions work; Submitted/Won trigger HITL flow
 
@@ -92,10 +93,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement POST /api/coach/confirm-outcome in apps/web/app/api/coach/confirm-outcome/route.ts: auth, validate applicationId and outcomeType
-- [ ] T023 [US3] On confirmed Submitted: transition status to submitted, set submitted_at, update applications, update active_milestones in same flow (FR-005) in apps/web/app/api/coach/confirm-outcome/route.ts
-- [ ] T024 [US3] On confirmed Won: transition status to awarded, set confirmed_at (required for 006 Debt Lifted), update Total Debt Lifted (compute from applications where status='awarded' AND confirmed_at IS NOT NULL), update active_milestones in same flow in apps/web/app/api/coach/confirm-outcome/route.ts
-- [ ] T025 [US3] On declined: return success false, no DB changes in apps/web/app/api/coach/confirm-outcome/route.ts
+- [x] T022 [US3] Implement POST /api/coach/confirm-outcome in apps/web/app/api/coach/confirm-outcome/route.ts: auth, validate applicationId and outcomeType
+- [x] T023 [US3] On confirmed Submitted: transition status to submitted, set submitted_at, update applications (FR-005) in apps/web/app/api/coach/confirm-outcome/route.ts
+- [x] T024 [US3] On confirmed Won: transition status to awarded, set confirmed_at (required for 006 Debt Lifted); Total Debt Lifted computed on read from applications where status='awarded' AND confirmed_at IS NOT NULL in apps/web/app/api/coach/confirm-outcome/route.ts
+- [x] T025 [US3] On declined: return success false, no DB changes in apps/web/app/api/coach/confirm-outcome/route.ts
 
 **Checkpoint**: User Story 3 complete—HITL verification works for Submitted and Won
 
@@ -109,12 +110,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T026 [US4] Implement Inngest function tuition-lift/coach.deadline.check with cron (e.g., hourly) in apps/web/lib/inngest/functions/coach.ts
-- [ ] T027 [US4] Implement deadline check logic: query applications JOIN scholarships on scholarship_id for deadline (scholarships.deadline), filter apps with deadline in 72h or 24h window, group by user, check notification_log for 24h limit in apps/agent/lib/coach/deadline-check.ts
-- [ ] T028 [US4] Implement consolidated email: single email per user with all approaching deadlines, prioritization plan (essays before forms, by due date) per FR-009a in apps/agent/lib/coach/deadline-check.ts
-- [ ] T029 [US4] Create React Email template DeadlineAlert in apps/web/lib/email/coach-templates/DeadlineAlert.tsx with Coach persona and prioritization section
-- [ ] T030 [US4] Insert notification_log rows (notification_type, template_name for SC-008) for email and dashboard_toast before sending; respect 24h limit (skip if recent row exists) in apps/agent/lib/coach/deadline-check.ts
-- [ ] T031 [US4] Implement GET /api/coach/notifications in apps/web/app/api/coach/notifications/route.ts: return dashboard toasts from notification_log for polling
+- [x] T026 [US4] Implement Inngest function tuition-lift/coach.deadline.check with cron (e.g., hourly) in apps/web/lib/inngest/functions/coach.ts
+- [x] T027 [US4] Implement deadline check logic: query applications JOIN scholarships on scholarship_id for deadline (scholarships.deadline), filter apps with deadline in 72h or 24h window, group by user, check notification_log for 24h limit in apps/agent/lib/coach/deadline-check.ts
+- [x] T028 [US4] Implement consolidated email: single email per user with all approaching deadlines, prioritization plan (essays before forms, by due date) per FR-009a in apps/agent/lib/coach/deadline-check.ts
+- [x] T029 [US4] Create React Email template DeadlineAlert in apps/web/lib/email/coach-templates/DeadlineAlert.tsx with Coach persona and prioritization section
+- [x] T030 [US4] Insert notification_log rows (notification_type, template_name for SC-008) for email and dashboard_toast before sending; respect 24h limit (skip if recent row exists) in apps/agent/lib/coach/deadline-check.ts
+- [x] T031 [US4] Implement GET /api/coach/notifications in apps/web/app/api/coach/notifications/route.ts: return dashboard toasts from notification_log for polling
 
 **Checkpoint**: User Story 4 complete—deadline notifications sent; frequency limit enforced
 
@@ -128,11 +129,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T032 [US5] On status→Submitted (after HITL confirm), send Inngest event tuition-lift/coach.check-in.schedule with userId, applicationId, dueAt=submitted_at+21d in apps/web/app/api/coach/confirm-outcome/route.ts
-- [ ] T033 [US5] Implement Inngest function tuition-lift/coach.check-in.schedule: create check_in_tasks row with due_at in apps/web/lib/inngest/functions/coach.ts
-- [ ] T034 [US5] Implement cron or step.sleepUntil for check-in batch: query applications with submitted_at 21 days ago, create check_in_tasks for any missing in apps/web/lib/inngest/functions/coach.ts
-- [ ] T035 [US5] Implement POST /api/coach/check-in/complete in apps/web/app/api/coach/check-in/complete/route.ts: auth, update check_in_tasks status, if outcome=Won trigger HITL (return requiresConfirmation)
-- [ ] T036 [US5] Include pending check-in tasks in GET /api/coach/game-plan or separate endpoint so Coach surfaces "Have you heard back?" in apps/web/app/api/coach/game-plan/route.ts
+- [x] T032 [US5] On status→Submitted (after HITL confirm), send Inngest event tuition-lift/coach.check-in.schedule with userId, applicationId, dueAt=submitted_at+21d in apps/web/app/api/coach/confirm-outcome/route.ts
+- [x] T033 [US5] Implement Inngest function tuition-lift/coach.check-in.schedule: create check_in_tasks row with due_at in apps/web/lib/inngest/functions/coach.ts
+- [x] T034 [US5] Implement cron or step.sleepUntil for check-in batch: query applications with submitted_at 21 days ago, create check_in_tasks for any missing in apps/web/lib/inngest/functions/coach.ts
+- [x] T035 [US5] Implement POST /api/coach/check-in/complete in apps/web/app/api/coach/check-in/complete/route.ts: auth, update check_in_tasks status, if outcome=Won trigger HITL (return requiresConfirmation)
+- [x] T036 [US5] Extend GET /api/coach/game-plan response contract to include pending check_in_tasks (T016 implements); ensure Coach persona can surface "Have you heard back?" per FR-012
 
 **Checkpoint**: User Story 5 complete—Check-in tasks created and completable
 
@@ -146,11 +147,11 @@
 
 ### Implementation for User Story 6
 
-- [ ] T037 [US6] Implement Inngest function tuition-lift/coach.micro-task.check with cron (e.g., every 4h) in apps/web/lib/inngest/functions/coach.ts
-- [ ] T038 [US6] Implement staleness check: query applications where last_progress_at < now()-48h, exclude snoozed (profiles.preferences.micro_task_snoozed_until), validate snoozed_until < nearest deadline in apps/agent/lib/coach/micro-task.ts
-- [ ] T039 [US6] Create React Email template MicroTaskSuggestion in apps/web/lib/email/coach-templates/MicroTaskSuggestion.tsx with Coach persona (FR-014)
-- [ ] T040 [US6] Implement Micro-Task send: check notification_log 24h limit, send email + insert dashboard toast in apps/agent/lib/coach/micro-task.ts
-- [ ] T041 [US6] Implement POST /api/coach/micro-task/snooze in apps/web/app/api/coach/micro-task/snooze/route.ts: auth, validate snoozedUntil < nearest app deadline, store in profiles.preferences
+- [x] T037 [US6] Implement Inngest function tuition-lift/coach.micro-task.check with cron (e.g., every 4h) in apps/web/lib/inngest/functions/coach.ts
+- [x] T038 [US6] Implement staleness check: query applications where last_progress_at < now()-48h, exclude snoozed (profiles.preferences.micro_task_snoozed_until), validate snoozed_until < nearest deadline in apps/agent/lib/coach/micro-task.ts
+- [x] T039 [US6] Create React Email template MicroTaskSuggestion in apps/web/lib/email/coach-templates/MicroTaskSuggestion.tsx with Coach persona (FR-014)
+- [x] T040 [US6] Implement Micro-Task send: check notification_log 24h limit, send email + insert dashboard toast in apps/agent/lib/coach/micro-task.ts
+- [x] T041 [US6] Implement POST /api/coach/micro-task/snooze in apps/web/app/api/coach/micro-task/snooze/route.ts: auth, validate snoozedUntil < nearest app deadline, store in profiles.preferences
 
 **Checkpoint**: User Story 6 complete—Micro-Task and snooze work
 
@@ -160,9 +161,9 @@
 
 **Purpose**: Improvements affecting multiple stories
 
-- [ ] T042 [P] Add inline comments referencing Inngest, Resend, contract docs in key Coach files
-- [ ] T043 Ensure all Coach communications use Encouraging Coach persona (action-oriented, athletic metaphors) in apps/web/lib/email/coach-templates/
-- [ ] T044 Run quickstart.md validation: verify migrations, Inngest dev, game plan trigger work end-to-end
+- [x] T042 [P] Add inline comments referencing Inngest, Resend, contract docs in key Coach files
+- [x] T043 Ensure all Coach communications use Encouraging Coach persona (action-oriented, athletic metaphors) in apps/web/lib/email/coach-templates/
+- [x] T044 Run quickstart.md validation: verify migrations, Inngest dev, game plan trigger work end-to-end
 
 ---
 

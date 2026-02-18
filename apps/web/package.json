@@ -13,13 +13,16 @@
   },
   "dependencies": {
     "@langchain/langgraph": "^1.1.0",
+    "@react-email/components": "^1.0.8",
+    "@react-email/render": "^2.0.4",
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
     "agent": "workspace:*",
     "inngest": "^3.52.0",
     "next": "16.1.5",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "resend": "^6.9.2"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

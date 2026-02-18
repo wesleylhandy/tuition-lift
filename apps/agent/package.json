@@ -7,7 +7,15 @@
   "types": "./lib/graph.ts",
   "exports": {
     ".": "./lib/graph.ts",
-    "./load-profile": "./lib/load-profile.ts"
+    "./load-profile": "./lib/load-profile.ts",
+    "./lib/coach/game-plan": "./lib/coach/game-plan.ts",
+    "./lib/coach/state-mapper": "./lib/coach/state-mapper.ts",
+    "./lib/coach/lifecycle": "./lib/coach/lifecycle.ts",
+    "./lib/coach/confirm-outcome": "./lib/coach/confirm-outcome.ts",
+    "./lib/coach/deadline-check": "./lib/coach/deadline-check.ts",
+    "./lib/coach/check-in-batch": "./lib/coach/check-in-batch.ts",
+    "./lib/coach/check-in-complete": "./lib/coach/check-in-complete.ts",
+    "./lib/coach/micro-task": "./lib/coach/micro-task.ts"
   },
   "scripts": {
     "build": "tsc",

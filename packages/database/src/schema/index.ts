@@ -32,6 +32,18 @@ export {
 } from './applications';
 export type { ApplicationSchema } from './applications';
 
+export {
+  notificationLogSchema,
+  notificationChannelEnum,
+} from './notification-log';
+export type { NotificationLogSchema } from './notification-log';
+
+export {
+  checkInTaskSchema,
+  checkInStatusEnum,
+} from './check-in-tasks';
+export type { CheckInTaskSchema } from './check-in-tasks';
+
 /**
  * Validates data against schema; throws ZodError on failure.
  * Use before DB writes to reject invalid payloads.

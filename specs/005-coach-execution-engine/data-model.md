@@ -125,26 +125,17 @@ If 002 scholarships has `metadata` JSONB, store `metadata.application_type` inst
 
 ---
 
-## 8. TuitionLiftState / active_milestones Extension
+## 8. Coach Game Plan Storage (No active_milestones Write)
 
-Per 003, `active_milestones` is `ActiveMilestone[]`. Coach Execution Engine populates it with:
+**Decision (plan.md Coach–Orchestration Integration)**: Applications table is source of truth for Top 3. Coach Execution Engine does NOT write to LangGraph checkpoint (active_milestones). API routes cannot update checkpoint state; Inngest game plan cron persists momentum_score to applications only.
 
-- Top 3 Game Plan: top 3 by Momentum Score
-- Check-in tasks: when due
-- Micro-Task suggestion: when 48h stale and not snoozed
+| Coach surface | Source | Notes |
+|---------------|--------|-------|
+| Top 3 Game Plan | applications (momentum_score) | GET /api/coach/game-plan computes on demand; 006 may use this API or query applications directly |
+| Check-in tasks | check_in_tasks table | GET game-plan includes pending check-ins for "Have you heard back?" |
+| Micro-Task | notification_log + profiles.preferences | Staleness check reads last_progress_at from applications |
 
-Extend `ActiveMilestone` or add `CoachContext`:
-
-| Field | Type | Notes |
-|-------|------|-------|
-| type | string | 'application' \| 'check_in' \| 'micro_task' |
-| application_id | uuid | nullable; for application milestones |
-| check_in_task_id | uuid | nullable; for check-in |
-| momentum_score | number | For application milestones |
-| due_at | timestamp | For deadline ordering |
-| snoozed_until | timestamp | For micro-task; null if not snoozed |
-
-Implementation: Extend 003 ActiveMilestone schema or add sibling `coach_suggestions` in state.
+**Orchestration (003) active_milestones**: Serves discovery flow (scholarship ROI) when user has no tracked applications. 005 does not extend or write to it. Future merge of discovery + application milestones would require ActiveMilestone schema extension; deferred.
 
 ---
 
