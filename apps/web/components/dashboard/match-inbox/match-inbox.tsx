@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { MatchCard } from "./match-card";
 import { LivePulse } from "./live-pulse";
+import { CoachesPrepChecklist } from "../coaches-prep-checklist";
 import {
   type DiscoveryMatch,
   useRealtimeMatches,
@@ -201,9 +202,7 @@ export function MatchInbox() {
         </AnimatePresence>
       </ul>
       {matches.length === 0 && !loading && (
-        <p className="text-sm text-muted-foreground">
-          No matches yet. Run discovery to find scholarships.
-        </p>
+        <CoachesPrepChecklist />
       )}
     </section>
   );
