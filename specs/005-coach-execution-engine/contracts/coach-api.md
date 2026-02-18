@@ -33,9 +33,19 @@ APIs for the Coach Execution Engine: Top 3 Game Plan, application lifecycle with
       "suggestion": "5 minutes on the intro today"
     }
   ],
+  "pendingCheckIns": [
+    {
+      "checkInTaskId": "uuid",
+      "applicationId": "uuid",
+      "dueAt": "2025-02-20T00:00:00Z",
+      "prompt": "Have you heard back? Any updates?"
+    }
+  ],
   "generatedAt": "2025-02-13T06:00:00Z"
 }
 ```
+
+*Note: Top 3 computed on demand from applications (momentum_score); pendingCheckIns from check_in_tasks. Source: plan.md Coach–Orchestration Integration.*
 
 **Response 200** (zero tracked applications—FR-001a):
 ```json

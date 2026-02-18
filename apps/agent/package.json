@@ -7,7 +7,11 @@
   "types": "./lib/graph.ts",
   "exports": {
     ".": "./lib/graph.ts",
-    "./load-profile": "./lib/load-profile.ts"
+    "./load-profile": "./lib/load-profile.ts",
+    "./lib/coach/game-plan": "./lib/coach/game-plan.ts",
+    "./lib/coach/state-mapper": "./lib/coach/state-mapper.ts",
+    "./lib/coach/lifecycle": "./lib/coach/lifecycle.ts",
+    "./lib/coach/confirm-outcome": "./lib/coach/confirm-outcome.ts"
   },
   "scripts": {
     "build": "tsc",

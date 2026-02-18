@@ -62,7 +62,7 @@ A student tracks an application through clear stages: from first adding it (Trac
 4. **Given** an application in Review, **When** the student submits it, **Then** it transitions to Submitted.
 5. **Given** an application in Submitted, **When** an outcome is awaited (decision not yet known), **Then** it may transition to Outcome Pending.
 6. **Given** any status change attempt, **When** the transition is invalid per the lifecycle, **Then** the system rejects the change and retains the previous status.
-7. **Given** an application status changes, **When** the update is persisted, **Then** the shared orchestration state (active_milestones) and the data layer remain consistent.
+7. **Given** an application status changes, **When** the update is persisted, **Then** the applications table reflects the new status and last_progress_at; Coach Game Plan and Dashboard read from applications.
 
 ---
 
@@ -157,7 +157,7 @@ When a student has made no progress on any application for 48 hours, the Coach s
 - **FR-003**: System MUST support application lifecycle states: Tracked → Drafting → Review → Submitted → Outcome Pending. All status changes MUST be validated against the defined lifecycle; invalid transitions MUST be rejected.
 - **FR-003a**: Coach lifecycle states MUST be reconciled with the data layer application_status enum via a mapping layer; orchestration uses Coach states; persistence uses DB enum values; conversions MUST be bidirectional and consistent.
 - **FR-004**: System MUST persist application status and momentum_score in a manner consistent with the shared data layer schema (002). When status→submitted, set submitted_at; on every status change, set last_progress_at; when user confirms Won, set confirmed_at before updating Total Debt Lifted.
-- **FR-005**: System MUST keep the shared orchestration state (active_milestones) in sync with application status changes; updates MUST occur immediately in the same flow as the status change (e.g., same API call).
+- **FR-005**: System MUST persist application status changes immediately in the same flow (e.g., same API call). The applications table is the source of truth for application lifecycle; Coach Game Plan and Dashboard read from it. Orchestration's active_milestones (discovery-based) is separate; when user has tracked applications, Top 3 is derived from applications.momentum_score on read.
 
 **Verification Protocol**
 - **FR-006**: When a student requests to mark an application as Submitted or Won, the Coach MUST require explicit student confirmation before applying the change.
@@ -191,14 +191,14 @@ When a student has made no progress on any application for 48 hours, the Coach s
 
 - **Application**: A scholarship application a student is pursuing. Has status (lifecycle state), deadline (from linked scholarship), momentum_score (Momentum Score; 002 schema), trust score (from linked scholarship's reputation), submitted_at, last_progress_at, confirmed_at (002).
 - **Momentum Score**: Composite score for prioritization; (Deadline Proximity × 0.6) + (Trust Score × 0.4). Combines urgency and source trustworthiness; quadrant logic: high trust + high urgency = best; low trust deprioritizes even when urgent.
-- **active_milestones**: Prioritized list of upcoming tasks (from Orchestration spec); Coach Execution Engine consumes and updates this as part of shared orchestration state.
+- **active_milestones**: Prioritized list from Orchestration (003)—discovery-based milestones. When user has tracked applications, Coach Game Plan and Top 3 derive from applications (momentum_score) on read; applications table is source of truth for application lifecycle.
 - **Total Debt Lifted**: Dashboard aggregate of confirmed scholarship awards; updated only after verification protocol confirmation.
 - **Notification Log**: Record of notifications sent per student; used to enforce one email and one dashboard nudge per 24-hour period.
 - **Check-in Task**: A follow-up prompt scheduled 21 days after submission; asks the student for outcome updates.
 
 ### Assumptions
 
-- The shared orchestration state (TuitionLiftState) and active_milestones are defined in the Orchestration spec; Coach Execution Engine integrates with them.
+- The shared orchestration state (TuitionLiftState) and active_milestones are defined in the Orchestration spec. Coach Game Plan uses the applications table as source of truth for Top 3; orchestration's active_milestones serves discovery flow (no tracked applications).
 - Application status values align with the data layer schema (ApplicationStatus) defined in the Core Infrastructure spec.
 - **Lifecycle reconciliation**: Coach lifecycle states (Tracked, Drafting, Review, Submitted, Outcome Pending) live in orchestration; the DB application_status enum (draft, submitted, awarded, rejected, withdrawn) remains the persisted source of truth. A mapping layer converts between Coach states and DB values on read/write (e.g., Tracked/Drafting/Review → draft; Submitted → submitted; Outcome Pending → submitted with outcome metadata; Won → awarded).
 - Scheduled and event-driven workflows are provided by the project's automation layer.
