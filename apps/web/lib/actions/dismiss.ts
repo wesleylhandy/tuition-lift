@@ -17,7 +17,7 @@ export async function dismissScholarship(
   scholarshipId: string,
   discoveryRunId?: string | null
 ): Promise<DismissScholarshipResult> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

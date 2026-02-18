@@ -9,7 +9,7 @@ import { createServerSupabaseClient } from "../../../../lib/supabase/server";
 import { resolveDiscoveryStatus } from "../../../../lib/discovery-status";
 
 export async function GET(request: NextRequest) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

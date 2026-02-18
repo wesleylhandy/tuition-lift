@@ -31,7 +31,7 @@ const TARGET_STATES: CoachState[] = [
 ];
 
 export async function POST(request: Request) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

@@ -22,7 +22,7 @@ function isValidUuid(v: unknown): v is string {
 }
 
 export async function POST(request: Request) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

@@ -19,7 +19,7 @@ import { createServerSupabaseClient } from "../../../../lib/supabase/server";
 import { getGamePlanForUser } from "agent/lib/coach/game-plan";
 
 export async function GET() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

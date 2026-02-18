@@ -22,7 +22,7 @@ export type PrepChecklistData = {
 };
 
 export async function getPrepChecklistData(): Promise<PrepChecklistData | null> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

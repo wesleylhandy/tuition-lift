@@ -13,7 +13,7 @@ import { loadProfile } from "agent/load-profile";
 import { randomUUID } from "node:crypto";
 
 export async function POST(request: Request) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

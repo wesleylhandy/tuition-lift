@@ -25,7 +25,7 @@ const NOTIFICATION_BODIES: Record<string, string> = {
 };
 
 export async function GET(request: Request) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

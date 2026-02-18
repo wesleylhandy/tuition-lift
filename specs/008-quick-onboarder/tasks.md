@@ -23,10 +23,10 @@
 
 **Purpose**: Dependencies and folder structure for onboarding module
 
-- [ ] T001 [P] Add @supabase/ssr to apps/web if not present (pnpm --filter web add @supabase/ssr) per research.md §1
-- [ ] T002 Create onboarding route structure: apps/web/app/(onboard)/onboard/page.tsx and layout.tsx per plan.md
-- [ ] T003 [P] Create apps/web/components/onboard/ directory for wizard components
-- [ ] T004 [P] Create US state codes allowlist (2-letter) in apps/web/lib/constants/us-states.ts for state validation per research.md §7
+- [x] T001 [P] Add @supabase/ssr to apps/web if not present (pnpm --filter web add @supabase/ssr) per research.md §1
+- [x] T002 Create onboarding route structure: apps/web/app/(onboard)/onboard/page.tsx and layout.tsx per plan.md
+- [x] T003 [P] Create apps/web/components/onboard/ directory for wizard components
+- [x] T004 [P] Create US state codes allowlist (2-letter) in apps/web/lib/constants/us-states.ts for state validation per research.md §7
 
 ---
 
@@ -38,10 +38,10 @@
 
 - [x] T005 Create migration 00000000000016_profiles_onboarding_gpa.sql in packages/database/supabase/migrations/: add onboarding_complete boolean NOT NULL DEFAULT false, gpa_weighted numeric(4,2), gpa_unweighted numeric(3,2) with CHECK constraints; migrate existing gpa to gpa_unweighted; retain gpa column (do not drop) per data-model.md
 - [x] T006 Update packages/database/src/schema/profiles.ts: add gpa_weighted, gpa_unweighted (0–6, 0–4), onboarding_complete; deprecate gpa (keep for type compat) per data-model.md
-- [ ] T007 Update apps/web/lib/supabase/server.ts to use @supabase/ssr createServerClient for cookie-based session persistence per research.md §1
-- [ ] T008 Create signup rate-limiting utility in apps/web/lib/rate-limit.ts: check increment per email (3–5/hour); implement in-memory Map for MVP (dev and single-instance); document in code that production multi-instance deployment requires Redis/Upstash KV per research.md §3
-- [ ] T009 Create OnboardWizard Client Component shell in apps/web/components/onboard/onboard-wizard.tsx: useState(step 1|2|3), render step placeholder divs, 450px max-width centered card per spec FR-010
-- [ ] T010 Wire OnboardWizard into apps/web/app/(onboard)/onboard/page.tsx; ensure route renders wizard
+- [x] T007 Update apps/web/lib/supabase/server.ts to use @supabase/ssr createServerClient for cookie-based session persistence per research.md §1
+- [x] T008 Create signup rate-limiting utility in apps/web/lib/rate-limit.ts: check increment per email (3–5/hour); implement in-memory Map for MVP (dev and single-instance); document in code that production multi-instance deployment requires Redis/Upstash KV per research.md §3
+- [x] T009 Create OnboardWizard Client Component shell in apps/web/components/onboard/onboard-wizard.tsx: useState(step 1|2|3), render step placeholder divs, 450px max-width centered card per spec FR-010
+- [x] T010 Wire OnboardWizard into apps/web/app/(onboard)/onboard/page.tsx; ensure route renders wizard
 
 **Checkpoint**: Foundation ready—user story implementation can begin. T005, T006 done (migration and schema).
 

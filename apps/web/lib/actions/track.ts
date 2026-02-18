@@ -22,7 +22,7 @@ export async function trackScholarship(
   scholarshipId: string,
   academicYear: string
 ): Promise<TrackScholarshipResult> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,
