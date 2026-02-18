@@ -27,6 +27,7 @@ export {
   scholarshipCategoryEnum,
   applicationSchema,
   applicationStatusEnum,
+  dismissalInputSchema,
   parseOrThrow,
 } from './schema/index';
 

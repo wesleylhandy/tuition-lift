@@ -1,6 +1,30 @@
+/**
+ * Design tokens per FR-018, FR-019, FR-020 (Scholarship Inbox & Dashboard)
+ * Navy #1A1A40, Electric Mint #00FFAB, Off-White; serif headings, sans-serif body
+ */
+@import "tailwindcss";
+
+@theme {
+  /* Dashboard palette */
+  --color-navy: #1a1a40;
+  --color-electric-mint: #00ffab;
+  --color-off-white: #fafaf9;
+  /* Font families: serif for headings, sans-serif for body */
+  --font-heading: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-body: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Design tokens (also in @theme for Tailwind utilities) */
+  --color-navy: #1a1a40;
+  --color-electric-mint: #00ffab;
+  --color-off-white: #fafaf9;
+  --font-heading: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-body: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @media (prefers-color-scheme: dark) {

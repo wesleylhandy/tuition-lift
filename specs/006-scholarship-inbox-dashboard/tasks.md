@@ -22,11 +22,11 @@
 
 **Purpose**: Project initialization and dependencies
 
-- [ ] T001 Add framer-motion to apps/web/package.json
-- [ ] T002 [P] Add shadcn skeleton, toast, sonner components via `pnpm dlx shadcn@latest add skeleton sonner` in apps/web
-- [ ] T003 [P] Create dashboard route group and page at apps/web/app/(auth)/dashboard/page.tsx (or apps/web/app/dashboard/page.tsx per existing auth layout)
-- [ ] T004 [P] Create apps/web/components/dashboard/bento-grid.tsx with Tailwind grid layout (responsive grid-cols, col-span, row-span for modular blocks)
-- [ ] T005 Add Toaster provider from sonner to apps/web app layout for toast notifications
+- [x] T001 Add framer-motion to apps/web/package.json
+- [x] T002 [P] Add shadcn skeleton, toast, sonner components via `pnpm dlx shadcn@latest add skeleton sonner` in apps/web
+- [x] T003 [P] Create dashboard route group and page at apps/web/app/(auth)/dashboard/page.tsx (or apps/web/app/dashboard/page.tsx per existing auth layout)
+- [x] T004 [P] Create apps/web/components/dashboard/bento-grid.tsx with Tailwind grid layout (responsive grid-cols, col-span, row-span for modular blocks)
+- [x] T005 Add Toaster provider from sonner to apps/web app layout for toast notifications
 
 ---
 
@@ -34,14 +34,14 @@
 
 **Purpose**: Core infrastructure required before user story implementation
 
-- [ ] T006 Create dismissals migration in packages/database/supabase/migrations/ (file: XXXXX_add_dismissals.sql) per data-model.md spec with RLS policies. **Depends on**: packages/database and prior migrations from 002-db-core-infrastructure; create package structure if missing.
-- [ ] T007 [P] Create Trust Shield util at apps/web/lib/utils/trust-shield.ts mapping trust_score to badge color (Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39, gray for null)
-- [ ] T008 Implement trackScholarship Server Action in apps/web/lib/actions/track.ts per contracts/server-actions.md (authenticate, validate scholarship, insert applications)
-- [ ] T009 Implement dismissScholarship Server Action in apps/web/lib/actions/dismiss.ts per contracts/server-actions.md (authenticate, insert dismissals)
-- [ ] T010 Implement verifySubmission Server Action in apps/web/lib/actions/verify-submission.ts per contracts/server-actions.md (authenticate, validate ownership, update status)
-- [ ] T011 [P] Define design tokens in Tailwind config or CSS: Navy #1A1A40, Electric Mint #00FFAB, Off-White; serif for headings, sans-serif for body per FR-018, FR-019, FR-020
-- [ ] T012 Create apps/web/lib/hooks/use-realtime-matches.ts subscribing per contracts/realtime-channels.md: use Broadcast on `user:{userId}:discovery` for `new_matches` event (discovery results live in LangGraph checkpoint, not a Supabase table); optional polling of GET /api/discovery/results as fallback when Broadcast unavailable
-- [ ] T013 [P] Create apps/web/lib/hooks/use-realtime-applications.ts for applications table Postgres Changes per contracts/realtime-channels.md
+- [x] T006 Create dismissals migration in packages/database/supabase/migrations/ (file: XXXXX_add_dismissals.sql) per data-model.md spec with RLS policies. **Depends on**: packages/database and prior migrations from 002-db-core-infrastructure; create package structure if missing.
+- [x] T007 [P] Create Trust Shield util at apps/web/lib/utils/trust-shield.ts mapping trust_score to badge color (Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39, gray for null)
+- [x] T008 Implement trackScholarship Server Action in apps/web/lib/actions/track.ts per contracts/server-actions.md (authenticate, validate scholarship, insert applications)
+- [x] T009 Implement dismissScholarship Server Action in apps/web/lib/actions/dismiss.ts per contracts/server-actions.md (authenticate, insert dismissals)
+- [x] T010 Implement verifySubmission Server Action in apps/web/lib/actions/verify-submission.ts per contracts/server-actions.md (authenticate, validate ownership, update status)
+- [x] T011 [P] Define design tokens in Tailwind config or CSS: Navy #1A1A40, Electric Mint #00FFAB, Off-White; serif for headings, sans-serif for body per FR-018, FR-019, FR-020
+- [x] T012 Create apps/web/lib/hooks/use-realtime-matches.ts subscribing per contracts/realtime-channels.md: use Broadcast on `user:{userId}:discovery` for `new_matches` event (discovery results live in LangGraph checkpoint, not a Supabase table); optional polling of GET /api/discovery/results as fallback when Broadcast unavailable
+- [x] T013 [P] Create apps/web/lib/hooks/use-realtime-applications.ts for applications table Postgres Changes per contracts/realtime-channels.md
 
 **Checkpoint**: Foundation ready—user story implementation can begin
 
