@@ -2,8 +2,6 @@
  * Deduplicator: merges duplicate results by URL; keeps highest Tavily relevance score.
  * Per contracts §5, research §9: runs before TrustScorer; trust_score applied later in Verify.
  */
-import type { TavilySearchResult } from "./tavily-client";
-
 export interface RawResult {
   title: string;
   url: string;

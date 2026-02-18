@@ -53,10 +53,10 @@
 
 **Independent Test**: Complete signup with valid email/password; verify user sees Step 2. Invalid email or weak password shows error and does not advance.
 
-- [ ] T011 [US1] Implement signUp Server Action in apps/web/lib/actions/onboarding.ts: validate email (Zod), password (min 8), check rate limit, call supabase.auth.signUp, on success insert profiles row (id=user.id, onboarding_complete=false), return { success, error } per contracts/server-actions.md §1
-- [ ] T012 [US1] Create Step1Form component in apps/web/components/onboard/step1-form.tsx: email and password inputs, form action→signUp, validation errors display, Coach tip ("Create your account to get started!" or similar) per FR-005
-- [ ] T013 [US1] Wire Step1Form into OnboardWizard when step=1; on signUp success set step to 2; handle duplicate email and rate limit errors with user-friendly messages per FR-008, edge cases
-- [ ] T014 [US1] Add skeleton loading state and block duplicate submit during signUp in Step1Form per FR-014
+- [x] T011 [US1] Implement signUp Server Action in apps/web/lib/actions/onboarding.ts: validate email (Zod), password (min 8), check rate limit, call supabase.auth.signUp, on success insert profiles row (id=user.id, onboarding_complete=false), return { success, error } per contracts/server-actions.md §1
+- [x] T012 [US1] Create Step1Form component in apps/web/components/onboard/step1-form.tsx: email and password inputs, form action→signUp, validation errors display, Coach tip ("Create your account to get started!" or similar) per FR-005
+- [x] T013 [US1] Wire Step1Form into OnboardWizard when step=1; on signUp success set step to 2; handle duplicate email and rate limit errors with user-friendly messages per FR-008, edge cases
+- [x] T014 [US1] Add skeleton loading state and block duplicate submit during signUp in Step1Form per FR-014
 
 **Checkpoint**: User Story 1 complete—signup works, advances to Step 2
 
