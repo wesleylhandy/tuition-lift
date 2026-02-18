@@ -28,7 +28,8 @@ export const UserProfileSchema = z.object({
   id: z.string().uuid(),
   major: z.string().min(1),
   state: z.string().min(1),
-  gpa: z.number().min(0).max(4).optional(),
+  /** 0–4 unweighted or 0–6 weighted; derived from profiles.gpa_unweighted or gpa_weighted */
+  gpa: z.number().min(0).max(6).optional(),
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;

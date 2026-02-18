@@ -65,7 +65,9 @@ export async function loadProfile(userId: string): Promise<LoadProfileResult> {
   const db = createDbClient();
   const { data: row, error } = await db
     .from("profiles")
-    .select("id, intended_major, state, gpa, sai, pell_eligibility_status")
+    .select(
+      "id, intended_major, state, gpa_weighted, gpa_unweighted, sai, pell_eligibility_status"
+    )
     .eq("id", userId)
     .single();
 
@@ -83,17 +85,24 @@ function buildUserProfile(row: {
   id: string;
   intended_major: string | null;
   state: string | null;
-  gpa: number | null;
+  gpa_weighted: number | null;
+  gpa_unweighted: number | null;
 }): UserProfile | null {
   const major = row.intended_major?.trim() ?? "";
   const state = row.state?.trim() ?? "";
   if (!major || !state) return null;
 
+  // Prefer unweighted when available; else weighted (supports 0–6)
+  const gpa =
+    row.gpa_unweighted != null
+      ? row.gpa_unweighted
+      : row.gpa_weighted ?? undefined;
+
   const parsed = UserProfileSchema.safeParse({
     id: row.id,
     major,
     state,
-    gpa: row.gpa ?? undefined,
+    gpa,
   });
   return parsed.success ? parsed.data : null;
 }

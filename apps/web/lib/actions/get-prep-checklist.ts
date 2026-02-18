@@ -39,7 +39,7 @@ export async function getPrepChecklistData(): Promise<PrepChecklistData | null> 
   const [profileRes, discoveryRes] = await Promise.all([
     db
       .from("profiles")
-      .select("intended_major, state, gpa, sai")
+      .select("intended_major, state, gpa_weighted, gpa_unweighted, sai")
       .eq("id", userId)
       .maybeSingle(),
     db
@@ -58,10 +58,11 @@ export async function getPrepChecklistData(): Promise<PrepChecklistData | null> 
 
   const hasMajor = Boolean(profile?.intended_major?.trim());
   const hasState = Boolean(profile?.state?.trim());
+  const gpaW = profile?.gpa_weighted;
+  const gpaU = profile?.gpa_unweighted;
   const hasGpa =
-    typeof profile?.gpa === "number" &&
-    profile.gpa >= 0 &&
-    profile.gpa <= 4;
+    (typeof gpaW === "number" && gpaW >= 0 && gpaW <= 6) ||
+    (typeof gpaU === "number" && gpaU >= 0 && gpaU <= 4);
   const sai = decryptSai(profile?.sai);
   const hasSai = sai !== null && sai >= -1500 && sai <= 999999;
   const hasDiscoveryRun = Boolean(discovery?.discovery_run_id);

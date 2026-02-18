@@ -12,11 +12,18 @@ export const pellEligibilityStatusEnum = z.enum([
   'unknown',
 ]);
 
+/** GPA: unweighted 0–4, weighted 0–6. Prefer gpa_unweighted for scholarship matching. */
+const gpaUnweightedSchema = z.number().min(0).max(4).nullable().optional();
+const gpaWeightedSchema = z.number().min(0).max(6).nullable().optional();
+
 export const profileSchema = z.object({
   id: z.string().uuid(),
   full_name: z.string().nullable().optional(),
   intended_major: z.string().nullable().optional(),
+  /** @deprecated Use gpa_unweighted or gpa_weighted. Kept for backward compatibility. */
   gpa: z.number().min(0).max(4).nullable().optional(),
+  gpa_weighted: gpaWeightedSchema,
+  gpa_unweighted: gpaUnweightedSchema,
   state: z.string().nullable().optional(),
   interests: z.array(z.string()).nullable().optional(),
   /** SAI (Student Aid Index): -1500..999999. Rejects out-of-range (T027). */
@@ -24,6 +31,7 @@ export const profileSchema = z.object({
   pell_eligibility_status: pellEligibilityStatusEnum.nullable().optional(),
   household_size: z.number().int().positive().nullable().optional(),
   number_in_college: z.number().int().min(0).nullable().optional(),
+  onboarding_complete: z.boolean().optional(),
   updated_at: z.string().datetime().optional(),
 });
 

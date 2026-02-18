@@ -15,7 +15,8 @@ import {
  * external search APIs; no full_name, SSN, or raw SAI (Constitution §4, FR-003).
  */
 export const AnonymizedProfileSchema = z.object({
-  gpa: z.number().min(0).max(4).optional(),
+  /** 0–4 unweighted or 0–6 weighted; per 008 gpa model */
+  gpa: z.number().min(0).max(6).optional(),
   major: z.string().min(1).optional(),
   incomeBracket: householdIncomeBracketEnum.optional(),
   pellStatus: z.boolean().optional(),
