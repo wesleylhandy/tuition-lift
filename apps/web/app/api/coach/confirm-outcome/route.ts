@@ -89,10 +89,24 @@ export async function POST(request: Request) {
   }
 
   if (result.success) {
+    // Inngest: contract §7 — tuition-lift/coach.progress.recorded on status change
     await inngest.send({
       name: "tuition-lift/coach.progress.recorded",
       data: { userId: user.id, applicationId: result.applicationId },
     });
+    // Inngest: contract §7 — tuition-lift/coach.check-in.schedule (FR-011, 21 days)
+    if (body.outcomeType === "Submitted") {
+      const dueAt = new Date();
+      dueAt.setDate(dueAt.getDate() + 21);
+      await inngest.send({
+        name: "tuition-lift/coach.check-in.schedule",
+        data: {
+          userId: user.id,
+          applicationId: result.applicationId,
+          dueAt: dueAt.toISOString(),
+        },
+      });
+    }
   }
 
   return NextResponse.json({

@@ -1,6 +1,9 @@
 /**
  * Coach state ↔ DB application_status mapping.
  * Per data-model.md §1. Implemented in T009.
+ *
+ * @see specs/005-coach-execution-engine/contracts/coach-api.md §2 — targetState values
+ * @see specs/005-coach-execution-engine/data-model.md — application_status enum
  */
 
 export type CoachState =

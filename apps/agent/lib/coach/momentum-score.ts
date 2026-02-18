@@ -2,6 +2,9 @@
  * Momentum Score: (Deadline Proximity × 0.6) + (Trust Score × 0.4).
  * Per data-model.md, research.md §6, tasks T010. Used for Top 3 prioritization.
  *
+ * @see specs/005-coach-execution-engine/contracts/coach-api.md §1 — momentumScore in response
+ * @see specs/005-coach-execution-engine/data-model.md — momentum_score column
+ *
  * Trust Score: scholarship.trust_score (0–100), normalized to 0–1.
  * Deadline Proximity: composite of (a) time-to-deadline and (b) application stage.
  * Quadrant logic: high trust + high urgency = best; low trust deprioritizes even when urgent.

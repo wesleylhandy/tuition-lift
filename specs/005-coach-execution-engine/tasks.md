@@ -110,12 +110,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T026 [US4] Implement Inngest function tuition-lift/coach.deadline.check with cron (e.g., hourly) in apps/web/lib/inngest/functions/coach.ts
-- [ ] T027 [US4] Implement deadline check logic: query applications JOIN scholarships on scholarship_id for deadline (scholarships.deadline), filter apps with deadline in 72h or 24h window, group by user, check notification_log for 24h limit in apps/agent/lib/coach/deadline-check.ts
-- [ ] T028 [US4] Implement consolidated email: single email per user with all approaching deadlines, prioritization plan (essays before forms, by due date) per FR-009a in apps/agent/lib/coach/deadline-check.ts
-- [ ] T029 [US4] Create React Email template DeadlineAlert in apps/web/lib/email/coach-templates/DeadlineAlert.tsx with Coach persona and prioritization section
-- [ ] T030 [US4] Insert notification_log rows (notification_type, template_name for SC-008) for email and dashboard_toast before sending; respect 24h limit (skip if recent row exists) in apps/agent/lib/coach/deadline-check.ts
-- [ ] T031 [US4] Implement GET /api/coach/notifications in apps/web/app/api/coach/notifications/route.ts: return dashboard toasts from notification_log for polling
+- [x] T026 [US4] Implement Inngest function tuition-lift/coach.deadline.check with cron (e.g., hourly) in apps/web/lib/inngest/functions/coach.ts
+- [x] T027 [US4] Implement deadline check logic: query applications JOIN scholarships on scholarship_id for deadline (scholarships.deadline), filter apps with deadline in 72h or 24h window, group by user, check notification_log for 24h limit in apps/agent/lib/coach/deadline-check.ts
+- [x] T028 [US4] Implement consolidated email: single email per user with all approaching deadlines, prioritization plan (essays before forms, by due date) per FR-009a in apps/agent/lib/coach/deadline-check.ts
+- [x] T029 [US4] Create React Email template DeadlineAlert in apps/web/lib/email/coach-templates/DeadlineAlert.tsx with Coach persona and prioritization section
+- [x] T030 [US4] Insert notification_log rows (notification_type, template_name for SC-008) for email and dashboard_toast before sending; respect 24h limit (skip if recent row exists) in apps/agent/lib/coach/deadline-check.ts
+- [x] T031 [US4] Implement GET /api/coach/notifications in apps/web/app/api/coach/notifications/route.ts: return dashboard toasts from notification_log for polling
 
 **Checkpoint**: User Story 4 complete—deadline notifications sent; frequency limit enforced
 
@@ -129,11 +129,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T032 [US5] On status→Submitted (after HITL confirm), send Inngest event tuition-lift/coach.check-in.schedule with userId, applicationId, dueAt=submitted_at+21d in apps/web/app/api/coach/confirm-outcome/route.ts
-- [ ] T033 [US5] Implement Inngest function tuition-lift/coach.check-in.schedule: create check_in_tasks row with due_at in apps/web/lib/inngest/functions/coach.ts
-- [ ] T034 [US5] Implement cron or step.sleepUntil for check-in batch: query applications with submitted_at 21 days ago, create check_in_tasks for any missing in apps/web/lib/inngest/functions/coach.ts
-- [ ] T035 [US5] Implement POST /api/coach/check-in/complete in apps/web/app/api/coach/check-in/complete/route.ts: auth, update check_in_tasks status, if outcome=Won trigger HITL (return requiresConfirmation)
-- [ ] T036 [US5] Extend GET /api/coach/game-plan response contract to include pending check_in_tasks (T016 implements); ensure Coach persona can surface "Have you heard back?" per FR-012
+- [x] T032 [US5] On status→Submitted (after HITL confirm), send Inngest event tuition-lift/coach.check-in.schedule with userId, applicationId, dueAt=submitted_at+21d in apps/web/app/api/coach/confirm-outcome/route.ts
+- [x] T033 [US5] Implement Inngest function tuition-lift/coach.check-in.schedule: create check_in_tasks row with due_at in apps/web/lib/inngest/functions/coach.ts
+- [x] T034 [US5] Implement cron or step.sleepUntil for check-in batch: query applications with submitted_at 21 days ago, create check_in_tasks for any missing in apps/web/lib/inngest/functions/coach.ts
+- [x] T035 [US5] Implement POST /api/coach/check-in/complete in apps/web/app/api/coach/check-in/complete/route.ts: auth, update check_in_tasks status, if outcome=Won trigger HITL (return requiresConfirmation)
+- [x] T036 [US5] Extend GET /api/coach/game-plan response contract to include pending check_in_tasks (T016 implements); ensure Coach persona can surface "Have you heard back?" per FR-012
 
 **Checkpoint**: User Story 5 complete—Check-in tasks created and completable
 
@@ -147,11 +147,11 @@
 
 ### Implementation for User Story 6
 
-- [ ] T037 [US6] Implement Inngest function tuition-lift/coach.micro-task.check with cron (e.g., every 4h) in apps/web/lib/inngest/functions/coach.ts
-- [ ] T038 [US6] Implement staleness check: query applications where last_progress_at < now()-48h, exclude snoozed (profiles.preferences.micro_task_snoozed_until), validate snoozed_until < nearest deadline in apps/agent/lib/coach/micro-task.ts
-- [ ] T039 [US6] Create React Email template MicroTaskSuggestion in apps/web/lib/email/coach-templates/MicroTaskSuggestion.tsx with Coach persona (FR-014)
-- [ ] T040 [US6] Implement Micro-Task send: check notification_log 24h limit, send email + insert dashboard toast in apps/agent/lib/coach/micro-task.ts
-- [ ] T041 [US6] Implement POST /api/coach/micro-task/snooze in apps/web/app/api/coach/micro-task/snooze/route.ts: auth, validate snoozedUntil < nearest app deadline, store in profiles.preferences
+- [x] T037 [US6] Implement Inngest function tuition-lift/coach.micro-task.check with cron (e.g., every 4h) in apps/web/lib/inngest/functions/coach.ts
+- [x] T038 [US6] Implement staleness check: query applications where last_progress_at < now()-48h, exclude snoozed (profiles.preferences.micro_task_snoozed_until), validate snoozed_until < nearest deadline in apps/agent/lib/coach/micro-task.ts
+- [x] T039 [US6] Create React Email template MicroTaskSuggestion in apps/web/lib/email/coach-templates/MicroTaskSuggestion.tsx with Coach persona (FR-014)
+- [x] T040 [US6] Implement Micro-Task send: check notification_log 24h limit, send email + insert dashboard toast in apps/agent/lib/coach/micro-task.ts
+- [x] T041 [US6] Implement POST /api/coach/micro-task/snooze in apps/web/app/api/coach/micro-task/snooze/route.ts: auth, validate snoozedUntil < nearest app deadline, store in profiles.preferences
 
 **Checkpoint**: User Story 6 complete—Micro-Task and snooze work
 
@@ -161,9 +161,9 @@
 
 **Purpose**: Improvements affecting multiple stories
 
-- [ ] T042 [P] Add inline comments referencing Inngest, Resend, contract docs in key Coach files
-- [ ] T043 Ensure all Coach communications use Encouraging Coach persona (action-oriented, athletic metaphors) in apps/web/lib/email/coach-templates/
-- [ ] T044 Run quickstart.md validation: verify migrations, Inngest dev, game plan trigger work end-to-end
+- [x] T042 [P] Add inline comments referencing Inngest, Resend, contract docs in key Coach files
+- [x] T043 Ensure all Coach communications use Encouraging Coach persona (action-oriented, athletic metaphors) in apps/web/lib/email/coach-templates/
+- [x] T044 Run quickstart.md validation: verify migrations, Inngest dev, game plan trigger work end-to-end
 
 ---
 

@@ -11,6 +11,8 @@
  * source — consumed by 006 Dashboard, not by this Coach API.
  *
  * T016: auth, compute Top 3 on demand from applications, include pending check-ins.
+ *
+ * @see specs/005-coach-execution-engine/contracts/coach-api.md §1 — response contract
  */
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../../../lib/supabase/server";

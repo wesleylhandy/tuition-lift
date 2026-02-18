@@ -146,6 +146,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // Inngest: contract §7 — tuition-lift/coach.progress.recorded on status change
   await inngest.send({
     name: "tuition-lift/coach.progress.recorded",
     data: { userId: user.id, applicationId },

@@ -5,3 +5,5 @@
  */
 
 export { Top3GamePlanEmail } from "./Top3GamePlan";
+export { DeadlineAlertEmail } from "./DeadlineAlert";
+export { MicroTaskSuggestionEmail } from "./MicroTaskSuggestion";

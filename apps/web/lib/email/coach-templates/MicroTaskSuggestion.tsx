@@ -1,8 +1,8 @@
 /**
- * Top3GamePlan — React Email template for daily Top 3 Game Plan.
- * T017: Coach persona micro-copy per FR-014, FR-015 (Encouraging Coach, dynamic).
+ * MicroTaskSuggestion — React Email template for 48h staleness nudge (US6 T039).
+ * Coach persona: action-oriented, athletic metaphors, small-win focus (FR-013, FR-014).
  *
- * @see specs/005-coach-execution-engine/contracts/coach-api.md §1
+ * @see specs/005-coach-execution-engine/contracts/coach-api.md §6
  */
 
 import {
@@ -18,13 +18,12 @@ import {
   Text,
 } from "@react-email/components";
 
-export interface Top3GamePlanEmailProps {
-  /** Top 3 items with scholarship title, suggestion, deadline. */
-  top3: Array<{
+export interface MicroTaskSuggestionEmailProps {
+  /** Stale applications with Coach-persona suggestions. */
+  items: Array<{
     scholarshipTitle: string;
-    suggestion: string;
     deadline: string | null;
-    momentumScore: number;
+    suggestion: string;
   }>;
   /** Dashboard URL for CTA. */
   dashboardUrl?: string;
@@ -33,13 +32,13 @@ export interface Top3GamePlanEmailProps {
 }
 
 /**
- * Encouraging Coach tone: action-oriented, athletic metaphors, win-focused (FR-014).
+ * Encouraging Coach tone: small wins, momentum, action-oriented (FR-014).
  */
-export function Top3GamePlanEmail({
-  top3,
+export function MicroTaskSuggestionEmail({
+  items,
   dashboardUrl = "https://tuitionlift.com/dashboard",
-  previewText = "Your daily Top 3 — let's lock in.",
-}: Top3GamePlanEmailProps) {
+  previewText = "A quick 5 minutes can unlock your momentum.",
+}: MicroTaskSuggestionEmailProps) {
   return (
     <Html lang="en" dir="ltr">
       <Head />
@@ -47,16 +46,16 @@ export function Top3GamePlanEmail({
       <Body style={main}>
         <Container style={container}>
           <Heading as="h1" style={heading}>
-            🏆 Your Top 3 Today
+            🏃 Small Win Waiting
           </Heading>
-          <Text style={intro}>
-            Here are your three focus applications — ranked by momentum. Small
-            wins add up; consistency wins. Let&apos;s lock in.
+          <Text style={introText}>
+            You haven&apos;t touched these applications in a couple days. A quick
+            5-minute micro-task can restart your momentum — no pressure, just
+            one small step forward.
           </Text>
 
-          {top3.map((item, i) => (
+          {items.map((item, i) => (
             <Section key={i} style={card}>
-              <Text style={rank}>#{i + 1}</Text>
               <Text style={title}>{item.scholarshipTitle}</Text>
               {item.deadline && (
                 <Text style={deadline}>Due: {item.deadline}</Text>
@@ -68,12 +67,13 @@ export function Top3GamePlanEmail({
           <Hr style={hr} />
           <Text style={cta}>
             <Link href={dashboardUrl} style={link}>
-              Open your game plan in TuitionLift
+              Open TuitionLift
             </Link>{" "}
-            to track progress and celebrate wins.
+            and spend 5 minutes on one of these. Small wins add up. Let&apos;s
+            go. 💪
           </Text>
           <Text style={footer}>
-            — Your Coach at TuitionLift. One application at a time. 💪
+            — Your Coach at TuitionLift. One step at a time.
           </Text>
         </Container>
       </Body>
@@ -103,7 +103,7 @@ const heading = {
   lineHeight: 1.3,
 };
 
-const intro = {
+const introText = {
   color: "#4a5568",
   fontSize: "16px",
   lineHeight: 1.6,
@@ -117,13 +117,6 @@ const card = {
   margin: "0 0 12px",
 };
 
-const rank = {
-  color: "#667eea",
-  fontSize: "14px",
-  fontWeight: "600" as const,
-  margin: "0 0 4px",
-};
-
 const title = {
   color: "#1a1a2e",
   fontSize: "16px",
@@ -133,12 +126,12 @@ const title = {
 
 const deadline = {
   color: "#718096",
-  fontSize: "13px",
+  fontSize: "14px",
   margin: "0 0 8px",
 };
 
 const suggestion = {
-  color: "#2d3748",
+  color: "#4a5568",
   fontSize: "14px",
   lineHeight: 1.5,
   margin: 0,
@@ -167,4 +160,4 @@ const footer = {
   margin: 0,
 };
 
-export default Top3GamePlanEmail;
+export default MicroTaskSuggestionEmail;

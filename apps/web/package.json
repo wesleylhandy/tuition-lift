@@ -14,6 +14,7 @@
   "dependencies": {
     "@langchain/langgraph": "^1.1.0",
     "@react-email/components": "^1.0.8",
+    "@react-email/render": "^2.0.4",
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
     "agent": "workspace:*",

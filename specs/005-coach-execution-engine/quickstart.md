@@ -42,8 +42,9 @@ COACH_MICRO_TASK_CHECK_CRON="0 */4 * * *" # Every 4 hours
 
 2. **Run 005 migrations** (notification_log, check_in_tasks, etc.):
    ```bash
-   pnpm --filter @repo/db db:migrate
+   pnpm --filter @repo/db db:push
    ```
+   (Requires `supabase link` for remote; or `supabase start` then `db:push` for local.)
 
 3. **Apply 005 migrations**:
    - Add migrations in `packages/database/supabase/migrations/`
