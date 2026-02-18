@@ -34,15 +34,29 @@ export const UserProfileSchema = z.object({
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 
 // --- DiscoveryResult ---
+// Per data-model.md §1: trust_report, verification_status, categories, deadline, amount.
+// Advisor_Search produces raw results (trust_report etc optional); Advisor_Verify populates them.
+
+export const verificationStatusEnum = z.enum([
+  "verified",
+  "ambiguous_deadline",
+  "needs_manual_review",
+  "potentially_expired",
+]);
 
 export const DiscoveryResultSchema = z.object({
   id: z.string(),
-  discovery_run_id: z.string().uuid(),
+  discovery_run_id: z.string().uuid().optional(),
   title: z.string(),
   url: z.string(),
   trust_score: z.number().min(0).max(100),
   need_match_score: z.number().min(0).max(100),
   content: z.string().optional(),
+  trust_report: z.string().optional(),
+  verification_status: verificationStatusEnum.optional(),
+  categories: z.array(z.string()).optional(),
+  deadline: z.string().optional(),
+  amount: z.number().nullable().optional(),
 });
 
 export type DiscoveryResult = z.infer<typeof DiscoveryResultSchema>;

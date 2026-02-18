@@ -4,6 +4,7 @@
  */
 
 export { createDbClient } from './client';
+export type { DbClient } from './client';
 export type {
   Database,
   Tables,

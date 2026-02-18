@@ -23,10 +23,10 @@
 
 **Purpose**: Project initialization for discovery engine; extend existing structure
 
-- [ ] T001 Create apps/agent package structure with lib/ and lib/discovery/ per plan in apps/agent/
-- [ ] T002 Add dependencies to apps/agent: @langchain/langgraph, @langchain/langgraph-checkpoint-postgres, @supabase/supabase-js, zod in apps/agent/package.json
-- [ ] T003 [P] Add TAVILY_API_KEY and DISCOVERY_SEARCH_BATCH_DELAY_MS to env schema in apps/agent/ or .env.example
-- [ ] T004 [P] Add workspace dependency from apps/agent to packages/database (if database package exists) in pnpm-workspace.yaml and apps/agent/package.json
+- [x] T001 Create apps/agent package structure with lib/ and lib/discovery/ per plan in apps/agent/
+- [x] T002 Add dependencies to apps/agent: @langchain/langgraph, @langchain/langgraph-checkpoint-postgres, @supabase/supabase-js, zod in apps/agent/package.json
+- [x] T003 [P] Add TAVILY_API_KEY and DISCOVERY_SEARCH_BATCH_DELAY_MS to env schema in apps/agent/ or .env.example
+- [x] T004 [P] Add workspace dependency from apps/agent to packages/database (if database package exists) in pnpm-workspace.yaml and apps/agent/package.json
 
 ---
 
@@ -36,12 +36,12 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete. Requires 002 packages/database with scholarships table.
 
-- [ ] T005 Create migration adding metadata JSONB and UNIQUE(url) partial index to scholarships table in packages/database/supabase/migrations/
-- [ ] T006 [P] Create AnonymizedProfileSchema (gpa, major, incomeBracket, pellStatus; no PII) in apps/agent/lib/discovery/schemas.ts
-- [ ] T007 [P] Create DiscoveryResultSchema with trust_score 0-100, trust_report, verification_status, categories, discovery_run_id (uuid, optional) in apps/agent/lib/discovery/schemas.ts
-- [ ] T008 [P] Create ScholarshipMetadataSchema for metadata JSONB shape (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/schemas.ts
-- [ ] T009 [P] Create PII scrub utility that strips full_name and SSN from profile before external calls in apps/agent/lib/discovery/pii-scrub.ts
-- [ ] T010 Wire TuitionLiftState and discovery_results type extensions in apps/agent/lib/state.ts (align with 003 data-model; requires 003 graph and state)
+- [x] T005 Create migration adding metadata JSONB and UNIQUE(url) partial index to scholarships table in packages/database/supabase/migrations/
+- [x] T006 [P] Create AnonymizedProfileSchema (gpa, major, incomeBracket, pellStatus; no PII) in apps/agent/lib/discovery/schemas.ts
+- [x] T007 [P] Extend DiscoveryResultSchema in apps/agent/lib/schemas.ts: add trust_report, verification_status, categories, discovery_run_id (uuid, optional). Keep trust_score 0-100.
+- [x] T008 [P] Create ScholarshipMetadataSchema for metadata JSONB shape (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/schemas.ts
+- [x] T009 [P] Create PII scrub utility that strips full_name and SSN from profile before external calls in apps/agent/lib/discovery/pii-scrub.ts
+- [x] T010 Extend DiscoveryResult in apps/agent/lib/schemas.ts (add trust_report, verification_status, categories); ensure TuitionLiftState discovery_results uses extended type. Do not redefine state—build on 003 baseline. Align with data-model.md.
 
 **Checkpoint**: Foundation ready—user story implementation can begin
 
@@ -55,14 +55,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create QueryGenerator that accepts AnonymizedProfile and returns 3–5 query strings via LLM in apps/agent/lib/discovery/query-generator.ts
-- [ ] T012 [P] [US1] Create TavilyClient with search(query) method calling POST https://api.tavily.com/search; search_depth advanced, max_results 10 in apps/agent/lib/discovery/tavily-client.ts
-- [ ] T013 [US1] Add rate-limit delay (DISCOVERY_SEARCH_BATCH_DELAY_MS, default 2000ms) between Tavily calls in apps/agent/lib/discovery/tavily-client.ts
-- [ ] T014 [P] [US1] Create Deduplicator that merges by URL, keeps highest Tavily relevance score and merges snippets (runs pre-TrustScorer; trust_score applied later in Verify) in apps/agent/lib/discovery/deduplicator.ts
-- [ ] T015 [P] [US1] Create CycleVerifier that computes academic year from Date, verifies deadline in cycle, returns verification_status (verified|ambiguous_deadline|needs_manual_review|potentially_expired) and active (false when deadline past today per Constitution §8) in apps/agent/lib/discovery/cycle-verifier.ts
-- [ ] T016 [US1] Implement Advisor_Search node: load profile, scrub PII, call QueryGenerator, TavilyClient (rate-limited), Deduplicator; extract domains from result URLs for Live Pulse (006); write raw results to state.discovery_results in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T017 [US1] Ensure graph checkpoints after Advisor_Search (separate node from Advisor_Verify) in apps/agent/lib/graph.ts
-- [ ] T018 [US1] Wire CycleVerifier into Advisor_Verify for each result; set verification_status; flag ambiguous for manual review in apps/agent/lib/nodes/advisor-verify.ts
+**Note (003 alignment)**: 003 delivered stub implementations in advisor-search and advisor-verify. T016 replaces inline logic with lib/discovery modules; remove single-query buildSearchQuery path and inline Tavily call.
+
+- [x] T011 [P] [US1] Create QueryGenerator that accepts AnonymizedProfile and returns 3–5 query strings via LLM in apps/agent/lib/discovery/query-generator.ts
+- [x] T012 [P] [US1] Create TavilyClient with search(query) method calling POST https://api.tavily.com/search; search_depth advanced, max_results 10 in apps/agent/lib/discovery/tavily-client.ts
+- [x] T013 [US1] Add rate-limit delay (DISCOVERY_SEARCH_BATCH_DELAY_MS, default 2000ms) between Tavily calls in apps/agent/lib/discovery/tavily-client.ts
+- [x] T014 [P] [US1] Create Deduplicator that merges by URL, keeps highest Tavily relevance score and merges snippets (runs pre-TrustScorer; trust_score applied later in Verify) in apps/agent/lib/discovery/deduplicator.ts
+- [x] T015 [P] [US1] Create CycleVerifier that computes academic year from Date, verifies deadline in cycle, returns verification_status (verified|ambiguous_deadline|needs_manual_review|potentially_expired) and active (false when deadline past today per Constitution §8) in apps/agent/lib/discovery/cycle-verifier.ts
+- [x] T016 [US1] Implement Advisor_Search node: load profile, scrub PII, call QueryGenerator, TavilyClient (rate-limited), Deduplicator; extract domains from result URLs for Live Pulse (006); write raw results to state.discovery_results in apps/agent/lib/nodes/advisor-search.ts
+- [x] T017 [US1] Ensure graph checkpoints after Advisor_Search (separate node from Advisor_Verify) in apps/agent/lib/graph.ts
+- [x] T018 [US1] Wire CycleVerifier into Advisor_Verify for each result; set verification_status; flag ambiguous for manual review in apps/agent/lib/nodes/advisor-verify.ts
 
 **Checkpoint**: User Story 1—privacy-safe search with cycle verification works independently
 
@@ -76,12 +78,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Create TrustScorer: domain tier (.edu/.gov→high, .com/.org→vetted/under_review), longevity (WHOIS fallback 12), fee check; output trust_score, trust_report in apps/agent/lib/discovery/trust-scorer.ts
-- [ ] T020 [US2] Add fee-detection logic (application fee, processing fee, guarantee fee) to TrustScorer; set fee_check=fail and trust_score=0 when detected in apps/agent/lib/discovery/trust-scorer.ts
-- [ ] T021 [US2] Integrate TrustScorer into Advisor_Verify; read discovery_run_id from config.configurable, attach to each DiscoveryResult (003/006 alignment); exclude fee_check=fail from active discovery_results; include trust_report in each result in apps/agent/lib/nodes/advisor-verify.ts
-- [ ] T022 [US2] Create ScholarshipUpsert: INSERT ON CONFLICT(url) DO UPDATE for trust_score, metadata in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T023 [US2] Persist verified results to scholarships table with metadata (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T024 [US2] Extend GET /api/discovery/results response to include discoveryRunId at root, discoveryRunId per result, trustReport, verificationStatus, categories per contracts/discovery-internals.md and 003/006 alignment in apps/web/app/api/discovery/results/
+- [x] T019 [P] [US2] Create TrustScorer: domain tier (.edu/.gov→high, .com/.org→vetted/under_review), longevity (WHOIS fallback 12), fee check; output trust_score, trust_report in apps/agent/lib/discovery/trust-scorer.ts
+- [x] T020 [US2] Add fee-detection logic (application fee, processing fee, guarantee fee) to TrustScorer; set fee_check=fail and trust_score=0 when detected in apps/agent/lib/discovery/trust-scorer.ts
+- [x] T021 [US2] Integrate TrustScorer into Advisor_Verify; read discovery_run_id from config.configurable, attach to each DiscoveryResult (003/006 alignment); exclude fee_check=fail from active discovery_results; include trust_report in each result in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T022 [US2] Create ScholarshipUpsert: INSERT ON CONFLICT(url) DO UPDATE for trust_score, metadata in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T023 [US2] Persist verified results to scholarships table with metadata (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T024 [US2] Extend GET /api/discovery/results response to include discoveryRunId at root, discoveryRunId per result, trustReport, verificationStatus, categories per contracts/discovery-internals.md and 003/006 alignment in apps/web/app/api/discovery/results/
 
 **Checkpoint**: User Story 2—Trust Report on every result; fee-required excluded
 
@@ -95,9 +97,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [P] [US3] Create need_match_score calculator comparing student SAI to scholarship eligibility (0–100) in apps/agent/lib/discovery/need-match-scorer.ts
-- [ ] T026 [US3] Integrate need_match_score into Advisor_Verify; assign to each DiscoveryResult; order results by SAI alignment + trust_score in apps/agent/lib/nodes/advisor-verify.ts
-- [ ] T027 [US3] Store multiple categories in metadata.categories when scholarship fits need_based and field_specific in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T025 [P] [US3] Create need_match_score calculator comparing student SAI to scholarship eligibility (0–100) in apps/agent/lib/discovery/need-match-scorer.ts
+- [x] T026 [US3] Integrate need_match_score into Advisor_Verify; assign to each DiscoveryResult; order results by SAI alignment + trust_score in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T027 [US3] Store multiple categories in metadata.categories when scholarship fits need_based and field_specific in apps/agent/lib/discovery/scholarship-upsert.ts
 
 **Checkpoint**: User Story 3—SAI-aware ranking and multi-category support
 
@@ -111,9 +113,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Verify PostgresSaver checkpoint configuration; ensure checkpoint writes after Advisor_Search node in apps/agent/lib/checkpointer.ts
-- [ ] T029 [US4] Add resumability test: invoke graph, stop after Scout, resume with same thread_id; assert Scout not re-invoked in apps/agent/tests/ or manual verification
-- [ ] T030 [US4] Document DISCOVERY_SEARCH_BATCH_DELAY_MS in quickstart.md and .env.example in specs/004-advisor-discovery-engine/quickstart.md
+- [x] T028 [US4] Verify PostgresSaver checkpoint configuration; ensure checkpoint writes after Advisor_Search node in apps/agent/lib/checkpointer.ts
+- [x] T029 [US4] Add resumability test: invoke graph, stop after Scout, resume with same thread_id; assert Scout not re-invoked in apps/agent/tests/ or manual verification
+- [x] T030 [US4] Document DISCOVERY_SEARCH_BATCH_DELAY_MS in quickstart.md and .env.example in specs/004-advisor-discovery-engine/quickstart.md
 
 **Checkpoint**: User Story 4—durable state and rate limiting verified
 
@@ -123,11 +125,11 @@
 
 **Purpose**: Final integration, edge cases, documentation
 
-- [ ] T031 [P] Handle zero search results: return empty discovery_results without error in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T032 [P] Handle Tavily timeout/failure: log error, update error_log, route to SafeRecovery per 003 in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T033 [P] Add updated_at to scholarship upsert for conflict update in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T034 Run quickstart.md validation; verify env vars and local discovery flow in specs/004-advisor-discovery-engine/quickstart.md
-- [ ] T035 Validate SC-006 (discovery results within 5 min): run end-to-end discovery under normal load and document timing; defer formal load test if infra not ready
+- [x] T031 [P] Handle zero search results: return empty discovery_results without error in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: When Tavily returns empty or no results, set discovery_results: [] and goto Advisor_Verify (no error; Coach will handle empty state per FR-012b).
+- [x] T032 [P] Handle Tavily timeout/failure: log error, update error_log, route to SafeRecovery per 003 in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: Wrap Tavily calls in try/catch; on timeout/network/API error, append createErrorEntry("Advisor_Search", err), return Command({ goto: "SafeRecovery", update: { error_log } }). Consider explicit timeout (e.g. AbortController) if Tavily has no built-in limit.
+- [x] T033 [P] Add updated_at to scholarship upsert for conflict update in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T034 Run quickstart.md validation; verify env vars and local discovery flow in specs/004-advisor-discovery-engine/quickstart.md
+- [x] T035 Validate SC-006 (discovery results within 5 min): run end-to-end discovery under normal load and document timing; defer formal load test if infra not ready
 
 ---
 

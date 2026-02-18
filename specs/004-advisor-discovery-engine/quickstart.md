@@ -26,8 +26,13 @@ TAVILY_API_KEY=tvly-xxx
 # LLM (query generation)
 OPENAI_API_KEY=xxx   # or ANTHROPIC_API_KEY
 
-# Optional: rate limit (default 2000 ms)
+# Optional: rate limit between search batches (FR-014; default 2000 ms)
+# Minimum delay in ms between Tavily calls to prevent 429 throttling. Tune for external limits.
 DISCOVERY_SEARCH_BATCH_DELAY_MS=2000
+
+# Optional: timeout for Tavily search batch (default 300000 ms = 5 min; T032)
+# Prevents indefinite hang if Tavily API is slow or unresponsive.
+DISCOVERY_SEARCH_TIMEOUT_MS=300000
 ```
 
 ## Setup Steps
@@ -51,6 +56,12 @@ DISCOVERY_SEARCH_BATCH_DELAY_MS=2000
    # PostgresSaver.setup() runs on first graph invocation
    # Or run manually if schema is managed separately
    ```
+
+## Rate Limiting & Resumability (US4)
+
+- **DISCOVERY_SEARCH_BATCH_DELAY_MS**: Minimum delay (ms) between Tavily search calls. Default 2000. Prevents 429 throttling (FR-014).
+- **Checkpoints**: PostgresSaver writes a checkpoint after Advisor_Search (Scout). If Advisor_Verify fails or times out, resume with the same `thread_id` — Scout will not re-run.
+- **Manual verification**: Run `pnpm verify-us4` to assert resumability.
 
 ## Running Discovery Locally
 
@@ -81,3 +92,19 @@ pnpm --filter agent test
 ```
 
 Unit tests should mock Tavily and WHOIS; integration tests can use Tavily sandbox if available.
+
+## Verification (T034)
+
+Validate env and discovery flow:
+
+1. **Build**: `pnpm --filter agent build` and `pnpm --filter agent check-types` — should succeed.
+2. **Env vars**: Ensure `apps/agent/.env` or root `.env` has `DATABASE_URL`, `TAVILY_API_KEY`, `OPENAI_API_KEY`.
+3. **US2 (Trust Report)**: `pnpm verify-us2` — full discovery; every result has trust_score and trust_report.
+4. **US4 (Resumability)**: `pnpm verify-us4` — assert Scout not re-invoked on resume.
+
+## SC-006 Timing (T035)
+
+**Goal**: Discovery results within 5 minutes under normal load.
+
+- **Design**: `DISCOVERY_SEARCH_TIMEOUT_MS=300000` (5 min) caps Tavily batch; rate limit (`DISCOVERY_SEARCH_BATCH_DELAY_MS=2000`) prevents throttling.
+- **Validation**: Run `pnpm verify-us2` with `time pnpm verify-us2` and confirm completion under 5 min. Formal load tests deferred until infra ready.

@@ -3,6 +3,10 @@
  * Per plan.md, 002 FR-009 — creates checkpoints table via setup() on first use.
  * Ignores 23505 (unique violation) if schema already exists from prior setup.
  *
+ * US4 (FR-013): LangGraph checkpoints after each node. Checkpoint is written
+ * when Advisor_Search completes, before Advisor_Verify runs. Resume with same
+ * thread_id after a Verify failure will not re-run Scout.
+ *
  * @see LangGraph JS: https://langchain-ai.github.io/langgraphjs/ — PostgresSaver, checkpointer setup
  * @see @langchain/langgraph-checkpoint-postgres
  */
