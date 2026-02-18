@@ -21,6 +21,7 @@
     "@langchain/openai": "^0.3.0",
     "@repo/db": "workspace:*",
     "@supabase/supabase-js": "^2.90.0",
+    "whois-json": "^2.0.4",
     "zod": "^3.24.0"
   },
   "devDependencies": {

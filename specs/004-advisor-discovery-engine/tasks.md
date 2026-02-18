@@ -78,12 +78,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Create TrustScorer: domain tier (.edu/.gov→high, .com/.org→vetted/under_review), longevity (WHOIS fallback 12), fee check; output trust_score, trust_report in apps/agent/lib/discovery/trust-scorer.ts
-- [ ] T020 [US2] Add fee-detection logic (application fee, processing fee, guarantee fee) to TrustScorer; set fee_check=fail and trust_score=0 when detected in apps/agent/lib/discovery/trust-scorer.ts
-- [ ] T021 [US2] Integrate TrustScorer into Advisor_Verify; read discovery_run_id from config.configurable, attach to each DiscoveryResult (003/006 alignment); exclude fee_check=fail from active discovery_results; include trust_report in each result in apps/agent/lib/nodes/advisor-verify.ts
-- [ ] T022 [US2] Create ScholarshipUpsert: INSERT ON CONFLICT(url) DO UPDATE for trust_score, metadata in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T023 [US2] Persist verified results to scholarships table with metadata (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T024 [US2] Extend GET /api/discovery/results response to include discoveryRunId at root, discoveryRunId per result, trustReport, verificationStatus, categories per contracts/discovery-internals.md and 003/006 alignment in apps/web/app/api/discovery/results/
+- [x] T019 [P] [US2] Create TrustScorer: domain tier (.edu/.gov→high, .com/.org→vetted/under_review), longevity (WHOIS fallback 12), fee check; output trust_score, trust_report in apps/agent/lib/discovery/trust-scorer.ts
+- [x] T020 [US2] Add fee-detection logic (application fee, processing fee, guarantee fee) to TrustScorer; set fee_check=fail and trust_score=0 when detected in apps/agent/lib/discovery/trust-scorer.ts
+- [x] T021 [US2] Integrate TrustScorer into Advisor_Verify; read discovery_run_id from config.configurable, attach to each DiscoveryResult (003/006 alignment); exclude fee_check=fail from active discovery_results; include trust_report in each result in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T022 [US2] Create ScholarshipUpsert: INSERT ON CONFLICT(url) DO UPDATE for trust_score, metadata in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T023 [US2] Persist verified results to scholarships table with metadata (source_url, snippet, scoring_factors, trust_report, categories, verification_status) in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T024 [US2] Extend GET /api/discovery/results response to include discoveryRunId at root, discoveryRunId per result, trustReport, verificationStatus, categories per contracts/discovery-internals.md and 003/006 alignment in apps/web/app/api/discovery/results/
 
 **Checkpoint**: User Story 2—Trust Report on every result; fee-required excluded
 

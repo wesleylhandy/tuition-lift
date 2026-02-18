@@ -17,12 +17,15 @@ function getEnv(name: string): string | undefined {
   return process.env[name];
 }
 
+/** Typed Supabase client for Database. Use for explicit annotations. */
+export type DbClient = SupabaseClient<Database>;
+
 /**
  * Creates a typed Supabase client appropriate for the current runtime.
  * - Browser: Uses anon key only (service-role never exposed).
  * - Node/server: Uses service-role key if set, otherwise anon key.
  */
-export function createDbClient(): SupabaseClient<Database> {
+export function createDbClient(): DbClient {
   const url = getEnv(SUPABASE_URL);
   const anonKey = getEnv(SUPABASE_ANON_KEY);
 

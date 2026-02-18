@@ -2,7 +2,7 @@
  * Advisor_Verify node: score results, apply Trust Filter, hand off to Coach.
  * Constitution §10: .edu/.gov 2×, auto-fail fees, 0-100 scoring.
  * Reads discovery_run_id from config.configurable; attaches to each result.
- * US3 (T028): on error append error_log, route to SafeRecovery.
+ * US2: TrustScorer integration; exclude fee_check=fail; persist to scholarships.
  *
  * @see data-model.md, plan.md
  * @see LangGraph JS: Command for node-to-node handoff; config.configurable for run-scoped data
@@ -13,33 +13,8 @@ import type { DiscoveryResult } from "../schemas";
 import { createErrorEntry } from "../error-log";
 import { anonymizeFinancial } from "../anonymize-financial";
 import { verify as verifyCycle } from "../discovery/cycle-verifier";
-
-const FEE_PATTERNS = [
-  /application fee/i,
-  /processing fee/i,
-  /guarantee fee/i,
-  /upfront fee/i,
-  /\$[\d,]+\s*(?:application|processing|to apply)/i,
-];
-
-function suggestsUpfrontFee(title: string, content: string): boolean {
-  const text = `${title} ${content}`;
-  return FEE_PATTERNS.some((p) => p.test(text));
-}
-
-/** Trust Filter: Constitution §10 — .edu/.gov High Trust 80-100, .com/.org 60-79, auto-fail = 0. */
-function computeTrustScore(url: string, title: string, content: string): number {
-  if (suggestsUpfrontFee(title, content)) return 0;
-  try {
-    const host = new URL(url).hostname.toLowerCase();
-    if (host.endsWith(".edu")) return 90;
-    if (host.endsWith(".gov")) return 90;
-    if (host.endsWith(".org")) return 68;
-    return 62;
-  } catch {
-    return 50;
-  }
-}
+import { scoreTrust, toScholarshipMetadata } from "../discovery/trust-scorer";
+import { upsertScholarship } from "../discovery/scholarship-upsert";
 
 /** need_match_score: match vs financial_profile (0-100). */
 function computeNeedMatchScore(
@@ -56,6 +31,20 @@ function computeNeedMatchScore(
   return Math.min(100, Math.max(0, score));
 }
 
+/** Infer categories from content for metadata; US3 extends with SAI alignment. */
+function inferCategories(content: string): string[] {
+  const text = (content ?? "").toLowerCase();
+  const categories: string[] = [];
+  if (text.includes("need-based") || text.includes("low income") || text.includes("pell"))
+    categories.push("need_based");
+  if (text.includes("merit")) categories.push("merit");
+  if (text.includes("minority") || text.includes("diversity")) categories.push("minority");
+  if (text.includes("engineering") || text.includes("stem") || text.includes("major"))
+    categories.push("field_specific");
+  if (categories.length === 0) categories.push("other");
+  return categories;
+}
+
 export type AdvisorVerifyConfig = {
   configurable?: {
     discovery_run_id?: string;
@@ -64,8 +53,8 @@ export type AdvisorVerifyConfig = {
 };
 
 /**
- * Advisor_Verify: scores discovery_results, applies Trust Filter, returns Command to Coach.
- * US3: On error append error_log and route to SafeRecovery.
+ * Advisor_Verify: TrustScorer + CycleVerifier; exclude fee_check=fail; persist via ScholarshipUpsert.
+ * US2: Every result has trust_score, trust_report; fee-required excluded from active.
  */
 export async function advisorVerifyNode(
   state: TuitionLiftStateType,
@@ -81,13 +70,15 @@ export async function advisorVerifyNode(
 
     const verified: DiscoveryResult[] = [];
     for (const r of rawResults) {
-      const runId = discoveryRunId || r.discovery_run_id;
-      const trustScore = computeTrustScore(
-        r.url,
-        r.title,
-        r.content ?? ""
-      );
-      if (trustScore === 0) continue;
+      const runId = discoveryRunId || (r.discovery_run_id ?? "");
+
+      const trustResult = await scoreTrust({
+        url: r.url,
+        title: r.title,
+        content: r.content ?? "",
+      });
+
+      if (trustResult.fee_check === "fail") continue;
 
       const needMatchScore = computeNeedMatchScore(r.content ?? "", anonymized);
       const cycleResult = verifyCycle({
@@ -95,16 +86,32 @@ export async function advisorVerifyNode(
         url: r.url,
       });
 
-      verified.push({
+      const categories = inferCategories(r.content ?? "");
+
+      const result: DiscoveryResult = {
         id: r.id,
         discovery_run_id: runId,
         title: r.title,
         url: r.url,
-        trust_score: trustScore,
+        trust_score: trustResult.trust_score,
         need_match_score: needMatchScore,
+        trust_report: trustResult.trust_report,
         verification_status: cycleResult.verification_status,
+        categories,
         deadline: cycleResult.deadline ?? undefined,
-      });
+        amount: r.amount ?? null,
+      };
+
+      verified.push(result);
+
+      const metadata = toScholarshipMetadata(
+        trustResult,
+        r.url,
+        (r.content ?? "").slice(0, 500),
+        categories,
+        cycleResult.verification_status
+      );
+      await upsertScholarship(result, metadata);
     }
 
     return new Command({

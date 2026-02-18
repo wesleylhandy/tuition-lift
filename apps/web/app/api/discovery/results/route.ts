@@ -40,11 +40,16 @@ export async function GET(request: NextRequest) {
   const values = (state?.values ?? {}) as {
     discovery_results?: Array<{
       id: string;
-      discovery_run_id: string;
+      discovery_run_id?: string;
       title: string;
       url: string;
       trust_score: number;
       need_match_score: number;
+      trust_report?: string;
+      verification_status?: string;
+      categories?: string[];
+      deadline?: string;
+      amount?: number | null;
     }>;
     active_milestones?: Array<{
       id: string;
@@ -65,11 +70,16 @@ export async function GET(request: NextRequest) {
     discoveryRunId,
     discoveryResults: results.map((r) => ({
       id: r.id,
-      discoveryRunId: r.discovery_run_id,
+      discoveryRunId: r.discovery_run_id ?? discoveryRunId,
       title: r.title,
       url: r.url,
       trustScore: r.trust_score,
       needMatchScore: r.need_match_score,
+      trustReport: r.trust_report,
+      verificationStatus: r.verification_status,
+      categories: r.categories ?? [],
+      deadline: r.deadline,
+      amount: r.amount,
     })),
     activeMilestones: milestones.map((m) => ({
       id: m.id,

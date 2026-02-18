@@ -36,6 +36,10 @@ async function run() {
       logLevel: "error",
     });
 
+    if (!result?.lhr) {
+      throw new Error("Lighthouse did not return a valid result");
+    }
+
     const lhr = result.lhr;
     const perfScore = (lhr.categories.performance?.score ?? 0) * 100;
     const bpScore = (lhr.categories["best-practices"]?.score ?? 0) * 100;
@@ -47,8 +51,9 @@ async function run() {
       fs.mkdirSync(outDir, { recursive: true });
     }
     const reportPath = path.join(outDir, "discovery-report.html");
-    if (result.report) {
-      fs.writeFileSync(reportPath, result.report);
+    const report = result.report;
+    if (report) {
+      fs.writeFileSync(reportPath, typeof report === "string" ? report : report.join(""));
       console.log(`\nReport saved to ${reportPath}`);
     }
 

@@ -5,6 +5,7 @@
  */
 // Uses createDbClient; for cookie-based auth add @supabase/ssr
 import { createDbClient } from "@repo/db";
+import type { DbClient } from "@repo/db";
 
 /**
  * Creates a Supabase client for server-side auth.
@@ -12,6 +13,6 @@ import { createDbClient } from "@repo/db";
  * Without @supabase/ssr, session from cookies is not auto-restored; getUser() may return null.
  * Add @supabase/ssr and createServerClient for full cookie-based auth.
  */
-export function createServerSupabaseClient() {
+export function createServerSupabaseClient(): DbClient {
   return createDbClient();
 }
