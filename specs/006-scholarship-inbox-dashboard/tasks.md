@@ -87,11 +87,11 @@
 
 **Independent Test**: Move applications through stages; verify tracker updates in real time; status persists correctly
 
-- [ ] T026 [P] [US3] Create Tracker Column component at apps/web/components/dashboard/application-tracker/tracker-column.tsx for one lifecycle stage (title, list of cards)
-- [ ] T027 [P] [US3] Create Application Card component at apps/web/components/dashboard/application-tracker/application-card.tsx displaying application/scholarship info, status, deadline
-- [ ] T028 [US3] Create Application Tracker component at apps/web/components/dashboard/application-tracker/application-tracker.tsx with columns for Tracked, Drafting, Review, Submitted, Outcome Pending; map DB status (draft, submitted, awarded, rejected, withdrawn) to display buckets per data-model.md lifecycle mapping
-- [ ] T029 [US3] Subscribe Application Tracker to applications table via use-realtime-applications for real-time status updates per FR-010
-- [ ] T030 [US3] Ensure Application Tracker receives and displays Won (awarded) and Lost (rejected) in outcome section or inline
+- [x] T026 [P] [US3] Create Tracker Column component at apps/web/components/dashboard/application-tracker/tracker-column.tsx for one lifecycle stage (title, list of cards)
+- [x] T027 [P] [US3] Create Application Card component at apps/web/components/dashboard/application-tracker/application-card.tsx displaying application/scholarship info, status, deadline
+- [x] T028 [US3] Create Application Tracker component at apps/web/components/dashboard/application-tracker/application-tracker.tsx with columns for Tracked, Drafting, Review, Submitted, Outcome Pending; map DB status (draft, submitted, awarded, rejected, withdrawn) to display buckets per data-model.md lifecycle mapping
+- [x] T029 [US3] Subscribe Application Tracker to applications table via use-realtime-applications for real-time status updates per FR-010
+- [x] T030 [US3] Ensure Application Tracker receives and displays Won (awarded) and Lost (rejected) in outcome section or inline
 
 **Checkpoint**: Application Tracker shows full lifecycle; real-time updates; status mapping correct
 

@@ -6,6 +6,7 @@
 import { BentoGrid, BentoGridItem } from "@/components/dashboard/bento-grid";
 import { MatchInbox } from "@/components/dashboard/match-inbox/match-inbox";
 import { GamePlan } from "@/components/dashboard/game-plan/game-plan";
+import { ApplicationTracker } from "@/components/dashboard/application-tracker/application-tracker";
 
 export default function DashboardPage() {
   return (
@@ -17,6 +18,9 @@ export default function DashboardPage() {
         </BentoGridItem>
         <BentoGridItem colSpan={2} rowSpan={2}>
           <GamePlan />
+        </BentoGridItem>
+        <BentoGridItem colSpan={4} rowSpan={2}>
+          <ApplicationTracker />
         </BentoGridItem>
       </BentoGrid>
     </main>
