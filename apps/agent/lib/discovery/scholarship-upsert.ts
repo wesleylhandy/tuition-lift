@@ -1,6 +1,8 @@
 /**
  * ScholarshipUpsert: INSERT ON CONFLICT(url) DO UPDATE per FR-015.
  * Persists verified discovery results to scholarships with metadata JSONB.
+ * US3/FR-016a: metadata.categories stores all applicable categories
+ * (e.g. need_based + field_specific) when scholarship fits multiple.
  *
  * @see contracts/discovery-internals.md §6, data-model.md §2
  */

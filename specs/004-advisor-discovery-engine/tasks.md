@@ -97,9 +97,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [P] [US3] Create need_match_score calculator comparing student SAI to scholarship eligibility (0–100) in apps/agent/lib/discovery/need-match-scorer.ts
-- [ ] T026 [US3] Integrate need_match_score into Advisor_Verify; assign to each DiscoveryResult; order results by SAI alignment + trust_score in apps/agent/lib/nodes/advisor-verify.ts
-- [ ] T027 [US3] Store multiple categories in metadata.categories when scholarship fits need_based and field_specific in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T025 [P] [US3] Create need_match_score calculator comparing student SAI to scholarship eligibility (0–100) in apps/agent/lib/discovery/need-match-scorer.ts
+- [x] T026 [US3] Integrate need_match_score into Advisor_Verify; assign to each DiscoveryResult; order results by SAI alignment + trust_score in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T027 [US3] Store multiple categories in metadata.categories when scholarship fits need_based and field_specific in apps/agent/lib/discovery/scholarship-upsert.ts
 
 **Checkpoint**: User Story 3—SAI-aware ranking and multi-category support
 
