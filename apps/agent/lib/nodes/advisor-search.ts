@@ -88,30 +88,53 @@ export async function advisorSearchNode(
       });
     }
 
-    const batchResults = await searchBatch(queries);
-    const rawResults = batchResults.flat();
-    const deduped = deduplicate(rawResults);
+    // T032: Explicit timeout for Tavily calls; prevents indefinite hang (fetch has no built-in limit)
+    const timeoutMs =
+      parseInt(process.env.DISCOVERY_SEARCH_TIMEOUT_MS ?? "300000", 10) || 300000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    const discoveryResults: DiscoveryResult[] = deduped.map((r) => ({
-      id: randomUUID(),
-      discovery_run_id: discoveryRunId,
-      title: r.title,
-      url: r.url,
-      trust_score: 0,
-      need_match_score: 0,
-      content: r.content || undefined,
-    }));
+    try {
+      const batchResults = await searchBatch(queries, {
+        signal: controller.signal,
+      });
+      const rawResults = batchResults.flat();
+      const deduped = deduplicate(rawResults);
 
-    // Domains extracted for Live Pulse (006)
-    void extractDomainsFromResults(deduped);
+      // T031: When Tavily returns empty or no results, set discovery_results: [] and goto Advisor_Verify (no error)
+      if (deduped.length === 0) {
+        return new Command({
+          goto: "Advisor_Verify",
+          update: {
+            discovery_results: [],
+            last_active_node: "Advisor_Search",
+          },
+        });
+      }
 
-    return new Command({
-      goto: "Advisor_Verify",
-      update: {
-        discovery_results: discoveryResults,
-        last_active_node: "Advisor_Search",
-      },
-    });
+      const discoveryResults: DiscoveryResult[] = deduped.map((r) => ({
+        id: randomUUID(),
+        discovery_run_id: discoveryRunId,
+        title: r.title,
+        url: r.url,
+        trust_score: 0,
+        need_match_score: 0,
+        content: r.content || undefined,
+      }));
+
+      // Domains extracted for Live Pulse (006)
+      void extractDomainsFromResults(deduped);
+
+      return new Command({
+        goto: "Advisor_Verify",
+        update: {
+          discovery_results: discoveryResults,
+          last_active_node: "Advisor_Search",
+        },
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch (err) {
     return new Command({
       goto: "SafeRecovery",

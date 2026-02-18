@@ -50,6 +50,7 @@ export async function search(
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       query,

@@ -46,6 +46,9 @@ export async function advisorVerifyNode(
   state: TuitionLiftStateType,
   config?: AdvisorVerifyConfig
 ): Promise<Command> {
+  if (process.env.US4_SIMULATE_VERIFY_FAIL === "1") {
+    throw new Error("US4 resumability test: simulated Verify failure");
+  }
   try {
     const discoveryRunId = config?.configurable?.discovery_run_id ?? "";
     const rawResults = state.discovery_results ?? [];

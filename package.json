@@ -10,6 +10,7 @@
     "verify-checkpoints": "tsx apps/agent/scripts/verify-checkpoints.ts",
     "verify-sc001": "tsx apps/agent/scripts/verify-sc001.ts",
     "verify-us2": "tsx apps/agent/scripts/verify-us2.ts",
+    "verify-us4": "tsx apps/agent/scripts/verify-us4.ts",
     "setup-test-profile": "tsx apps/agent/scripts/setup-test-profile.ts"
   },
   "devDependencies": {

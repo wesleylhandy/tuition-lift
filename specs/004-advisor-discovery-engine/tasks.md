@@ -113,9 +113,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Verify PostgresSaver checkpoint configuration; ensure checkpoint writes after Advisor_Search node in apps/agent/lib/checkpointer.ts
-- [ ] T029 [US4] Add resumability test: invoke graph, stop after Scout, resume with same thread_id; assert Scout not re-invoked in apps/agent/tests/ or manual verification
-- [ ] T030 [US4] Document DISCOVERY_SEARCH_BATCH_DELAY_MS in quickstart.md and .env.example in specs/004-advisor-discovery-engine/quickstart.md
+- [x] T028 [US4] Verify PostgresSaver checkpoint configuration; ensure checkpoint writes after Advisor_Search node in apps/agent/lib/checkpointer.ts
+- [x] T029 [US4] Add resumability test: invoke graph, stop after Scout, resume with same thread_id; assert Scout not re-invoked in apps/agent/tests/ or manual verification
+- [x] T030 [US4] Document DISCOVERY_SEARCH_BATCH_DELAY_MS in quickstart.md and .env.example in specs/004-advisor-discovery-engine/quickstart.md
 
 **Checkpoint**: User Story 4—durable state and rate limiting verified
 
@@ -125,11 +125,11 @@
 
 **Purpose**: Final integration, edge cases, documentation
 
-- [ ] T031 [P] Handle zero search results: return empty discovery_results without error in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: When Tavily returns empty or no results, set discovery_results: [] and goto Advisor_Verify (no error; Coach will handle empty state per FR-012b).
-- [ ] T032 [P] Handle Tavily timeout/failure: log error, update error_log, route to SafeRecovery per 003 in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: Wrap Tavily calls in try/catch; on timeout/network/API error, append createErrorEntry("Advisor_Search", err), return Command({ goto: "SafeRecovery", update: { error_log } }). Consider explicit timeout (e.g. AbortController) if Tavily has no built-in limit.
-- [ ] T033 [P] Add updated_at to scholarship upsert for conflict update in apps/agent/lib/discovery/scholarship-upsert.ts
-- [ ] T034 Run quickstart.md validation; verify env vars and local discovery flow in specs/004-advisor-discovery-engine/quickstart.md
-- [ ] T035 Validate SC-006 (discovery results within 5 min): run end-to-end discovery under normal load and document timing; defer formal load test if infra not ready
+- [x] T031 [P] Handle zero search results: return empty discovery_results without error in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: When Tavily returns empty or no results, set discovery_results: [] and goto Advisor_Verify (no error; Coach will handle empty state per FR-012b).
+- [x] T032 [P] Handle Tavily timeout/failure: log error, update error_log, route to SafeRecovery per 003 in apps/agent/lib/nodes/advisor-search.ts. **Impl note**: Wrap Tavily calls in try/catch; on timeout/network/API error, append createErrorEntry("Advisor_Search", err), return Command({ goto: "SafeRecovery", update: { error_log } }). Consider explicit timeout (e.g. AbortController) if Tavily has no built-in limit.
+- [x] T033 [P] Add updated_at to scholarship upsert for conflict update in apps/agent/lib/discovery/scholarship-upsert.ts
+- [x] T034 Run quickstart.md validation; verify env vars and local discovery flow in specs/004-advisor-discovery-engine/quickstart.md
+- [x] T035 Validate SC-006 (discovery results within 5 min): run end-to-end discovery under normal load and document timing; defer formal load test if infra not ready
 
 ---
 

@@ -60,8 +60,8 @@ async function main() {
     process.exit(0);
   }
 
-  const threadId = `user_${userId}`;
   const discoveryRunId = randomUUID();
+  const threadId = `verify-us2-${discoveryRunId}`;
   const config = {
     configurable: {
       thread_id: threadId,

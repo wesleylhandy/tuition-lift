@@ -31,7 +31,7 @@ function toPrimaryCategory(categories: string[]): ScholarshipCategory {
 }
 
 /**
- * Upserts a scholarship by URL. ON CONFLICT(url) updates trust_score, metadata, updated_at.
+ * Upserts a scholarship by URL. ON CONFLICT(url) updates trust_score, metadata, updated_at (T033).
  * Returns the scholarship id (existing or newly inserted).
  */
 export async function upsertScholarship(
