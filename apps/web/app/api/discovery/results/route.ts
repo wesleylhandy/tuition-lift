@@ -40,12 +40,14 @@ export async function GET(request: NextRequest) {
   const values = (state?.values ?? {}) as {
     discovery_results?: Array<{
       id: string;
+      scholarship_id?: string;
       discovery_run_id?: string;
       title: string;
       url: string;
       trust_score: number;
       need_match_score: number;
       trust_report?: string;
+      coach_take?: string | null;
       verification_status?: string;
       categories?: string[];
       deadline?: string;
@@ -70,12 +72,14 @@ export async function GET(request: NextRequest) {
     discoveryRunId,
     discoveryResults: results.map((r) => ({
       id: r.id,
+      scholarshipId: r.scholarship_id ?? r.id,
       discoveryRunId: r.discovery_run_id ?? discoveryRunId,
       title: r.title,
       url: r.url,
       trustScore: r.trust_score,
       needMatchScore: r.need_match_score,
       trustReport: r.trust_report,
+      coachTake: r.coach_take ?? null,
       verificationStatus: r.verification_status,
       categories: r.categories ?? [],
       deadline: r.deadline,

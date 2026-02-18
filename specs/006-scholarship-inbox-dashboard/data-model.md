@@ -79,7 +79,7 @@ CREATE POLICY "Users can delete own dismissals"
 | applications | 002 data-model | Application Tracker, Top 3, Debt Lifted           |
 | discovery_results | Orchestration / Advisor (003) | Match Inbox feed; need_match_score, trust_score, discovery_run_id |
 
-**Note**: discovery_results are retrieved via GET /api/discovery/results (003) which returns discoveryRunId and results with discovery_run_id per item. momentum_score and Coach's Take may be computed by Coach/Orchestration. applications.momentum_score (002; formerly priority_score) used for Top 3 ordering.
+**Note**: discovery_results are retrieved via GET /api/discovery/results (003) which returns discoveryRunId and results with discovery_run_id, trust_score, need_match_score per item. Coach's Take may be computed by Coach/Orchestration. applications.momentum_score (002) used for Top 3 ordering (not discovery results).
 
 ## Trust Shield Mapping
 
@@ -95,15 +95,18 @@ CREATE POLICY "Users can delete own dismissals"
 
 Dashboard displays: Tracked, Drafting, Review, Submitted, Outcome Pending; Won, Lost.
 
-DB `application_status`: draft, submitted, awarded, rejected, withdrawn.
+DB `application_status` (002): draft, submitted, awarded, rejected, withdrawn.
 
-Mapping (per spec note, to be revisited):
-- Tracked → draft (initial)
-- Drafting → draft
-- Review → draft (or new status if added)
-- Submitted → submitted
-- Outcome Pending → submitted
-- Won → awarded
-- Lost → rejected
+**Mapping**: The DB has fewer statuses than Coach display states. Tracked, Drafting, and Review all map to `draft`—the UI distinguishes them via Coach/checkpoint metadata, last_progress_at, or convention (e.g., newly added = Tracked; last_progress_at set = Drafting/Review). Outcome Pending uses `submitted` with no decision yet.
 
-Implement UI columns/sections by mapping DB status to display buckets.
+| Display bucket  | DB status   | Notes                                              |
+|-----------------|-------------|----------------------------------------------------|
+| Tracked         | draft       | Initial state when application first added         |
+| Drafting        | draft       | In progress; may use last_progress_at to infer      |
+| Review          | draft       | Ready for submission; Coach distinguishes from Drafting |
+| Submitted       | submitted   | User confirmed submission per 005 HITL             |
+| Outcome Pending | submitted   | Awaiting decision                                  |
+| Won             | awarded     | confirmed_at IS NOT NULL (Debt Lifted)             |
+| Lost            | rejected    |                                                    |
+
+**Implementation**: Map DB status to display buckets per table. For Drafting vs Review (both `draft`), use Coach API or application metadata if available; otherwise default to Tracked or Drafting. Implement UI columns/sections by this mapping.

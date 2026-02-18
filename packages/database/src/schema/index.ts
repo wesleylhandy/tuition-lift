@@ -32,6 +32,9 @@ export {
 } from './applications';
 export type { ApplicationSchema } from './applications';
 
+export { dismissalInputSchema } from './dismissals';
+export type { DismissalInputSchema } from './dismissals';
+
 export {
   notificationLogSchema,
   notificationChannelEnum,
