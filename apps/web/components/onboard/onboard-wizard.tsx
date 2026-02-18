@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Step1Form } from "./step1-form";
+import { Step2Form } from "./step2-form";
 
 type Step = 1 | 2 | 3;
 
@@ -26,9 +27,7 @@ export function OnboardWizard() {
         <Step1Form onSuccess={() => setStep(2)} />
       )}
       {step === 2 && (
-        <div data-step={2}>
-          <p className="text-muted-foreground">Step 2 — Academic Profile (placeholder)</p>
-        </div>
+        <Step2Form onSuccess={() => setStep(3)} />
       )}
       {step === 3 && (
         <div data-step={3}>

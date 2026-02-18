@@ -9,6 +9,7 @@
 import { z } from "zod";
 import { createServerSupabaseClient } from "../supabase/server";
 import { checkAndIncrementSignupRateLimit } from "../rate-limit";
+import { isUsStateCode } from "../constants/us-states";
 
 const signUpInputSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -92,6 +93,112 @@ export async function signUp(formData: FormData): Promise<SignUpResult> {
     return {
       success: false,
       error: "Account created but setup failed. Please sign in to continue.",
+    };
+  }
+
+  return { success: true };
+}
+
+// --- saveAcademicProfile (Step 2) ---
+
+const saveAcademicProfileInputSchema = z.object({
+  intended_major: z
+    .string()
+    .trim()
+    .min(1, "Major is required.")
+    .max(200, "Major must be 200 characters or less."),
+  state: z
+    .string()
+    .trim()
+    .refine((v) => isUsStateCode(v), "Please select a valid US state."),
+  full_name: z.string().trim().optional().transform((v) => v || undefined),
+  gpa_weighted: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === "" || v === undefined || v === null) return undefined;
+      const n = typeof v === "string" ? parseFloat(v) : v;
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .refine(
+      (v) => v === undefined || (v >= 0 && v <= 6),
+      "Weighted GPA must be between 0 and 6."
+    ),
+  gpa_unweighted: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === "" || v === undefined || v === null) return undefined;
+      const n = typeof v === "string" ? parseFloat(v) : v;
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .refine(
+      (v) => v === undefined || (v >= 0 && v <= 4),
+      "Unweighted GPA must be between 0 and 4."
+    ),
+});
+
+export type SaveAcademicProfileResult = {
+  success: boolean;
+  error?: string;
+};
+
+/**
+ * saveAcademicProfile — Upsert academic profile (intended_major, state required;
+ * full_name, gpa_weighted, gpa_unweighted optional).
+ * Per contracts/server-actions.md §2.
+ */
+export async function saveAcademicProfile(
+  formData: FormData
+): Promise<SaveAcademicProfileResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const raw = {
+    intended_major: formData.get("intended_major") ?? "",
+    state: formData.get("state") ?? "",
+    full_name: formData.get("full_name") ?? "",
+    gpa_weighted: formData.get("gpa_weighted") ?? "",
+    gpa_unweighted: formData.get("gpa_unweighted") ?? "",
+  };
+
+  const parsed = saveAcademicProfileInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    const msg = parsed.error.errors[0]?.message ?? "Invalid input.";
+    return { success: false, error: msg };
+  }
+
+  const { intended_major, state, full_name, gpa_weighted, gpa_unweighted } =
+    parsed.data;
+
+  const stateCode = state.toUpperCase().trim();
+
+  const { error: upsertError } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        id: user.id,
+        intended_major,
+        state: stateCode,
+        full_name: full_name || null,
+        gpa_weighted: gpa_weighted ?? null,
+        gpa_unweighted: gpa_unweighted ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
+  if (upsertError) {
+    return {
+      success: false,
+      error: "Failed to save profile. Please try again.",
     };
   }
 

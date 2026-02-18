@@ -68,10 +68,10 @@
 
 **Independent Test**: Fill Step 2 and submit; verify profile persisted (intended_major, state, gpa_weighted, gpa_unweighted); missing major/state blocks advance.
 
-- [ ] T015 [US2] Implement saveAcademicProfile Server Action in apps/web/lib/actions/onboarding.ts: validate auth, intended_major and state required (Zod), full_name/gpa_weighted/gpa_unweighted optional with range validation (0–6 weighted, 0–4 unweighted), upsert profiles per contracts/server-actions.md §2
-- [ ] T016 [US2] Create Step2Form component in apps/web/components/onboard/step2-form.tsx: intended_major (text), state (dropdown from US states), full_name (optional), gpa_weighted and gpa_unweighted (optional number inputs with labels), Coach tip per FR-005, validation per FR-008
-- [ ] T017 [US2] Wire Step2Form into OnboardWizard when step=2; on saveAcademicProfile success set step to 3; show skeleton during save, block duplicate submit per FR-014
-- [ ] T018 [US2] Add skip/optional handling for GPA fields when empty; validate only when value provided (invalid blocks or allows skip per FR-008) in Step2Form
+- [x] T015 [US2] Implement saveAcademicProfile Server Action in apps/web/lib/actions/onboarding.ts: validate auth, intended_major and state required (Zod), full_name/gpa_weighted/gpa_unweighted optional with range validation (0–6 weighted, 0–4 unweighted), upsert profiles per contracts/server-actions.md §2
+- [x] T016 [US2] Create Step2Form component in apps/web/components/onboard/step2-form.tsx: intended_major (text), state (dropdown from US states), full_name (optional), gpa_weighted and gpa_unweighted (optional number inputs with labels), Coach tip per FR-005, validation per FR-008
+- [x] T017 [US2] Wire Step2Form into OnboardWizard when step=2; on saveAcademicProfile success set step to 3; show skeleton during save, block duplicate submit per FR-014
+- [x] T018 [US2] Add skip/optional handling for GPA fields when empty; validate only when value provided (invalid blocks or allows skip per FR-008) in Step2Form
 
 **Checkpoint**: User Story 2 complete—Academic Profile saves and advances
 
