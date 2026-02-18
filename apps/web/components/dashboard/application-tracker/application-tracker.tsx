@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { TrackerColumn } from "./tracker-column";
 import { ApplicationCard } from "./application-card";
 import { useRealtimeApplications } from "@/lib/hooks/use-realtime-applications";
+import { ApplicationTrackerSkeleton } from "../skeletons/application-tracker-skeleton";
 import type {
   ApplicationsResponse,
   TrackerApplication,
@@ -114,20 +115,7 @@ export function ApplicationTracker() {
   }
 
   if (loading && !data) {
-    return (
-      <section className="space-y-4" aria-label="Application Tracker">
-        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-        <div className="flex gap-3 overflow-hidden">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="h-40 min-w-[140px] animate-pulse flex-1 rounded-lg bg-muted"
-              aria-hidden
-            />
-          ))}
-        </div>
-      </section>
-    );
+    return <ApplicationTrackerSkeleton />;
   }
 
   const buckets =

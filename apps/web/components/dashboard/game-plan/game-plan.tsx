@@ -10,6 +10,7 @@ import { TopThreeTasks, type TopThreeTask } from "./top-three-tasks";
 import { DebtLiftedRing } from "./debt-lifted-ring";
 import { NextWinCountdown } from "./next-win-countdown";
 import { useRealtimeApplications } from "@/lib/hooks/use-realtime-applications";
+import { GamePlanSkeleton } from "../skeletons/game-plan-skeleton";
 
 interface GamePlanData {
   top3: Top3ApiItem[];
@@ -100,23 +101,7 @@ export function GamePlan() {
   }
 
   if (loading && !data) {
-    return (
-      <section className="space-y-4" aria-label="Coach's Game Plan">
-        <div className="h-4 w-40 animate-pulse rounded bg-muted" />
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <div className="h-28 w-28 animate-pulse rounded-full bg-muted" />
-          <div className="flex-1 space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-20 animate-pulse rounded-lg bg-muted"
-                aria-hidden
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
+    return <GamePlanSkeleton />;
   }
 
   const top3 = (data?.top3 ?? []).map(toTopThreeTask);

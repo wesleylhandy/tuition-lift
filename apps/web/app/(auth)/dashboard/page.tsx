@@ -2,11 +2,13 @@
  * Dashboard — Main Control Center (006 Scholarship Inbox & Dashboard).
  * Bento grid composition in T044; layout structure from T004.
  * US1: Match Inbox wired (T018–T020). US2: Game Plan wired (T024–T025).
+ * T045: ReconnectionIndicator for Supabase Realtime disconnect.
  */
 import { BentoGrid, BentoGridItem } from "@/components/dashboard/bento-grid";
 import { MatchInbox } from "@/components/dashboard/match-inbox/match-inbox";
 import { GamePlan } from "@/components/dashboard/game-plan/game-plan";
 import { ApplicationTracker } from "@/components/dashboard/application-tracker/application-tracker";
+import { ReconnectionIndicator } from "@/components/dashboard/reconnection-indicator";
 
 export default function DashboardPage() {
   return (
@@ -15,6 +17,7 @@ export default function DashboardPage() {
       aria-label="Dashboard"
     >
       <h1 className="sr-only font-heading">Dashboard</h1>
+      <ReconnectionIndicator />
       <BentoGrid>
         <BentoGridItem colSpan={4} rowSpan={2}>
           <MatchInbox />

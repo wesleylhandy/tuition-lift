@@ -11,6 +11,7 @@ import {
   getPrepChecklistData,
   type PrepChecklistItem,
 } from "@/lib/actions/get-prep-checklist";
+import { CoachesPrepChecklistSkeleton } from "./skeletons/coaches-prep-checklist-skeleton";
 
 export function CoachesPrepChecklist() {
   const [items, setItems] = useState<PrepChecklistItem[]>([]);
@@ -38,26 +39,7 @@ export function CoachesPrepChecklist() {
   }, []);
 
   if (loading) {
-    return (
-      <section
-        className="rounded-lg border border-border bg-muted/30 p-4"
-        aria-label="Coach's Prep Checklist"
-        aria-busy
-      >
-        <h3 className="font-heading text-sm font-semibold text-navy mb-3">
-          Coach&apos;s Prep Checklist
-        </h3>
-        <ul className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <li
-              key={i}
-              className="h-8 animate-pulse rounded bg-muted"
-              aria-hidden
-            />
-          ))}
-        </ul>
-      </section>
-    );
+    return <CoachesPrepChecklistSkeleton />;
   }
 
   if (error) {

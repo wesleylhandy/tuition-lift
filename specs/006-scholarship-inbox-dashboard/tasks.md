@@ -146,10 +146,10 @@
 
 **Purpose**: Loading/error states, page composition, validation
 
-- [ ] T043 [P] Add skeleton/placeholder loading states to Match Inbox, Game Plan, Application Tracker, and Coach's Prep Checklist during initial data load per FR-016; mirror final layout structure
-- [ ] T044 Compose dashboard page at apps/web/app/(auth)/dashboard/page.tsx: Bento grid with Match Inbox, Game Plan, Application Tracker sections; integrate Coach's Prep Checklist in Match Inbox area when empty
-- [ ] T045 Add subtle reconnection indicator when Supabase Realtime disconnects; degrade gracefully (data remains viewable)
-- [ ] T046 Run quickstart.md verification: Trust Shield colors, Coach's Prep Checklist, Quick Actions toast, skeletons, Lighthouse Performance and Best Practices 90+, Lighthouse a11y (WCAG AA, zero critical violations). Verify SC-001 (Match Inbox load <2s), SC-002 (Live Pulse within 5s of scouting start), SC-004 (action feedback within 2s).
+- [x] T043 [P] Add skeleton/placeholder loading states to Match Inbox, Game Plan, Application Tracker, and Coach's Prep Checklist during initial data load per FR-016; mirror final layout structure
+- [x] T044 Compose dashboard page at apps/web/app/(auth)/dashboard/page.tsx: Bento grid with Match Inbox, Game Plan, Application Tracker sections; integrate Coach's Prep Checklist in Match Inbox area when empty
+- [x] T045 Add subtle reconnection indicator when Supabase Realtime disconnects; degrade gracefully (data remains viewable)
+- [x] T046 Run quickstart.md verification: Trust Shield colors, Coach's Prep Checklist, Quick Actions toast, skeletons, Lighthouse Performance and Best Practices 90+, Lighthouse a11y (WCAG AA, zero critical violations). Verify SC-001 (Match Inbox load <2s), SC-002 (Live Pulse within 5s of scouting start), SC-004 (action feedback within 2s).
 
 ---
 

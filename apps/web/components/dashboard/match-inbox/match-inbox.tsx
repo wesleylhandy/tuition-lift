@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { MatchCard } from "./match-card";
 import { LivePulse } from "./live-pulse";
 import { CoachesPrepChecklist } from "../coaches-prep-checklist";
+import { MatchInboxSkeleton } from "../skeletons/match-inbox-skeleton";
 import {
   type DiscoveryMatch,
   useRealtimeMatches,
@@ -145,20 +146,7 @@ export function MatchInbox() {
   }
 
   if (loading && matches.length === 0) {
-    return (
-      <section className="space-y-4" aria-label="Match Inbox">
-        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-        <div className="grid gap-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-24 animate-pulse rounded-lg bg-muted"
-              aria-hidden
-            />
-          ))}
-        </div>
-      </section>
-    );
+    return <MatchInboxSkeleton />;
   }
 
   return (
