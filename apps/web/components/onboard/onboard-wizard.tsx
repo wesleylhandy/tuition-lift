@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useOnboardInitialStep } from "./onboard-step-provider";
 import { ProgressBar } from "./progress-bar";
 import { Step1Form } from "./step1-form";
 import { Step2Form } from "./step2-form";
@@ -14,9 +15,11 @@ type Step = 1 | 2 | 3;
  * OnboardWizard — 3-step onboarding shell (Identity → Academic Profile → Financial Pulse).
  * Per spec FR-010: 450px max-width, centered card, mobile-friendly (44px touch targets).
  * T024: ProgressBar shows current step; bar updates when step changes.
+ * T028: Resumes at correct step via useOnboardInitialStep when user returns mid-flow.
  */
 export function OnboardWizard() {
-  const [step, setStep] = useState<Step>(1);
+  const initialStep = useOnboardInitialStep();
+  const [step, setStep] = useState<Step>(initialStep);
   const router = useRouter();
 
   function handleStep3Success(discoveryTriggered: boolean) {
