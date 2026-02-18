@@ -55,7 +55,7 @@ export function NextWinCountdown({
 
   return (
     <div className={`rounded-lg border bg-card p-3 ${className}`}>
-      <p className="text-xs text-muted-foreground">Next win</p>
+      <p className="font-heading text-xs font-semibold text-navy">Next win</p>
       <p className="mt-0.5 font-medium text-foreground">{displayLabel}</p>
       {deadline && (
         <p className={`mt-1 text-sm ${urgency}`}>

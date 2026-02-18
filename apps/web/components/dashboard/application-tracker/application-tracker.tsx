@@ -144,7 +144,7 @@ export function ApplicationTracker() {
       <h2 className="font-heading text-lg font-semibold text-navy">
         Application Tracker
       </h2>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex min-w-0 gap-3 overflow-x-auto pb-2">
         {COLUMN_ORDER.map((bucket) => {
           const items = buckets[bucket] ?? [];
           const title =

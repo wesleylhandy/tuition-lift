@@ -26,7 +26,7 @@ export function LivePulse({ userId, className = "" }: LivePulseProps) {
       aria-live="polite"
       aria-label="Active Scouting"
     >
-      <span className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-navy)]">
+      <span className="font-heading flex items-center gap-1.5 text-sm font-medium text-navy">
         <span
           className="inline-block h-2 w-2 animate-pulse rounded-full bg-electric-mint"
           aria-hidden

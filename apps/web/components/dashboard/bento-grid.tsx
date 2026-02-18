@@ -58,7 +58,7 @@ export interface BentoGridProps {
 export function BentoGrid({ children, className = "" }: BentoGridProps) {
   return (
     <div
-      className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full max-w-full min-w-0 ${className}`}
+      className={`grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4 w-full max-w-full ${className}`}
       role="presentation"
     >
       {children}

@@ -133,10 +133,10 @@
 
 **Independent Test**: Verify typography, colors, layout; run Lighthouse; zero critical a11y violations
 
-- [ ] T039 [P] [US6] Apply serif font to dashboard headings (font-serif or custom) and sans-serif to body per FR-019
-- [ ] T040 [P] [US6] Apply color palette Navy #1A1A40, Electric Mint #00FFAB, Off-White to dashboard components per FR-020
-- [ ] T041 [US6] Ensure Bento grid adapts to 320px+ viewports; no horizontal scroll; blocks reflow per FR-018, SC-008
-- [ ] T042 [US6] Add aria-labels, focus order, and ensure WCAG AA contrast on all interactive elements (buttons, links, cards); run axe or Lighthouse a11y audit
+- [x] T039 [P] [US6] Apply serif font to dashboard headings (font-serif or custom) and sans-serif to body per FR-019
+- [x] T040 [P] [US6] Apply color palette Navy #1A1A40, Electric Mint #00FFAB, Off-White to dashboard components per FR-020
+- [x] T041 [US6] Ensure Bento grid adapts to 320px+ viewports; no horizontal scroll; blocks reflow per FR-018, SC-008
+- [x] T042 [US6] Add aria-labels, focus order, and ensure WCAG AA contrast on all interactive elements (buttons, links, cards); run axe or Lighthouse a11y audit
 
 **Checkpoint**: Visual identity and accessibility meet spec; Lighthouse a11y pass
 

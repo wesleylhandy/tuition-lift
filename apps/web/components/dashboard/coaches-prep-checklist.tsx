@@ -91,7 +91,7 @@ export function CoachesPrepChecklist() {
           <li key={item.id} role="listitem">
             <Link
               href={item.href}
-              className="flex items-start gap-3 rounded-md p-2 -m-2 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="flex min-h-[44px] items-start gap-3 rounded-md p-2 -m-2 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2"
               aria-label={`${item.label} — take action`}
             >
               <span

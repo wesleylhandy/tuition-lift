@@ -123,8 +123,8 @@ export function ApplicationCard({
             type="button"
             onClick={handleVerifyClick}
             disabled={pending}
-            className="rounded px-2 py-1 text-xs font-medium text-navy bg-electric-mint/30 hover:bg-electric-mint/50 focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Verify submission"
+            className="min-h-[44px] rounded px-3 py-2 text-xs font-medium text-navy bg-electric-mint/30 hover:bg-electric-mint/50 focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`Verify submission for ${scholarshipTitle}`}
           >
             Verify Submission
           </button>
@@ -137,7 +137,7 @@ export function ApplicationCard({
         aria-describedby="verify-dialog-desc"
         onCancel={handleVerifyCancel}
       >
-        <h2 id="verify-dialog-title" className="text-lg font-semibold">
+        <h2 id="verify-dialog-title" className="font-heading text-lg font-semibold text-navy">
           Verify submission
         </h2>
         <p id="verify-dialog-desc" className="mt-2 text-sm text-muted-foreground">
@@ -147,7 +147,7 @@ export function ApplicationCard({
           <button
             type="button"
             onClick={handleVerifyCancel}
-            className="rounded px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted"
+            className="min-h-[44px] rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2"
           >
             Cancel
           </button>
@@ -155,7 +155,7 @@ export function ApplicationCard({
             type="button"
             onClick={handleVerifyConfirm}
             disabled={pending}
-            className="rounded px-3 py-1.5 text-sm font-medium text-navy bg-electric-mint hover:bg-electric-mint/90 disabled:opacity-50"
+            className="min-h-[44px] rounded px-3 py-2 text-sm font-medium text-navy bg-electric-mint hover:bg-electric-mint/90 focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2 disabled:opacity-50"
           >
             {pending ? "Verifying…" : "Confirm"}
           </button>
@@ -171,7 +171,8 @@ export function ApplicationCard({
           href={scholarshipUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 rounded-lg"
+          className="block min-h-[44px] focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 rounded-lg"
+          aria-label={`Open ${scholarshipTitle} application`}
           data-application-id={applicationId}
         >
           {content}

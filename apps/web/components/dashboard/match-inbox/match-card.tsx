@@ -105,7 +105,7 @@ export function MatchCard({
   };
 
   return (
-    <motion.div
+    <motion.article
       layout
       data-match-id={id}
       initial={{ opacity: 0, y: 12 }}
@@ -113,17 +113,18 @@ export function MatchCard({
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.25 }}
       className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+      aria-label={`Scholarship: ${title}`}
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
           <TrustShield trustScore={trustScore} />
-          <div className="flex shrink-0 gap-1">
+          <div className="flex shrink-0 gap-1" role="group" aria-label="Quick actions">
             <button
               type="button"
               onClick={handleTrack}
               disabled={pending || isTracked}
-              className="rounded px-2 py-1 text-xs font-medium text-navy bg-electric-mint/30 hover:bg-electric-mint/50 focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label={isTracked ? "Already tracked" : "Track scholarship"}
+              className="rounded px-2 py-1 text-xs font-medium text-navy bg-electric-mint/30 hover:bg-electric-mint/50 focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px]"
+              aria-label={isTracked ? "Already tracked" : `Track scholarship: ${title}`}
             >
               {isTracked ? "Tracked" : "Track"}
             </button>
@@ -131,8 +132,8 @@ export function MatchCard({
               type="button"
               onClick={handleDismiss}
               disabled={pending}
-              className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Dismiss from feed"
+              className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px]"
+              aria-label={`Dismiss ${title} from feed`}
             >
               Dismiss
             </button>
@@ -142,7 +143,8 @@ export function MatchCard({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-foreground hover:text-electric-mint hover:underline focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 rounded"
+          className="font-medium text-foreground hover:text-electric-mint hover:underline focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2 rounded focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2"
+          aria-label={`View scholarship: ${title}`}
         >
           {title}
         </Link>
@@ -158,6 +160,6 @@ export function MatchCard({
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
