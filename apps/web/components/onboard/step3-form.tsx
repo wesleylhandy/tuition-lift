@@ -31,17 +31,18 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
       <div>
         <label
           htmlFor="step3-sai"
-          className="mb-1 flex items-center gap-2 text-sm font-medium"
+          className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium"
         >
           Student Aid Index (SAI){" "}
           <span className="text-muted-foreground">(optional)</span>
-          <span
-            className="cursor-help text-xs text-muted-foreground underline decoration-dotted hover:no-underline"
-            title={SAI_TOOLTIP}
-            aria-label="What is SAI? Opens tooltip with explanation"
-          >
-            What is this?
-          </span>
+          <details className="inline [&>summary::-webkit-details-marker]:hidden">
+            <summary className="cursor-pointer list-none text-xs text-muted-foreground underline decoration-dotted hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:rounded">
+              What is this?
+            </summary>
+            <p className="mt-1 max-w-[320px] rounded bg-muted/50 px-2 py-1.5 text-xs text-muted-foreground">
+              {SAI_TOOLTIP}
+            </p>
+          </details>
         </label>
         <input
           id="step3-sai"

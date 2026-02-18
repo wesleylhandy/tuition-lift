@@ -98,11 +98,11 @@
 
 **Independent Test**: Advance through steps; progress indicator updates; layout works on mobile (no horizontal scroll, 44px touch targets).
 
-- [ ] T023 [P] [US4] Create ProgressBar component in apps/web/components/onboard/progress-bar.tsx: display current step (e.g., Step 1 of 3), high-contrast bar (Electric Mint #00FFAB brand accent per plan), 3 segments per FR-009, FR-010
-- [ ] T024 [US4] Add ProgressBar to OnboardWizard; pass current step; ensure bar updates when step changes
-- [ ] T025 [US4] Apply centered card layout (450px max-width, soft shadow), mobile-friendly (no horizontal scroll, 44px min touch targets per WCAG) to OnboardWizard and step forms per FR-010, plan visual style
-- [ ] T026 [US4] Verify WCAG 2.1 AA: keyboard navigation, focus visible, screen reader labels, color contrast 4.5:1 on all onboarding components per FR-015
-- [ ] T027 [US4] Verify Coach tip copy on Step1Form, Step2Form, Step3Form; ensure each step has one-line supportive micro-copy per FR-005
+- [x] T023 [P] [US4] Create ProgressBar component in apps/web/components/onboard/progress-bar.tsx: display current step (e.g., Step 1 of 3), high-contrast bar (Electric Mint #00FFAB brand accent per plan), 3 segments per FR-009, FR-010
+- [x] T024 [US4] Add ProgressBar to OnboardWizard; pass current step; ensure bar updates when step changes
+- [x] T025 [US4] Apply centered card layout (450px max-width, soft shadow), mobile-friendly (no horizontal scroll, 44px min touch targets per WCAG) to OnboardWizard and step forms per FR-010, plan visual style
+- [x] T026 [US4] Verify WCAG 2.1 AA: keyboard navigation, focus visible, screen reader labels, color contrast 4.5:1 on all onboarding components per FR-015
+- [x] T027 [US4] Verify Coach tip copy on Step1Form, Step2Form, Step3Form; ensure each step has one-line supportive micro-copy per FR-005
 
 **Checkpoint**: User Story 4 complete—Progress, layout, and accessibility in place
 
