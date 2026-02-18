@@ -40,7 +40,7 @@
 - [ ] T009 Implement dismissScholarship Server Action in apps/web/lib/actions/dismiss.ts per contracts/server-actions.md (authenticate, insert dismissals)
 - [ ] T010 Implement verifySubmission Server Action in apps/web/lib/actions/verify-submission.ts per contracts/server-actions.md (authenticate, validate ownership, update status)
 - [ ] T011 [P] Define design tokens in Tailwind config or CSS: Navy #1A1A40, Electric Mint #00FFAB, Off-White; serif for headings, sans-serif for body per FR-018, FR-019, FR-020
-- [ ] T012 Create apps/web/lib/hooks/use-realtime-matches.ts subscribing per contracts/realtime-channels.md: use Postgres Changes on discovery_results table (filter: user_id) when schema exists, or Broadcast on `user:{userId}:discovery` for `new_matches` event as fallback
+- [ ] T012 Create apps/web/lib/hooks/use-realtime-matches.ts subscribing per contracts/realtime-channels.md: use Broadcast on `user:{userId}:discovery` for `new_matches` event (discovery results live in LangGraph checkpoint, not a Supabase table); optional polling of GET /api/discovery/results as fallback when Broadcast unavailable
 - [ ] T013 [P] Create apps/web/lib/hooks/use-realtime-applications.ts for applications table Postgres Changes per contracts/realtime-channels.md
 
 **Checkpoint**: Foundation ready—user story implementation can begin
@@ -51,14 +51,14 @@
 
 **Goal**: Student views prioritized feed of Advisor discoveries with Live Pulse, Trust Shield, Coach's Take
 
-**Independent Test**: Display match feed with varying trust scores; verify prioritization by trust_score and momentum_score; verify Live Pulse when discovery active
+**Independent Test**: Display match feed with varying trust scores; verify prioritization by trust_score and need_match_score; verify Live Pulse when discovery active
 
 - [ ] T014 [P] [US1] Create Trust Shield component at apps/web/components/dashboard/match-inbox/trust-shield.tsx using lib/utils/trust-shield.ts and render badge (Green/Amber/Yellow/Red/gray)
 - [ ] T015 [P] [US1] Create Coach's Take component at apps/web/components/dashboard/match-inbox/coaches-take.tsx displaying micro-summary (prop: coachTakeText or similar)
-- [ ] T016 [US1] Create Live Pulse component at apps/web/components/dashboard/match-inbox/live-pulse.tsx showing "Active Scouting" and domain ticker when scouting active per FR-002
+- [ ] T016 [US1] Create Live Pulse component at apps/web/components/dashboard/match-inbox/live-pulse.tsx showing "Active Scouting" and domain ticker when scouting active per FR-002; use Broadcast (user:{userId}:discovery) for scouting event, or fallback to polling GET /api/discovery/status (lastActiveNode=Advisor_Search) per contracts/realtime-channels.md
 - [ ] T017 [US1] Create Match Card component at apps/web/components/dashboard/match-inbox/match-card.tsx with Trust Shield, Coach's Take, scholarship title, amount, deadline; wrap in motion.div for AnimatePresence
-- [ ] T018 [US1] Create Match Inbox component at apps/web/components/dashboard/match-inbox/match-inbox.tsx: fetch/sort matches by trust_score and momentum_score, render MatchCard list with AnimatePresence, integrate Live Pulse, subscribe via use-realtime-matches for new matches
-- [ ] T019 [US1] Wire Match Inbox data source to GET /api/discovery/results (003); consume discoveryRunId and results with discovery_run_id; filter out dismissed scholarships per current run (user_id, scholarship_id, discovery_run_id in dismissals)
+- [ ] T018 [US1] Create Match Inbox component at apps/web/components/dashboard/match-inbox/match-inbox.tsx: fetch/sort matches by trust_score and need_match_score, render MatchCard list with AnimatePresence, integrate Live Pulse, subscribe via use-realtime-matches for new matches
+- [ ] T019 [US1] Wire Match Inbox data source to GET /api/discovery/results (003); consume discoveryRunId (camelCase in response; map to internal), results with discovery_run_id, trust_score, need_match_score, coachTake; filter out dismissed scholarships per current run. Pass coachTake to Coach's Take component (fallback to trustReport when coachTake null)
 - [ ] T020 [US1] Add Framer Motion entrance animation for new matches in Match Inbox (AnimatePresence, initial/animate/exit, key=id) per research.md
 
 **Checkpoint**: Match Inbox fully functional; Trust Shield, Coach's Take, Live Pulse, real-time updates working
@@ -146,10 +146,10 @@
 
 **Purpose**: Loading/error states, page composition, validation
 
-- [ ] T043 [P] Add skeleton/placeholder loading states to Match Inbox, Game Plan, Application Tracker during initial data load per FR-016; mirror final layout structure
+- [ ] T043 [P] Add skeleton/placeholder loading states to Match Inbox, Game Plan, Application Tracker, and Coach's Prep Checklist during initial data load per FR-016; mirror final layout structure
 - [ ] T044 Compose dashboard page at apps/web/app/(auth)/dashboard/page.tsx: Bento grid with Match Inbox, Game Plan, Application Tracker sections; integrate Coach's Prep Checklist in Match Inbox area when empty
 - [ ] T045 Add subtle reconnection indicator when Supabase Realtime disconnects; degrade gracefully (data remains viewable)
-- [ ] T046 Run quickstart.md verification: Trust Shield colors, Coach's Prep Checklist, Quick Actions toast, skeletons, Lighthouse Performance and Best Practices 90+, Lighthouse a11y (WCAG AA, zero critical violations)
+- [ ] T046 Run quickstart.md verification: Trust Shield colors, Coach's Prep Checklist, Quick Actions toast, skeletons, Lighthouse Performance and Best Practices 90+, Lighthouse a11y (WCAG AA, zero critical violations). Verify SC-001 (Match Inbox load <2s), SC-002 (Live Pulse within 5s of scouting start), SC-004 (action feedback within 2s).
 
 ---
 

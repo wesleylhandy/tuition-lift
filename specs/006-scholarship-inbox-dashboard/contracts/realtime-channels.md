@@ -10,18 +10,13 @@ The dashboard subscribes to Supabase Realtime for live updates. Use **Postgres C
 
 ## 1. Match Inbox – New Matches
 
-**Source**: Discovery results written to a table or view (e.g., `discovery_results`, `scholarship_matches`, or orchestration-managed table).
+**Source**: Discovery results live in LangGraph checkpoint state (003), not a Supabase table. GET /api/discovery/results reads from checkpoint. New matches arrive when orchestration completes discovery and checkpoints.
 
-**Channel**: Postgres Changes on the table storing discovery results for the user. If orchestration uses a different persistence model, use Broadcast on channel `user:{userId}:discovery` with payload `{ event: "new_matches", matches: [...] }`.
+**Channel**: Broadcast on `user:{userId}:discovery` with payload `{ event: "new_matches", matches: [...] }`. Orchestration (or discovery completion handler) must publish to this channel when discovery finishes. **No Postgres Changes**—there is no discovery_results table.
 
-**Postgres Changes** (when discovery results live in DB):
-```
-table: discovery_results (or equivalent)
-filter: user_id = auth.uid()
-events: INSERT
-```
+**Fallback**: When Broadcast is not yet implemented by orchestration, poll GET /api/discovery/results (e.g., after user triggers discovery or on interval while status=completed) and compare with previous results to detect new matches.
 
-**Client**: Subscribe to INSERT; append new matches to local state; trigger entrance animation (Framer Motion). If using Broadcast, listen for `new_matches` event.
+**Client**: Subscribe to Broadcast for `new_matches`; append to local state; trigger entrance animation (Framer Motion).
 
 ---
 
@@ -55,7 +50,9 @@ events: INSERT, UPDATE
 
 **Client**: Subscribe to broadcast; show Live Pulse + domain ticker when status is active; hide when discovery completes or status is "idle".
 
-**Note**: Requires orchestration/agent to publish to this channel. If orchestration does not yet support Broadcast, fallback: poll or infer from checkpoint/orchestration API.
+**Orchestration responsibility**: 003/004 should publish to this channel during Scout (Advisor_Search). When Scout starts: `{ event: "scouting", domains: [...], status: "active" }`; when done: `{ event: "scouting", status: "idle" }`.
+
+**Fallback**: When Broadcast is not yet implemented, poll GET /api/discovery/status. When `status === "running"` and `lastActiveNode === "Advisor_Search"`, show Live Pulse with "Active Scouting" (domain ticker unavailable without Broadcast).
 
 ---
 

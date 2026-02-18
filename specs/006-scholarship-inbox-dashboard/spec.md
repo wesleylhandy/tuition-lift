@@ -33,11 +33,11 @@ A student views a prioritized feed of Advisor discoveries—scholarships that ma
 
 **Why this priority**: Core engagement—the inbox is the primary surface where students encounter new opportunities. Live status builds trust and reduces "is anything happening?" anxiety.
 
-**Independent Test**: Can be fully tested by displaying a match feed with varying trust scores, verifying prioritization by trust_score and momentum_score, and confirming that live scouting status appears when discovery is active.
+**Independent Test**: Can be fully tested by displaying a match feed with varying trust scores, verifying prioritization by trust_score and need_match_score, and confirming that live scouting status appears when discovery is active.
 
 **Acceptance Scenarios**:
 
-1. **Given** a student has discovery results, **When** they view the Match Inbox, **Then** scholarships appear in a prioritized feed ordered by trust_score and momentum_score.
+1. **Given** a student has discovery results, **When** they view the Match Inbox, **Then** scholarships appear in a prioritized feed ordered by trust_score and need_match_score (Advisor's SAI-alignment score; per 004).
 2. **Given** the Advisor is actively scouting, **When** the student views the inbox, **Then** a "Live Pulse" indicator shows "Active Scouting" and a ticker of domains currently being vetted.
 3. **Given** discovery completes with new matches, **When** matches arrive, **Then** new items are visibly surfaced in the feed so the student notices them.
 4. **Given** the student views a scholarship card, **When** they look at it, **Then** they see a Trust Shield badge (Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39) based on the Reputation Engine score (trust_score).
@@ -135,7 +135,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 - What happens when the Match Inbox receives new matches while the student is viewing it? The UI updates in real time; new matches are surfaced with a noticeable indicator so the student sees them without manual refresh.
 - What happens when the student has zero tracked applications? The Coach's Game Plan shows a reduced or empty state; the Next Win countdown may reference onboarding or discovery as the next action.
-- What happens when trust_score or momentum_score is missing for a scholarship? Fallback to secondary sort (e.g., deadline, creation date); display a neutral/gray Trust Shield until score is available.
+- What happens when trust_score or need_match_score is missing for a discovery result? Fallback to secondary sort (e.g., deadline, creation date); display a neutral/gray Trust Shield until score is available.
 - What happens when the student has no confirmed Won applications? The Debt Lifted progress ring shows zero or a placeholder; the design encourages action without shaming.
 - What happens when real-time updates fail or disconnect? The UI degrades gracefully; data remains viewable; a subtle reconnection indicator appears when connection is restored.
 - What happens during initial data load? Skeletons or placeholders are shown; no blank white space.
@@ -148,7 +148,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 ### Functional Requirements
 
 **Match Inbox**
-- **FR-001**: System MUST display a prioritized feed of Advisor discoveries (Match Inbox) ordered by trust_score and momentum_score.
+- **FR-001**: System MUST display a prioritized feed of Advisor discoveries (Match Inbox) ordered by trust_score and need_match_score (Advisor's SAI-alignment score; per 004).
 - **FR-002**: System MUST show a "Live Pulse" indicator with "Active Scouting" status and a ticker of domains currently being vetted when discovery is running.
 - **FR-003**: System MUST surface new matches in real time so the student sees them without manual refresh.
 - **FR-004**: Each scholarship card MUST display a Trust Shield badge with four levels: Green (trust_score 80–100), Amber (60–79), Yellow (40–59), Red (0–39).
@@ -183,12 +183,12 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 - **FR-021**: System MUST meet WCAG AA contrast, keyboard navigation, and screen reader support for all interactive elements.
 
 **Data & State**
-- **FR-022**: System MUST consume data from the shared data layer; use trust_score and momentum_score for all sorting and prioritization logic.
+- **FR-022**: System MUST consume data from the shared data layer; use trust_score and need_match_score for Match Inbox ordering (discovery results); use momentum_score for Top 3 / application prioritization (applications table).
 - **FR-023**: All state transitions (Track, Dismiss, Verify Submission, status updates) MUST be performed via server-side actions; client reflects authoritative server state.
 
 ### Key Entities
 
-- **Match**: A scholarship discovery result from the Advisor. Has trust_score, momentum_score, Coach's Take, discovery_run_id (per 003), and eligibility metadata. Displayed in Match Inbox.
+- **Match**: A scholarship discovery result from the Advisor. Has trust_score, need_match_score (SAI alignment; per 004), Coach's Take, discovery_run_id (per 003), and eligibility metadata. Displayed in Match Inbox.
 - **Trust Shield**: Visual badge (Green 80–100, Amber 60–79, Yellow 40–59, Red 0–39) derived from trust_score; indicates scholarship legitimacy per Reputation Engine.
 - **Coach's Take**: Micro-summary explaining ROI and fit for a specific scholarship; generated from student profile and scholarship attributes.
 - **Top 3 Tasks**: The three applications a student should focus on today; ordered by momentum_score per Coach Execution Engine.
@@ -198,7 +198,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 ### Assumptions
 
-- The shared data layer exposes trust_score and momentum_score for scholarships and applications; Advisor Discovery Engine and Coach Execution Engine populate these. Implementation consumes from the project's data package. Applications use momentum_score (002 schema; formerly priority_score).
+- Discovery results (GET /api/discovery/results) expose trust_score and need_match_score per item; Advisor Discovery Engine produces these. Applications use momentum_score (002 schema) for Top 3 ordering. Implementation consumes from the API and @repo/db.
 - Real-time updates are delivered via the project's real-time subscription layer; the UI subscribes to relevant channels for matches, applications, and scouting status.
 - The Coach's Take micro-summary is either pre-computed by the Advisor/Coach or generated on demand; exact source is implementation-defined.
 - Bento grid layout and design system components are available; exact component library is an implementation choice.
@@ -212,7 +212,7 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 
 ### Measurable Outcomes
 
-- **SC-001**: Students can view the Match Inbox with scholarships prioritized by trust and momentum within 2 seconds of page load, under normal load.
+- **SC-001**: Students can view the Match Inbox with scholarships prioritized by trust and relevance (need_match_score) within 2 seconds of page load, under normal load.
 - **SC-002**: When discovery is active, the Live Pulse indicator and domain ticker appear within 5 seconds of scouting start; new matches appear in the feed within 10 seconds of discovery completion.
 - **SC-003**: Students can identify their Top 3 Tasks and Next Win countdown at a glance; 90% of users locate the Coach's Game Plan section within 5 seconds of first view.
 - **SC-004**: Students can complete Track, Dismiss, or Verify Submission from any card in under 3 clicks; state updates reflect within 2 seconds.
@@ -220,6 +220,10 @@ The dashboard uses a cohesive visual identity: serif headings for trust and auth
 - **SC-006**: All dashboard views meet WCAG AA for contrast and keyboard accessibility; zero critical accessibility violations in automated audits.
 - **SC-007**: Debt Lifted progress ring and Application Tracker accurately reflect server state; zero discrepancies between displayed and persisted data under normal operation.
 - **SC-008**: Layout adapts to mobile and desktop viewports without horizontal scroll; Bento blocks reflow appropriately on screens 320px and above.
+
+## Terminology
+
+**API vs internal**: Discovery APIs use camelCase (discoveryRunId, needMatchScore, coachTake); internal/DB uses snake_case (discovery_run_id, need_match_score). Implementation maps between them at boundaries.
 
 ## Documentation References
 

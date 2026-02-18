@@ -120,7 +120,7 @@ interface CycleVerificationResult {
 4. For each query (with rate limit): `TavilyClient.search(query)` → append results; extract domains from result URLs for Live Pulse
 5. `Deduplicator.dedupe(results)` → unique by URL
 6. Update state: `discovery_results` = raw results (pre-verify)
-7. Optionally expose scouting domains (e.g., via state or orchestration) for 006 Live Pulse "Active Scouting" ticker
+7. Expose scouting domains for 006 Live Pulse: orchestration should publish Broadcast to `user:{userId}:discovery` with `{ event: "scouting", domains: ["example.edu", ...], status: "active" }` during Scout; `{ event: "scouting", status: "idle" }` when done. If Broadcast unavailable, 006 falls back to polling GET /api/discovery/status (lastActiveNode=Advisor_Search → show "Active Scouting").
 8. Checkpoint (automatic after node)
 
 ---
@@ -142,7 +142,7 @@ interface CycleVerificationResult {
 
 ## 9. GET /api/discovery/results Response (Extended)
 
-Per 003 contract; extend `discoveryResults` item. 003 includes discoveryRunId at response root; each result includes discoveryRunId or discovery_run_id for 006 dismissals scoping.
+Per 003 contract; extend `discoveryResults` item. 003 includes discoveryRunId at response root; each result includes discoveryRunId (camelCase in API; snake_case internally) for 006 dismissals scoping. `coachTake`: ROI micro-summary for 006 Match Inbox; Coach_Prioritization (005) may populate; when null, 006 may use trustReport as fallback.
 
 ```json
 {
@@ -156,6 +156,7 @@ Per 003 contract; extend `discoveryResults` item. 003 includes discoveryRunId at
       "trustScore": 85,
       "needMatchScore": 72,
       "trustReport": "High-trust .edu source; domain established 2010; no fees.",
+      "coachTake": "Strong fit for your SAI range; apply by March 15.",
       "verificationStatus": "verified",
       "categories": ["need_based", "field_specific"],
       "deadline": "2026-03-15",
