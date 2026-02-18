@@ -15,6 +15,7 @@ import { createDbClient } from "@repo/db";
 /** Match shape from GET /api/discovery/results and Broadcast new_matches payload */
 export interface DiscoveryMatch {
   id: string;
+  scholarshipId: string;
   discoveryRunId: string | null;
   title: string;
   url: string;
@@ -53,6 +54,7 @@ const DEFAULT_POLL_INTERVAL_MS = 5_000;
 /** Normalize API discoveryResult to DiscoveryMatch */
 function toDiscoveryMatch(r: {
   id: string;
+  scholarshipId?: string | null;
   discoveryRunId?: string | null;
   title: string;
   url: string;
@@ -67,6 +69,7 @@ function toDiscoveryMatch(r: {
 }): DiscoveryMatch {
   return {
     id: r.id,
+    scholarshipId: r.scholarshipId ?? r.id,
     discoveryRunId: r.discoveryRunId ?? null,
     title: r.title,
     url: r.url,
@@ -126,13 +129,19 @@ export function useRealtimeMatches(
         "broadcast",
         { event: "new_matches" },
         (payload: { payload?: { matches?: unknown[] }; matches?: unknown[] }) => {
-          const raw = payload?.payload?.matches ?? payload?.matches ?? [];
+            const raw = payload?.payload?.matches ?? payload?.matches ?? [];
           if (Array.isArray(raw) && raw.length > 0) {
             const matches = raw
               .filter((m): m is Record<string, unknown> => m != null)
               .map((m) =>
                 toDiscoveryMatch({
                   id: String(m.id ?? ""),
+                  scholarshipId:
+                    typeof m.scholarshipId === "string"
+                      ? m.scholarshipId
+                      : typeof m.scholarship_id === "string"
+                        ? m.scholarship_id
+                        : String(m.id ?? ""),
                   discoveryRunId:
                     typeof m.discoveryRunId === "string"
                       ? m.discoveryRunId
@@ -206,6 +215,7 @@ export function useRealtimeMatches(
         const data = (await res.json()) as {
           discoveryResults?: Array<{
             id: string;
+            scholarshipId?: string | null;
             discoveryRunId?: string | null;
             title: string;
             url: string;

@@ -53,13 +53,13 @@
 
 **Independent Test**: Display match feed with varying trust scores; verify prioritization by trust_score and need_match_score; verify Live Pulse when discovery active
 
-- [ ] T014 [P] [US1] Create Trust Shield component at apps/web/components/dashboard/match-inbox/trust-shield.tsx using lib/utils/trust-shield.ts and render badge (Green/Amber/Yellow/Red/gray)
-- [ ] T015 [P] [US1] Create Coach's Take component at apps/web/components/dashboard/match-inbox/coaches-take.tsx displaying micro-summary (prop: coachTakeText or similar)
-- [ ] T016 [US1] Create Live Pulse component at apps/web/components/dashboard/match-inbox/live-pulse.tsx showing "Active Scouting" and domain ticker when scouting active per FR-002; use Broadcast (user:{userId}:discovery) for scouting event, or fallback to polling GET /api/discovery/status (lastActiveNode=Advisor_Search) per contracts/realtime-channels.md
-- [ ] T017 [US1] Create Match Card component at apps/web/components/dashboard/match-inbox/match-card.tsx with Trust Shield, Coach's Take, scholarship title, amount, deadline; wrap in motion.div for AnimatePresence
-- [ ] T018 [US1] Create Match Inbox component at apps/web/components/dashboard/match-inbox/match-inbox.tsx: fetch/sort matches by trust_score and need_match_score, render MatchCard list with AnimatePresence, integrate Live Pulse, subscribe via use-realtime-matches for new matches
-- [ ] T019 [US1] Wire Match Inbox data source to GET /api/discovery/results (003); consume discoveryRunId (camelCase in response; map to internal), results with discovery_run_id, trust_score, need_match_score, coachTake; filter out dismissed scholarships per current run. Pass coachTake to Coach's Take component (fallback to trustReport when coachTake null)
-- [ ] T020 [US1] Add Framer Motion entrance animation for new matches in Match Inbox (AnimatePresence, initial/animate/exit, key=id) per research.md
+- [x] T014 [P] [US1] Create Trust Shield component at apps/web/components/dashboard/match-inbox/trust-shield.tsx using lib/utils/trust-shield.ts and render badge (Green/Amber/Yellow/Red/gray)
+- [x] T015 [P] [US1] Create Coach's Take component at apps/web/components/dashboard/match-inbox/coaches-take.tsx displaying micro-summary (prop: coachTakeText or similar)
+- [x] T016 [US1] Create Live Pulse component at apps/web/components/dashboard/match-inbox/live-pulse.tsx showing "Active Scouting" and domain ticker when scouting active per FR-002; use Broadcast (user:{userId}:discovery) for scouting event, or fallback to polling GET /api/discovery/status (lastActiveNode=Advisor_Search) per contracts/realtime-channels.md
+- [x] T017 [US1] Create Match Card component at apps/web/components/dashboard/match-inbox/match-card.tsx with Trust Shield, Coach's Take, scholarship title, amount, deadline; wrap in motion.div for AnimatePresence
+- [x] T018 [US1] Create Match Inbox component at apps/web/components/dashboard/match-inbox/match-inbox.tsx: fetch/sort matches by trust_score and need_match_score, render MatchCard list with AnimatePresence, integrate Live Pulse, subscribe via use-realtime-matches for new matches
+- [x] T019 [US1] Wire Match Inbox data source to GET /api/discovery/results (003); consume discoveryRunId (camelCase in response; map to internal), results with discovery_run_id, trust_score, need_match_score, coachTake; filter out dismissed scholarships per current run. Pass coachTake to Coach's Take component (fallback to trustReport when coachTake null)
+- [x] T020 [US1] Add Framer Motion entrance animation for new matches in Match Inbox (AnimatePresence, initial/animate/exit, key=id) per research.md
 
 **Checkpoint**: Match Inbox fully functional; Trust Shield, Coach's Take, Live Pulse, real-time updates working
 
