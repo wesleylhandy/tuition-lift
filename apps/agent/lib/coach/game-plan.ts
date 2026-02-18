@@ -129,11 +129,28 @@ export interface PendingCheckIn {
   prompt: string;
 }
 
+/** Per 006 FR-007: cumulative $ from applications where status='awarded' AND confirmed_at IS NOT NULL */
+export interface DebtLifted {
+  totalCents: number;
+}
+
+/** Per 006 FR-008: nearest deadline or next actionable milestone */
+export interface NextWin {
+  /** ISO date string (YYYY-MM-DD) or null */
+  deadline: string | null;
+  /** Application/scholarship title for context */
+  label: string | null;
+}
+
 export interface GamePlanResponse {
   top3: Top3Item[];
   pendingCheckIns?: PendingCheckIn[];
   suggestion?: string;
   generatedAt: string;
+  /** Per 006 FR-007: Debt Lifted from confirmed Won applications */
+  debtLifted?: DebtLifted;
+  /** Per 006 FR-008: Next Win countdown — nearest deadline */
+  nextWin?: NextWin;
 }
 
 /**
@@ -178,10 +195,28 @@ export async function getGamePlanForUser(
   }>;
 
   if (rows.length === 0) {
+    // Still compute debtLifted for zero-apps users (might have Won from before)
+    const { data: awardedRows } = await db
+      .from("applications")
+      .select("scholarships ( amount )")
+      .eq("user_id", userId)
+      .eq("status", "awarded")
+      .not("confirmed_at", "is", null);
+    let totalCents = 0;
+    if (awardedRows) {
+      for (const row of awardedRows as Array<{ scholarships: { amount: number | null } | null }>) {
+        const amt = row.scholarships?.amount;
+        if (typeof amt === "number" && amt > 0) {
+          totalCents += Math.round(amt * 100);
+        }
+      }
+    }
     return {
       top3: [],
       suggestion:
         "Add applications or run discovery to get your game plan.",
+      debtLifted: { totalCents },
+      nextWin: { deadline: null, label: null },
       generatedAt,
     };
   }
@@ -222,5 +257,70 @@ export async function getGamePlanForUser(
     prompt: "Have you heard back? Any updates?",
   }));
 
-  return { top3, pendingCheckIns, generatedAt };
+  // 006 FR-007: Debt Lifted — sum scholarships.amount for applications where status='awarded' AND confirmed_at IS NOT NULL
+  const { data: awardedRows } = await db
+    .from("applications")
+    .select("scholarships ( amount )")
+    .eq("user_id", userId)
+    .eq("status", "awarded")
+    .not("confirmed_at", "is", null);
+
+  const debtLifted: DebtLifted = {
+    totalCents: 0,
+  };
+  if (awardedRows) {
+    for (const row of awardedRows as Array<{ scholarships: { amount: number | null } | null }>) {
+      const amt = row.scholarships?.amount;
+      if (typeof amt === "number" && amt > 0) {
+        debtLifted.totalCents += Math.round(amt * 100);
+      }
+    }
+  }
+
+  // 006 FR-008: Next Win — nearest future deadline from top3; fallback to all apps if top3 has none
+  let nextWin: NextWin = { deadline: null, label: null };
+  const today = new Date().toISOString().slice(0, 10);
+  const deadlinesFromTop3 = top3
+    .filter((t) => t.deadline)
+    .map((t) => ({ deadline: t.deadline!, title: t.scholarshipTitle }));
+  let futureDeadlines = deadlinesFromTop3
+    .filter((d) => d.deadline >= today)
+    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+  if (futureDeadlines.length === 0) {
+    const { data: allApps } = await db
+      .from("applications")
+      .select("scholarships ( deadline, title )")
+      .eq("user_id", userId)
+      .in("status", ACTIVE_STATUSES);
+    const fromAll = (allApps ?? []) as Array<{
+      scholarships: { deadline: string | null; title: string } | null;
+    }>;
+    const fromAllDeadlines: Array<{ deadline: string; title: string }> = [];
+    for (const r of fromAll) {
+      const sch = r.scholarships;
+      const dl = sch?.deadline;
+      if (dl && dl >= today) {
+        fromAllDeadlines.push({
+          deadline: dl,
+          title: sch?.title ?? "Scholarship",
+        });
+      }
+    }
+    fromAllDeadlines.sort((a, b) => a.deadline.localeCompare(b.deadline));
+    futureDeadlines = fromAllDeadlines;
+  }
+  const firstDeadline = futureDeadlines[0];
+  if (firstDeadline) {
+    nextWin = {
+      deadline: firstDeadline.deadline,
+      label: firstDeadline.title,
+    };
+  } else {
+    const firstTask = top3[0];
+    if (firstTask) {
+      nextWin = { deadline: null, label: firstTask.scholarshipTitle };
+    }
+  }
+
+  return { top3, pendingCheckIns, debtLifted, nextWin, generatedAt };
 }

@@ -71,11 +71,11 @@
 
 **Independent Test**: Supply applications with varying deadlines/trust; verify Top 3 ordered by momentum_score, Debt Lifted from Won apps, Next Win shows nearest deadline
 
-- [ ] T021 [P] [US2] Create Top Three Tasks component at apps/web/components/dashboard/game-plan/top-three-tasks.tsx displaying up to 3 applications ordered by momentum_score
-- [ ] T022 [P] [US2] Create Debt Lifted progress ring at apps/web/components/dashboard/game-plan/debt-lifted-ring.tsx showing cumulative $ from applications where status='awarded' AND confirmed_at IS NOT NULL (per 005)
-- [ ] T023 [P] [US2] Create Next Win countdown at apps/web/components/dashboard/game-plan/next-win-countdown.tsx showing nearest deadline or next actionable milestone
-- [ ] T024 [US2] Create Game Plan component at apps/web/components/dashboard/game-plan/game-plan.tsx composing Top Three Tasks, Debt Lifted ring, Next Win countdown; fetch applications with momentum_score (002 schema)
-- [ ] T025 [US2] Wire Game Plan to applications data; compute Debt Lifted from applications where status = 'awarded' AND confirmed_at IS NOT NULL (per 005); adapt layout when fewer than 3 tasks (no empty placeholders)
+- [x] T021 [P] [US2] Create Top Three Tasks component at apps/web/components/dashboard/game-plan/top-three-tasks.tsx displaying up to 3 applications ordered by momentum_score
+- [x] T022 [P] [US2] Create Debt Lifted progress ring at apps/web/components/dashboard/game-plan/debt-lifted-ring.tsx showing cumulative $ from applications where status='awarded' AND confirmed_at IS NOT NULL (per 005)
+- [x] T023 [P] [US2] Create Next Win countdown at apps/web/components/dashboard/game-plan/next-win-countdown.tsx showing nearest deadline or next actionable milestone
+- [x] T024 [US2] Create Game Plan component at apps/web/components/dashboard/game-plan/game-plan.tsx composing Top Three Tasks, Debt Lifted ring, Next Win countdown; fetch applications with momentum_score (002 schema)
+- [x] T025 [US2] Wire Game Plan to applications data; compute Debt Lifted from applications where status = 'awarded' AND confirmed_at IS NOT NULL (per 005); adapt layout when fewer than 3 tasks (no empty placeholders)
 
 **Checkpoint**: Coach's Game Plan displays Top 3, Debt Lifted, Next Win correctly
 
