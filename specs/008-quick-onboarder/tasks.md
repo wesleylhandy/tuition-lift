@@ -83,10 +83,10 @@
 
 **Independent Test**: Complete Step 3; verify onboarding_complete=true, discovery triggered, user lands on /dashboard. SAI tooltip visible.
 
-- [ ] T019 [US3] Implement finishOnboarding Server Action in apps/web/lib/actions/onboarding.ts: validate auth, optional sai (-1500–999999) and pell_eligibility (enum), encrypt SAI via @repo/db withEncryptedSai before upsert, upsert profiles (sai, pell_eligibility_status, onboarding_complete=true), call POST /api/discovery/trigger, return { success, discoveryTriggered } per contracts/server-actions.md §3
-- [ ] T020 [US3] Create Step3Form component in apps/web/components/onboard/step3-form.tsx: SAI input with "What is this?" tooltip (explain Student Aid Index), Pell toggle (eligible/ineligible/unknown), Coach tip per FR-005, "Finish & Start Discovery" CTA per FR-006
-- [ ] T021 [US3] Wire Step3Form into OnboardWizard when step=3; on finishOnboarding success call router.push('/dashboard'); show skeleton during action; if discoveryTriggered=false show toast per contracts §3
-- [ ] T022 [US3] Handle discovery trigger failure gracefully in finishOnboarding: still set onboarding_complete so user not stuck; set discoveryTriggered: false per edge case spec
+- [x] T019 [US3] Implement finishOnboarding Server Action in apps/web/lib/actions/onboarding.ts: validate auth, optional sai (-1500–999999) and pell_eligibility (enum), encrypt SAI via @repo/db withEncryptedSai before upsert, upsert profiles (sai, pell_eligibility_status, onboarding_complete=true), call POST /api/discovery/trigger, return { success, discoveryTriggered } per contracts/server-actions.md §3
+- [x] T020 [US3] Create Step3Form component in apps/web/components/onboard/step3-form.tsx: SAI input with "What is this?" tooltip (explain Student Aid Index), Pell toggle (eligible/ineligible/unknown), Coach tip per FR-005, "Finish & Start Discovery" CTA per FR-006
+- [x] T021 [US3] Wire Step3Form into OnboardWizard when step=3; on finishOnboarding success call router.push('/dashboard'); show skeleton during action; if discoveryTriggered=false show toast per contracts §3
+- [x] T022 [US3] Handle discovery trigger failure gracefully in finishOnboarding: still set onboarding_complete so user not stuck; set discoveryTriggered: false per edge case spec
 
 **Checkpoint**: User Story 3 complete—Financial Pulse saves, discovery triggers, redirect
 

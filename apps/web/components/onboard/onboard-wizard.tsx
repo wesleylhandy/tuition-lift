@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Step1Form } from "./step1-form";
 import { Step2Form } from "./step2-form";
+import { Step3Form } from "./step3-form";
 
 type Step = 1 | 2 | 3;
 
@@ -14,6 +17,14 @@ type Step = 1 | 2 | 3;
  */
 export function OnboardWizard() {
   const [step, setStep] = useState<Step>(1);
+  const router = useRouter();
+
+  function handleStep3Success(discoveryTriggered: boolean) {
+    if (!discoveryTriggered) {
+      toast.info("Profile saved. Start discovery from your dashboard when ready.");
+    }
+    router.push("/dashboard");
+  }
 
   return (
     <div
@@ -30,9 +41,7 @@ export function OnboardWizard() {
         <Step2Form onSuccess={() => setStep(3)} />
       )}
       {step === 3 && (
-        <div data-step={3}>
-          <p className="text-muted-foreground">Step 3 — Financial Pulse (placeholder)</p>
-        </div>
+        <Step3Form onSuccess={handleStep3Success} />
       )}
     </div>
   );
