@@ -10,7 +10,7 @@ import { createDbClient } from "@repo/db";
 import { getCurrentAcademicYear } from "../utils/academic-year";
 
 export async function getTrackedScholarshipIds(): Promise<string[]> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

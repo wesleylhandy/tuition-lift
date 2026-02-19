@@ -9,7 +9,7 @@ import { createServerSupabaseClient } from "../../../../lib/supabase/server";
 import { graph } from "agent";
 
 export async function GET(request: NextRequest) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

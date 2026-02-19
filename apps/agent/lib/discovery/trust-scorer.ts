@@ -121,8 +121,7 @@ function getBaseScore(tier: DomainTier): number {
 function buildTrustReport(
   tier: DomainTier,
   longevityScore: number,
-  feeCheck: FeeCheck,
-  hostname: string
+  feeCheck: FeeCheck
 ): string {
   if (feeCheck === "fail") {
     return "Fee required (application, processing, or guarantee fee detected). Excluded.";
@@ -161,7 +160,7 @@ export async function scoreTrust(input: {
   if (feeCheck === "fail") {
     return {
       trust_score: 0,
-      trust_report: buildTrustReport("under_review", 0, "fail", hostname),
+      trust_report: buildTrustReport("under_review", 0, "fail"),
       domain_tier: "under_review",
       longevity_score: 0,
       fee_check: "fail",
@@ -181,12 +180,7 @@ export async function scoreTrust(input: {
 
   return {
     trust_score: trustScore,
-    trust_report: buildTrustReport(
-      domainTier,
-      longevityScore,
-      "pass",
-      hostname
-    ),
+    trust_report: buildTrustReport(domainTier, longevityScore, "pass"),
     domain_tier: domainTier,
     longevity_score: longevityScore,
     fee_check: "pass",

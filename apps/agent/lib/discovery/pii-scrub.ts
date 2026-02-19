@@ -31,10 +31,11 @@ export function scrubPiiFromProfile(input: ProfileWithPossiblePii): AnonymizedPr
   const userProfile = input.user_profile;
   const financialProfile = input.financial_profile;
 
+  /** 0–4 unweighted or 0–6 weighted; per 008 gpa model */
   const gpa =
     typeof userProfile?.gpa === "number" &&
     userProfile.gpa >= 0 &&
-    userProfile.gpa <= 4
+    userProfile.gpa <= 6
       ? userProfile.gpa
       : undefined;
   const major =

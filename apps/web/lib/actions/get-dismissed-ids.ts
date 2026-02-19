@@ -11,7 +11,7 @@ import { createDbClient } from "@repo/db";
 export async function getDismissedScholarshipIds(
   discoveryRunId: string | null
 ): Promise<string[]> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

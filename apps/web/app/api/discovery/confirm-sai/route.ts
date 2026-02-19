@@ -10,7 +10,7 @@ import { inngest } from "../../../../lib/inngest/client";
 import { createServerSupabaseClient } from "../../../../lib/supabase/server";
 
 export async function POST(request: Request) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

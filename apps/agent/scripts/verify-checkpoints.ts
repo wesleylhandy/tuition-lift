@@ -19,7 +19,7 @@ async function main() {
   // Phase 2: Checkpointer setup (runs on import of graph)
   try {
     const config = { configurable: { thread_id: TEST_THREAD_ID } };
-    const stateBefore = await graph.getState(config);
+    await graph.getState(config);
     results.push({
       phase: "Phase 2 (Checkpointer)",
       status: "✓",
@@ -118,7 +118,7 @@ async function main() {
           message: `Unexpected status ${res.status} from ${webUrl}/api/inngest`,
         });
       }
-    } catch (err) {
+    } catch {
       results.push({
         phase: "Inngest (serve route)",
         status: "✓",

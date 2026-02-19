@@ -25,7 +25,7 @@ export async function verifySubmission(
   applicationId: string,
   confirmed: boolean
 ): Promise<VerifySubmissionResult> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
     error: authError,

@@ -58,7 +58,7 @@ async function main() {
     id: profileId,
     intended_major: DEFAULT_MAJOR,
     state: DEFAULT_STATE,
-    gpa: DEFAULT_GPA,
+    gpa_unweighted: DEFAULT_GPA,
     sai: DEFAULT_SAI,
     pell_eligibility_status: DEFAULT_PELL,
     full_name: "Test User (PII scrub verification)",
@@ -71,7 +71,7 @@ async function main() {
       onConflict: "id",
       ignoreDuplicates: false,
     })
-    .select("id, intended_major, state, gpa")
+    .select("id, intended_major, state, gpa_unweighted")
     .single();
 
   if (error) {
@@ -83,7 +83,7 @@ async function main() {
   console.log(`  ID:       ${data?.id ?? profileId}`);
   console.log(`  Major:    ${data?.intended_major ?? DEFAULT_MAJOR}`);
   console.log(`  State:    ${data?.state ?? DEFAULT_STATE}`);
-  console.log(`  GPA:      ${data?.gpa ?? DEFAULT_GPA}`);
+  console.log(`  GPA:      ${data?.gpa_unweighted ?? DEFAULT_GPA}`);
   console.log(`  SAI:      ${DEFAULT_SAI} (encrypted, Moderate bracket)`);
   console.log(`  Pell:     ${DEFAULT_PELL}`);
   console.log("");

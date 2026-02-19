@@ -60,6 +60,27 @@ yarn exec turbo build --filter=docs
 pnpm exec turbo build --filter=docs
 ```
 
+### Local development (web + Inngest + Supabase)
+
+**One-command launch** (requires Docker for Supabase):
+
+```bash
+pnpm dev:local:full   # Starts Supabase, then web + Inngest together
+```
+
+Or step-by-step:
+
+```bash
+pnpm --filter @repo/db exec supabase start   # DB (run once)
+pnpm dev:local                               # Web + Inngest
+```
+
+- **Web**: http://localhost:3000
+- **Inngest UI**: http://localhost:8288
+- **Supabase Studio**: http://127.0.0.1:54323
+
+Ensure `apps/web/.env` or `.env` has `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from `pnpm --filter @repo/db exec supabase status`). `NEXT_PUBLIC_*` vars are safe to expose in the client bundle; they are restricted by Supabase RLS.
+
 ### Develop
 
 To develop all apps and packages, run the following command:
