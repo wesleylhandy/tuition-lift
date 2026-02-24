@@ -26,3 +26,39 @@ export function parseDiscoveryEnv(): DiscoveryEnv {
     DISCOVERY_SEARCH_BATCH_DELAY_MS: process.env.DISCOVERY_SEARCH_BATCH_DELAY_MS,
   });
 }
+
+const ScoutEnvSchema = z.object({
+  /** Max file size for Scout uploads (MB). Default 10. Used for validation before upload. */
+  SCOUT_MAX_FILE_SIZE_MB: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const n = v ? parseFloat(v) : 10;
+      return Number.isNaN(n) || n <= 0 ? 10 : Math.min(100, n);
+    }),
+  /** Fuzzy dedup similarity threshold (0–1). Default 0.85. Titles ≥ this match trigger duplicate warning. */
+  SCOUT_DEDUP_SIMILARITY_THRESHOLD: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const n = v ? parseFloat(v) : 0.85;
+      if (Number.isNaN(n) || n < 0 || n > 1) return 0.85;
+      return n;
+    }),
+  /** Vision model for Scout extraction (images/scanned PDFs). Default gpt-4o. */
+  SCOUT_VISION_MODEL: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : "gpt-4o")),
+});
+
+export type ScoutEnv = z.infer<typeof ScoutEnvSchema>;
+
+/** Parse and validate Scout-related env vars. Call when Scout modules need them. */
+export function parseScoutEnv(): ScoutEnv {
+  return ScoutEnvSchema.parse({
+    SCOUT_MAX_FILE_SIZE_MB: process.env.SCOUT_MAX_FILE_SIZE_MB,
+    SCOUT_DEDUP_SIMILARITY_THRESHOLD: process.env.SCOUT_DEDUP_SIMILARITY_THRESHOLD,
+    SCOUT_VISION_MODEL: process.env.SCOUT_VISION_MODEL,
+  });
+}

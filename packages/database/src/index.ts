@@ -29,6 +29,10 @@ export {
   applicationStatusEnum,
   dismissalInputSchema,
   parseOrThrow,
+  ScoutInputSchema,
+  ExtractedScholarshipDataSchema,
+  scoutStepEnum,
+  scoutVerificationStatusEnum,
 } from './schema/index';
 
 export type {
@@ -38,6 +42,10 @@ export type {
   ProfileUpdateSchema,
   ScholarshipSchema,
   ApplicationSchema,
+  ScoutInput,
+  ExtractedScholarshipData,
+  ScoutStep,
+  ScoutVerificationStatus,
 } from './schema/index';
 
 export {
