@@ -73,8 +73,14 @@ a {
   animation: float-subtle 4s ease-in-out infinite;
 }
 
+.animate-float-subtle-delay {
+  animation: float-subtle 4s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-float-subtle {
+  .animate-float-subtle,
+  .animate-float-subtle-delay {
     animation: none;
   }
 }

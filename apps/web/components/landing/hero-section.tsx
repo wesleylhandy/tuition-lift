@@ -48,12 +48,10 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative flex min-h-[85vh] flex-col items-center justify-center px-4 py-16 sm:py-24"
+      className="relative grid min-h-[85vh] grid-cols-1 items-center gap-8 px-4 py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 xl:px-12"
       aria-labelledby="hero-heading"
     >
-      <FloatingPreviewCards />
-
-      <div className="relative z-10 mx-auto max-w-2xl text-center">
+      <div className="order-2 mx-auto flex max-w-2xl flex-col items-center text-center lg:order-1 lg:mx-0 lg:items-start lg:text-left">
         <h1
           id="hero-heading"
           className="font-heading text-3xl font-semibold leading-tight text-off-white sm:text-4xl md:text-5xl"
@@ -103,6 +101,10 @@ export function HeroSection() {
         <p className="mt-3 text-sm text-off-white/70">
           Free to start. No credit card required.
         </p>
+      </div>
+
+      <div className="order-1 flex min-h-[280px] items-center justify-center lg:order-2 lg:min-h-[320px]">
+        <FloatingPreviewCards />
       </div>
     </section>
   );

@@ -111,9 +111,9 @@
 
 **Independent Test**: View on desktop and mobile; verify color palette, floating cards, scroll reveals; check 375px, 768px, 1440px; reduced motion respected.
 
-- [ ] T024 [US5] Apply dark navy gradient background and electric mint accents to landing page sections in apps/web/app/page.tsx and landing components; ensure CTAs, highlights, icons use electric mint
-- [ ] T025 [US5] Verify all landing sections use useScrollReveal; ensure prefers-reduced-motion: reduce disables or simplifies animations in apps/web/components/landing/*.tsx
-- [ ] T026 [US5] Verify responsive layout: 375px, 768px, 1440px; no horizontal overflow; floating cards, bento grid, form stack appropriately in apps/web/components/landing/
+- [x] T024 [US5] Apply dark navy gradient background and electric mint accents to landing page sections in apps/web/app/page.tsx and landing components; ensure CTAs, highlights, icons use electric mint
+- [x] T025 [US5] Verify all landing sections use useScrollReveal; ensure prefers-reduced-motion: reduce disables or simplifies animations in apps/web/components/landing/*.tsx
+- [x] T026 [US5] Verify responsive layout: 375px, 768px, 1440px; no horizontal overflow; floating cards, bento grid, form stack appropriately in apps/web/components/landing/
 
 **Checkpoint**: US5 complete — premium visual identity and responsiveness verified
 
