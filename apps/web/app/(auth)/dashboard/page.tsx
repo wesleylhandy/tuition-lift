@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const sectionStatus = "loading" as const;
 
   return (
-    <div className="min-h-screen bg-off-white font-body">
+    <div className="min-h-screen min-w-0 overflow-x-hidden bg-off-white font-body">
       <GlobalHeader />
       <main
         className="p-4 sm:p-6 lg:p-8"

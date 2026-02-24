@@ -1,6 +1,7 @@
 /**
  * Design tokens per FR-018, FR-019, FR-020 (Scholarship Inbox & Dashboard)
  * Navy #1A1A40, Electric Mint #00FFAB, Off-White; serif headings, sans-serif body
+ * WCAG 2.1 AA: Navy on Off-White, Electric Mint on Navy, Slate on Off-White (4.5:1+)
  */
 @import "tailwindcss";
 

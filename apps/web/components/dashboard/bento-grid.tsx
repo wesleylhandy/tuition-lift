@@ -16,7 +16,11 @@ export interface BentoGridItemProps {
   className?: string;
 }
 
-/** Responsive col-span: 1 col default, 2 at sm, 4 at md, N at lg */
+/**
+ * Responsive col-span mapping per contract: 1/2/4/12 cols at default/sm/md/lg.
+ * Wireframe (010): Game Plan 4, Discovery Feed 5, Calendar 3 cols.
+ * At sm (2 cols) items span 1–2; at md (4 cols) span 1–4; at lg (12 cols) span 1–12.
+ */
 const colSpanMap: Record<BentoGridColSpan, string> = {
   1: "col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1",
   2: "col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2",

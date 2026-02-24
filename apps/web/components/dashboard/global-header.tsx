@@ -7,7 +7,7 @@
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, User } from "lucide-react";
 import { LogoPlaceholder } from "./logo-placeholder";
 import { DebtLiftedRing } from "./game-plan/debt-lifted-ring";
 
@@ -50,10 +50,15 @@ export function GlobalHeader({
   }, [debtLiftedProp]);
 
   const displayDebtCents = debtLiftedCents ?? 0;
+  const debtFormatted = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(displayDebtCents / 100);
 
   return (
     <header
-      className="flex w-full flex-nowrap items-center gap-3 overflow-x-auto border-b border-border bg-background px-4 py-3 lg:gap-6 lg:px-6"
+      className="flex w-full min-w-0 flex-nowrap items-center gap-2 overflow-hidden border-b border-border bg-background px-3 py-3 sm:gap-3 sm:px-4 lg:gap-6 lg:px-6"
       role="banner"
     >
       {/* Branding */}
@@ -116,18 +121,28 @@ export function GlobalHeader({
         )}
       </button>
 
-      {/* Debt Lifted — compact for header */}
-      <div className="shrink-0">
+      {/* Debt Lifted — compact for header; hides label on narrow viewports to prevent overflow */}
+      <div className="hidden shrink-0 sm:block">
         <DebtLiftedRing totalCents={displayDebtCents} compact />
       </div>
+      <div
+        className="flex shrink-0 items-center sm:hidden"
+        role="status"
+        aria-label={`Debt lifted: ${debtFormatted}`}
+      >
+        <span className="font-heading text-sm font-semibold text-navy">
+          {debtFormatted}
+        </span>
+      </div>
 
-      {/* Account */}
+      {/* Account — icon on mobile to save space */}
       <button
         type="button"
         aria-label="Account menu"
-        className="flex h-11 min-h-[44px] shrink-0 items-center justify-center rounded-md border border-input px-4 hover:bg-accent focus-visible:outline focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
+        className="flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md border border-input px-4 hover:bg-accent focus-visible:outline focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
       >
-        <span className="text-sm text-slate">Account</span>
+        <User className="h-5 w-5 text-slate sm:hidden" aria-hidden />
+        <span className="hidden text-sm text-slate sm:inline">Account</span>
       </button>
     </header>
   );

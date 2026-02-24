@@ -71,10 +71,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Add focus-visible ring to search bar, notification bell, Debt Lifted area, and retry button in apps/web/components/dashboard/global-header.tsx and section-shell.tsx
-- [ ] T022 [US2] Ensure all interactive elements (search input, bell, logo link) meet min 44×44px touch target in apps/web/components/dashboard/global-header.tsx
-- [ ] T023 [US2] Add aria-label to search bar and notification center; ensure notification badge hidden when count=0, visible when count>0 in apps/web/components/dashboard/global-header.tsx
-- [ ] T024 [US2] Verify 16px base font and color contrast (navy on off-white, mint accents) in apps/web/app/globals.css; fix any contrast failures
+- [x] T021 [US2] Add focus-visible ring to search bar, notification bell, Debt Lifted area, and retry button in apps/web/components/dashboard/global-header.tsx and section-shell.tsx
+- [x] T022 [US2] Ensure all interactive elements (search input, bell, logo link) meet min 44×44px touch target in apps/web/components/dashboard/global-header.tsx
+- [x] T023 [US2] Add aria-label to search bar and notification center; ensure notification badge hidden when count=0, visible when count>0 in apps/web/components/dashboard/global-header.tsx
+- [x] T024 [US2] Verify 16px base font and color contrast (navy on off-white, mint accents) in apps/web/app/globals.css; fix any contrast failures
 
 **Checkpoint**: User Story 2 complete — accessibility audit passes; touch targets verified.
 
@@ -88,9 +88,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Verify BentoGrid responsive breakpoints (1/2/4/12 cols), wireframe-driven colSpan mapping (Game Plan 4, Discovery Feed 5, Calendar 3), and BentoGridItem colSpan at sm/md/lg in apps/web/components/dashboard/bento-grid.tsx
-- [ ] T026 [US3] Verify GlobalHeader reflows on mobile (e.g., search bar full-width, notifications compact) in apps/web/components/dashboard/global-header.tsx
-- [ ] T027 [US3] Test layout at 375px, 768px, 1280px; fix horizontal overflow if present in apps/web/app/(auth)/dashboard/page.tsx
+- [x] T025 [US3] Verify BentoGrid responsive breakpoints (1/2/4/12 cols), wireframe-driven colSpan mapping (Game Plan 4, Discovery Feed 5, Calendar 3), and BentoGridItem colSpan at sm/md/lg in apps/web/components/dashboard/bento-grid.tsx
+- [x] T026 [US3] Verify GlobalHeader reflows on mobile (e.g., search bar full-width, notifications compact) in apps/web/components/dashboard/global-header.tsx
+- [x] T027 [US3] Test layout at 375px, 768px, 1280px; fix horizontal overflow if present in apps/web/app/(auth)/dashboard/page.tsx
 
 **Checkpoint**: User Story 3 complete — layout adapts without horizontal scroll at all breakpoints.
 
@@ -100,9 +100,9 @@
 
 **Purpose**: Verification and cleanup
 
-- [ ] T028 Run Lighthouse on /dashboard; achieve Accessibility ≥ 90; document Performance and Best Practices scores
-- [ ] T029 Run quickstart.md verification steps (auth redirect, shell render, viewport test)
-- [ ] T030 Verify FR-017: SectionShell, list-skeleton, card-skeleton are generic and reusable (no section-specific logic that would block adding new bento sections)
+- [x] T028 Run Lighthouse on /dashboard; achieve Accessibility ≥ 90; document Performance and Best Practices scores
+- [x] T029 Run quickstart.md verification steps (auth redirect, shell render, viewport test)
+- [x] T030 Verify FR-017: SectionShell, list-skeleton, card-skeleton are generic and reusable (no section-specific logic that would block adding new bento sections)
 
 ---
 

@@ -77,7 +77,7 @@ export function SectionShell({
             type="button"
             onClick={onRetry}
             aria-label={retryLabel}
-            className="mt-3 flex h-11 min-w-11 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-3 flex h-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus-visible:outline focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
           >
             Retry
           </button>
