@@ -103,6 +103,20 @@ export async function signUp(formData: FormData): Promise<SignUpResult> {
 
 // --- saveAcademicProfile (Step 2) ---
 
+const currentYear = new Date().getFullYear();
+const awardYearSchema = z
+  .union([z.string(), z.number()])
+  .optional()
+  .transform((v) => {
+    if (v === "" || v === undefined || v === null) return undefined;
+    const n = typeof v === "string" ? parseInt(v, 10) : v;
+    return Number.isNaN(n)
+      ? undefined
+      : n >= currentYear && n <= currentYear + 1
+        ? n
+        : undefined;
+  });
+
 const saveAcademicProfileInputSchema = z.object({
   intended_major: z
     .string()
@@ -138,6 +152,42 @@ const saveAcademicProfileInputSchema = z.object({
       (v) => v === undefined || (v >= 0 && v <= 4),
       "Unweighted GPA must be between 0 and 4."
     ),
+  sat_total: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === "" || v === undefined || v === null) return undefined;
+      const n = typeof v === "string" ? parseInt(v, 10) : v;
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .refine(
+      (v) => v === undefined || (v >= 400 && v <= 1600),
+      "SAT total must be between 400 and 1600."
+    ),
+  act_composite: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      if (v === "" || v === undefined || v === null) return undefined;
+      const n = typeof v === "string" ? parseInt(v, 10) : v;
+      return Number.isNaN(n) ? undefined : n;
+    })
+    .refine(
+      (v) => v === undefined || (v >= 1 && v <= 36),
+      "ACT composite must be between 1 and 36."
+    ),
+  spikes: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (!v?.trim()) return undefined;
+      return v
+        .split(/[,;\n]/)
+        .map((s) => s.trim().slice(0, 100))
+        .filter((s) => s.length > 0)
+        .slice(0, 10);
+    }),
+  award_year: awardYearSchema,
 });
 
 export type SaveAcademicProfileResult = {
@@ -169,6 +219,10 @@ export async function saveAcademicProfile(
     full_name: formData.get("full_name") ?? "",
     gpa_weighted: formData.get("gpa_weighted") ?? "",
     gpa_unweighted: formData.get("gpa_unweighted") ?? "",
+    sat_total: formData.get("sat_total") ?? "",
+    act_composite: formData.get("act_composite") ?? "",
+    spikes: formData.get("spikes") ?? "",
+    award_year: formData.get("award_year") ?? "",
   };
 
   const parsed = saveAcademicProfileInputSchema.safeParse(raw);
@@ -177,8 +231,17 @@ export async function saveAcademicProfile(
     return { success: false, error: msg };
   }
 
-  const { intended_major, state, full_name, gpa_weighted, gpa_unweighted } =
-    parsed.data;
+  const {
+    intended_major,
+    state,
+    full_name,
+    gpa_weighted,
+    gpa_unweighted,
+    sat_total,
+    act_composite,
+    spikes,
+    award_year,
+  } = parsed.data;
 
   const stateCode = state.toUpperCase().trim();
 
@@ -192,6 +255,10 @@ export async function saveAcademicProfile(
         full_name: full_name || null,
         gpa_weighted: gpa_weighted ?? null,
         gpa_unweighted: gpa_unweighted ?? null,
+        sat_total: sat_total ?? null,
+        act_composite: act_composite ?? null,
+        spikes: spikes?.length ? spikes : null,
+        award_year: award_year ?? null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }

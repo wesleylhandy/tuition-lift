@@ -28,6 +28,8 @@ function formatProfileForPrompt(profile: AnonymizedProfile): string {
       `Pell status: ${profile.pellStatus ? "Pell eligible" : "Not Pell eligible"}`
     );
   }
+  if (profile.spikes?.length)
+    parts.push(`Activities: ${profile.spikes.join(", ")}`);
   return parts.length > 0 ? parts.join("; ") : "No profile attributes available";
 }
 
@@ -37,13 +39,19 @@ Focus on 2025–2026 and 2026–2027 academic year scholarships.
 Use only the anonymized profile attributes provided. Never include names, SSN, or specific dollar amounts.
 Return exactly 3–5 query strings, one per search. Each query should be 5–15 words.`;
 
+const MERIT_FIRST_HINT = `IMPORTANT: This user qualifies for merit-first discovery. Prioritize queries that include "merit-based", "need-blind", "academic achievement", and "scholarship for high achievers" angles.`;
+
 /**
  * Generates 3–5 distinct scholarship search queries from anonymized profile.
+ * When meritFirst is true (SAI above merit threshold), adds merit/need-blind query hints per contracts §2.
  */
 export async function generateQueries(
-  profile: AnonymizedProfile
+  profile: AnonymizedProfile,
+  options?: { meritFirst?: boolean }
 ): Promise<string[]> {
   const profileText = formatProfileForPrompt(profile);
+  const meritHint =
+    options?.meritFirst === true ? `\n\n${MERIT_FIRST_HINT}` : "";
   const llm = new ChatOpenAI({
     model: "gpt-4o-mini",
     temperature: 0.3,
@@ -56,7 +64,7 @@ export async function generateQueries(
     { role: "system", content: PROMPT },
     {
       role: "user",
-      content: `Profile: ${profileText}\n\nGenerate 3–5 distinct scholarship search queries.`,
+      content: `Profile: ${profileText}${meritHint}\n\nGenerate 3–5 distinct scholarship search queries.`,
     },
   ])) as QueriesOutput;
 

@@ -11,10 +11,12 @@
 import { StateGraph, START, END } from "@langchain/langgraph";
 import { checkpointer } from "./checkpointer";
 import { TuitionLiftState } from "./state";
+import type { TuitionLiftStateType } from "./state";
 import { advisorSearchNode } from "./nodes/advisor-search";
 import { advisorVerifyNode } from "./nodes/advisor-verify";
 import { coachPrioritizationNode } from "./nodes/coach-prioritization";
 import { coachSAIConfirmNode } from "./nodes/coach-sai-confirm";
+import { coachMajorPivotNode } from "./nodes/coach-major-pivot";
 import { safeRecoveryNode } from "./nodes/safe-recovery";
 
 async function wrapSearch(
@@ -52,17 +54,23 @@ const builder = new StateGraph(TuitionLiftState)
   .addNode("Coach_SAIConfirm", coachSAIConfirmNode, {
     ends: ["Advisor_Search"],
   })
+  .addNode("Coach_Major_Pivot", coachMajorPivotNode, {
+    ends: ["SafeRecovery"],
+  })
   .addNode("SafeRecovery", wrapSafeRecovery)
   .addConditionalEdges(
     START,
-    (state) =>
-      (state as { __scheduled_refresh?: boolean }).__scheduled_refresh === true
-        ? "Coach_Prioritization"
-        : "Advisor_Search",
-    ["Coach_Prioritization", "Advisor_Search"]
+    (state) => {
+      const s = state as TuitionLiftStateType & { __scheduled_refresh?: boolean };
+      if (s.is_undecided_major === true) return "Coach_Major_Pivot";
+      if (s.__scheduled_refresh === true) return "Coach_Prioritization";
+      return "Advisor_Search";
+    },
+    ["Coach_Major_Pivot", "Coach_Prioritization", "Advisor_Search"]
   )
   .addEdge("Advisor_Verify", "Coach_Prioritization")
   .addEdge("Coach_Prioritization", END)
+  .addEdge("Coach_Major_Pivot", END)
   .addEdge("SafeRecovery", END);
 
 // Checkpointer required for persistence and human-in-the-loop (interrupt) — LangGraph JS docs

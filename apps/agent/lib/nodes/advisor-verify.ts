@@ -17,18 +17,59 @@ import { computeNeedMatchScore } from "../discovery/need-match-scorer";
 import { scoreTrust, toScholarshipMetadata } from "../discovery/trust-scorer";
 import { upsertScholarship } from "../discovery/scholarship-upsert";
 
-/** Infer categories from content; US3/FR-016a: multiple when need_based + field_specific. */
-function inferCategories(content: string): string[] {
+/**
+ * Infers categories from url and content. US1 (009): need_blind when .edu + merit, no need-based.
+ * Research §7: .edu + merit signals → need_blind; private org + merit → merit; need signals → need_based.
+ */
+function inferCategories(url: string, content: string): string[] {
   const text = (content ?? "").toLowerCase();
+  const hostname = (() => {
+    try {
+      return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    } catch {
+      return "";
+    }
+  })();
+  const isEdu = hostname.endsWith(".edu");
+
   const categories: string[] = [];
-  if (text.includes("need-based") || text.includes("low income") || text.includes("pell"))
-    categories.push("need_based");
-  if (text.includes("merit")) categories.push("merit");
-  if (text.includes("minority") || text.includes("diversity")) categories.push("minority");
-  if (text.includes("engineering") || text.includes("stem") || text.includes("major"))
+  const hasNeed =
+    text.includes("need-based") ||
+    text.includes("low income") ||
+    text.includes("pell");
+  const hasMerit =
+    text.includes("merit") ||
+    text.includes("academic achievement") ||
+    text.includes("gpa") ||
+    text.includes("sat") ||
+    text.includes("act");
+
+  if (hasNeed) categories.push("need_based");
+  if (hasMerit) {
+    if (isEdu && !hasNeed) categories.push("need_blind");
+    else if (!hasNeed) categories.push("merit");
+  }
+  if (text.includes("minority") || text.includes("diversity"))
+    categories.push("minority");
+  if (
+    text.includes("engineering") ||
+    text.includes("stem") ||
+    text.includes("major")
+  )
     categories.push("field_specific");
   if (categories.length === 0) categories.push("other");
   return categories;
+}
+
+/** Derives merit_tag from primary category for Coach prioritization. */
+function toMeritTag(
+  categories: string[]
+): "merit_only" | "need_blind" | "need_based" | undefined {
+  const first = categories[0];
+  if (first === "need_blind" || first === "merit")
+    return first === "need_blind" ? "need_blind" : "merit_only";
+  if (first === "need_based") return "need_based";
+  return undefined;
 }
 
 export type AdvisorVerifyConfig = {
@@ -53,6 +94,8 @@ export async function advisorVerifyNode(
     const discoveryRunId = config?.configurable?.discovery_run_id ?? "";
     const rawResults = state.discovery_results ?? [];
     const financialProfile = state.financial_profile;
+    const saiAbove = state.sai_above_merit_threshold === true;
+    const meritOnly = state.merit_filter_preference === "merit_only";
 
     const verified: DiscoveryResult[] = [];
     for (const r of rawResults) {
@@ -75,7 +118,8 @@ export async function advisorVerifyNode(
         url: r.url,
       });
 
-      const categories = inferCategories(r.content ?? "");
+      const categories = inferCategories(r.url, r.content ?? "");
+      const meritTag = toMeritTag(categories);
 
       const result: DiscoveryResult = {
         id: r.id,
@@ -87,6 +131,7 @@ export async function advisorVerifyNode(
         trust_report: trustResult.trust_report,
         verification_status: cycleResult.verification_status,
         categories,
+        merit_tag: meritTag,
         deadline: cycleResult.deadline ?? undefined,
         amount: r.amount ?? null,
       };
@@ -98,12 +143,23 @@ export async function advisorVerifyNode(
         r.url,
         (r.content ?? "").slice(0, 500),
         categories,
-        cycleResult.verification_status
+        cycleResult.verification_status,
+        meritTag
       );
       await upsertScholarship(result, metadata);
     }
 
-    verified.sort(
+    let filtered = verified;
+    if (saiAbove && meritOnly) {
+      filtered = verified.filter((r) => {
+        const cats = r.categories ?? [];
+        if (cats.includes("need_based") && !cats.includes("merit") && !cats.includes("need_blind"))
+          return false;
+        return true;
+      });
+    }
+
+    filtered.sort(
       (a, b) =>
         (b.need_match_score - a.need_match_score) ||
         (b.trust_score - a.trust_score)
@@ -112,7 +168,7 @@ export async function advisorVerifyNode(
     return new Command({
       goto: "Coach_Prioritization",
       update: {
-        discovery_results: verified,
+        discovery_results: filtered,
         last_active_node: "Advisor_Verify",
       },
     });

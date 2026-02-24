@@ -84,6 +84,97 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
+          <label
+            htmlFor="step2-sat-total"
+            className="mb-1 block text-sm font-medium"
+          >
+            SAT total <span className="text-muted-foreground">(optional)</span>
+          </label>
+          <input
+            id="step2-sat-total"
+            name="sat_total"
+            type="number"
+            min={400}
+            max={1600}
+            disabled={pending}
+            className={INPUT_CLASS}
+            placeholder="400–1600 (EBRW + Math)"
+            aria-describedby="step2-sat-hint"
+          />
+          <p id="step2-sat-hint" className="mt-1 text-xs text-muted-foreground">
+            EBRW + Math combined
+          </p>
+        </div>
+        <div>
+          <label
+            htmlFor="step2-act-composite"
+            className="mb-1 block text-sm font-medium"
+          >
+            ACT composite{" "}
+            <span className="text-muted-foreground">(optional)</span>
+          </label>
+          <input
+            id="step2-act-composite"
+            name="act_composite"
+            type="number"
+            min={1}
+            max={36}
+            disabled={pending}
+            className={INPUT_CLASS}
+            placeholder="1–36"
+          />
+        </div>
+      </div>
+      <div>
+        <label htmlFor="step2-spikes" className="mb-1 block text-sm font-medium">
+          Activities / Spikes{" "}
+          <span className="text-muted-foreground">(optional)</span>
+        </label>
+        <textarea
+          id="step2-spikes"
+          name="spikes"
+          rows={3}
+          disabled={pending}
+          className={INPUT_CLASS}
+          placeholder="e.g. Water Polo, Student Council, Volunteer work (comma or newline separated)"
+          aria-describedby="step2-spikes-hint"
+        />
+        <p id="step2-spikes-hint" className="mt-1 text-xs text-muted-foreground">
+          Up to 10 activities. Use labels only (no team names or addresses).
+        </p>
+      </div>
+      <div>
+        <label
+          htmlFor="step2-award-year"
+          className="mb-1 block text-sm font-medium"
+        >
+          Award year <span className="text-muted-foreground">(optional)</span>
+        </label>
+        <select
+          id="step2-award-year"
+          name="award_year"
+          disabled={pending}
+          className={INPUT_CLASS}
+          aria-describedby="step2-award-year-hint"
+        >
+          <option value="">Select year</option>
+          {[new Date().getFullYear(), new Date().getFullYear() + 1].map(
+            (y) => (
+              <option key={y} value={y}>
+                {y}–{y + 1}
+              </option>
+            )
+          )}
+        </select>
+        <p
+          id="step2-award-year-hint"
+          className="mt-1 text-xs text-muted-foreground"
+        >
+          Academic year for scholarship applications
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
           <label htmlFor="step2-gpa-weighted" className="mb-1 block text-sm font-medium">
             Weighted GPA <span className="text-muted-foreground">(optional)</span>
           </label>

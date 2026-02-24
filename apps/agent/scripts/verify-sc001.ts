@@ -63,7 +63,8 @@ async function main() {
     },
   };
 
-  const { user_profile, financial_profile } = await loadProfile(userId);
+  const { user_profile, financial_profile, merit_config } =
+    await loadProfile(userId);
   if (!user_profile?.major || !user_profile?.state) {
     console.log(
       "⚠ SKIP: Profile incomplete (major and state required). Fix profile and run again."
@@ -74,6 +75,10 @@ async function main() {
   const input = {
     user_profile,
     financial_profile: financial_profile ?? undefined,
+    merit_filter_preference: merit_config?.merit_filter_preference ?? "show_all",
+    sai_above_merit_threshold: merit_config?.sai_above_merit_threshold ?? false,
+    merit_tier: merit_config?.merit_tier ?? undefined,
+    award_year: merit_config?.award_year ?? undefined,
   };
 
   const start = Date.now();

@@ -24,6 +24,7 @@ export const NODE_NAMES = [
   "Advisor_Verify",
   "Coach_Prioritization",
   "Coach_SAIConfirm",
+  "Coach_Major_Pivot",
   "SafeRecovery",
 ] as const;
 
@@ -72,6 +73,29 @@ export const TuitionLiftState = Annotation.Root({
   sai_range_approved: Annotation<SaiRangeApproved>({
     reducer: (_, y) => y,
     default: () => undefined,
+  }),
+  /** US1 (009): Merit-first logic. From load-profile merit_config. */
+  merit_filter_preference: Annotation<"merit_only" | "show_all">({
+    reducer: (_, y) => y,
+    default: () => "show_all",
+  }),
+  /** US1: true when SAI >= merit_lean_threshold (sai_zone_config). */
+  sai_above_merit_threshold: Annotation<boolean>({
+    reducer: (_, y) => y,
+    default: () => false,
+  }),
+  /** US1: tier_name from merit_tier_config (e.g. presidential, deans, merit, incentive). */
+  merit_tier: Annotation<string | undefined>({
+    reducer: (_, y) => y,
+  }),
+  /** US1: Resolved award year for config lookup. */
+  award_year: Annotation<number | undefined>({
+    reducer: (_, y) => y,
+  }),
+  /** US3: True when intended_major empty/undecided; routes to Coach_Major_Pivot. */
+  is_undecided_major: Annotation<boolean>({
+    reducer: (_, y) => y,
+    default: () => false,
   }),
 });
 

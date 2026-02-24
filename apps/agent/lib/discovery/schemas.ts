@@ -13,6 +13,7 @@ import {
 /**
  * Anonymized profile for query generation. Contains only attributes safe for
  * external search APIs; no full_name, SSN, or raw SAI (Constitution §4, FR-003).
+ * US1 (009): spikes as activity labels only; no team names, coach names, or PII.
  */
 export const AnonymizedProfileSchema = z.object({
   /** 0–4 unweighted or 0–6 weighted; per 008 gpa model */
@@ -20,6 +21,8 @@ export const AnonymizedProfileSchema = z.object({
   major: z.string().min(1).optional(),
   incomeBracket: householdIncomeBracketEnum.optional(),
   pellStatus: z.boolean().optional(),
+  /** Activity labels only (e.g., Water Polo, Leadership). No team names or PII. */
+  spikes: z.array(z.string().min(1).max(100)).max(10).optional(),
 });
 
 export type AnonymizedProfile = z.infer<typeof AnonymizedProfileSchema>;
@@ -39,7 +42,7 @@ const scoringFactorsSchema = z.object({
 /**
  * Schema for scholarships.metadata JSONB column.
  * Per data-model.md §2 — source_url, snippet, scoring_factors, trust_report,
- * categories, verification_status. Used by ScholarshipUpsert on conflict update.
+ * categories, verification_status. US1: merit_tag for Coach prioritization.
  */
 export const ScholarshipMetadataSchema = z.object({
   source_url: z.string(),
@@ -48,6 +51,8 @@ export const ScholarshipMetadataSchema = z.object({
   trust_report: z.string(),
   categories: z.array(z.string()),
   verification_status: verificationStatusEnum,
+  /** Merit tag for Coach: merit_only | need_blind | need_based (009). */
+  merit_tag: z.enum(["merit_only", "need_blind", "need_based"]).optional(),
 });
 
 export type ScholarshipMetadata = z.infer<typeof ScholarshipMetadataSchema>;
