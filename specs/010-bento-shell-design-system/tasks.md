@@ -30,7 +30,8 @@
 
 - [ ] T003 Load Playfair Display and Inter via next/font/google in apps/web/app/layout.tsx and assign to --font-heading and --font-body
 - [ ] T004 Ensure 16px base font size on html or body in apps/web/app/globals.css
-- [ ] T005 Extend middleware matcher to include /dashboard and /dashboard/* in apps/web/middleware.ts; redirect unauthenticated users to /onboard
+- [ ] T005 Extend middleware matcher to include /dashboard and /dashboard/* in apps/web/middleware.ts; redirect unauthenticated users to / (landing)
+- [ ] T005b [P] Create minimal / placeholder route (sign-in CTA) in apps/web/app/page.tsx so auth redirect has valid target; full landing design deferred
 - [ ] T006 Create SectionShell component with status (loading|error|content), onRetry, skeletonVariant, title in apps/web/components/dashboard/section-shell.tsx
 - [ ] T007 Implement SectionShell error state with user-friendly message and 44×44px retry button in apps/web/components/dashboard/section-shell.tsx
 
@@ -40,7 +41,7 @@
 
 **Goal**: Authenticated user sees cohesive branded layout with global header, welcome area, bento grid (three sections), and stats row; all sections show loading skeletons.
 
-**Independent Test**: Load /dashboard as authenticated user; verify header, welcome, bento grid, stats row render with skeletons; verify unauthenticated redirect to /onboard.
+**Independent Test**: Load /dashboard as authenticated user; verify header, welcome, bento grid, stats row render with skeletons; verify unauthenticated redirect to / (landing).
 
 ### Implementation for User Story 1
 
@@ -50,12 +51,12 @@
 - [ ] T011 [P] [US1] Create welcome-skeleton (text-line variant) in apps/web/components/dashboard/skeletons/welcome-skeleton.tsx
 - [ ] T012 [P] [US1] Create stats-skeleton (four-card row variant) in apps/web/components/dashboard/skeletons/stats-skeleton.tsx
 - [ ] T013 [P] [US1] Create deadline-calendar-skeleton (calendar grid + list variant) in apps/web/components/dashboard/skeletons/deadline-calendar-skeleton.tsx
-- [ ] T014 [US1] Create GlobalHeader with LogoPlaceholder, search bar placeholder, notification center (Lucide Bell), DebtLiftedRing in apps/web/components/dashboard/global-header.tsx
-- [ ] T015 [US1] Update BentoGrid to grid-cols-12 at lg; update BentoGridItem colSpan to support 1–12 in apps/web/components/dashboard/bento-grid.tsx
+- [ ] T014 [US1] Create GlobalHeader with LogoPlaceholder, search bar placeholder, notification center (Lucide Bell), user profile/account dropdown placeholder (for Parent Link 009), DebtLiftedRing in apps/web/components/dashboard/global-header.tsx
+- [ ] T015 [US1] Update BentoGrid to grid-cols-12 at lg; update BentoGridItem colSpan to support 1–12; apply wireframe-driven mapping (Game Plan 4, Discovery Feed 5, Deadline Calendar 3 cols) per contracts/component-shell.md in apps/web/components/dashboard/bento-grid.tsx
 - [ ] T016 [US1] Create WelcomeAreaShell using SectionShell and welcome-skeleton in apps/web/components/dashboard/welcome-area-shell.tsx
 - [ ] T017 [US1] Create StatsRowShell using SectionShell and stats-skeleton in apps/web/components/dashboard/stats-row-shell.tsx
 - [ ] T018 [US1] Create DeadlineCalendarShell using SectionShell and deadline-calendar-skeleton in apps/web/components/dashboard/deadline-calendar-shell.tsx
-- [ ] T019 [US1] Compose dashboard page with GlobalHeader, WelcomeAreaShell, BentoGrid (GamePlan, MatchInbox, DeadlineCalendarShell wrapped in SectionShell), StatsRowShell; omit ReconnectionIndicator for now in apps/web/app/(auth)/dashboard/page.tsx
+- [ ] T019 [US1] Compose dashboard page with GlobalHeader, WelcomeAreaShell, BentoGrid (GamePlan, MatchInbox, DeadlineCalendarShell wrapped in SectionShell), StatsRowShell; omit ReconnectionIndicator for now in apps/web/app/(auth)/dashboard/page.tsx. Refactor GamePlan to accept optional `showDebtLifted?: boolean` (default true); pass false when composing for 010 since header owns Debt Lifted.
 - [ ] T020 [US1] Wire SectionShell skeletonVariants: list (generic list-skeleton) for GamePlan, card (generic card-skeleton) for MatchInbox, calendar for DeadlineCalendar; default status=loading in apps/web/app/(auth)/dashboard/page.tsx
 
 **Checkpoint**: User Story 1 complete — dashboard shell renders with all sections in skeleton state; auth redirect works.
@@ -72,7 +73,7 @@
 
 - [ ] T021 [US2] Add focus-visible ring to search bar, notification bell, Debt Lifted area, and retry button in apps/web/components/dashboard/global-header.tsx and section-shell.tsx
 - [ ] T022 [US2] Ensure all interactive elements (search input, bell, logo link) meet min 44×44px touch target in apps/web/components/dashboard/global-header.tsx
-- [ ] T023 [US2] Add aria-label to search bar and notification center in apps/web/components/dashboard/global-header.tsx
+- [ ] T023 [US2] Add aria-label to search bar and notification center; ensure notification badge hidden when count=0, visible when count>0 in apps/web/components/dashboard/global-header.tsx
 - [ ] T024 [US2] Verify 16px base font and color contrast (navy on off-white, mint accents) in apps/web/app/globals.css; fix any contrast failures
 
 **Checkpoint**: User Story 2 complete — accessibility audit passes; touch targets verified.
@@ -87,7 +88,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Verify BentoGrid responsive breakpoints (1/2/4/12 cols) and BentoGridItem colSpan mapping at sm/md/lg in apps/web/components/dashboard/bento-grid.tsx
+- [ ] T025 [US3] Verify BentoGrid responsive breakpoints (1/2/4/12 cols), wireframe-driven colSpan mapping (Game Plan 4, Discovery Feed 5, Calendar 3), and BentoGridItem colSpan at sm/md/lg in apps/web/components/dashboard/bento-grid.tsx
 - [ ] T026 [US3] Verify GlobalHeader reflows on mobile (e.g., search bar full-width, notifications compact) in apps/web/components/dashboard/global-header.tsx
 - [ ] T027 [US3] Test layout at 375px, 768px, 1280px; fix horizontal overflow if present in apps/web/app/(auth)/dashboard/page.tsx
 
@@ -101,6 +102,7 @@
 
 - [ ] T028 Run Lighthouse on /dashboard; achieve Accessibility ≥ 90; document Performance and Best Practices scores
 - [ ] T029 Run quickstart.md verification steps (auth redirect, shell render, viewport test)
+- [ ] T030 Verify FR-017: SectionShell, list-skeleton, card-skeleton are generic and reusable (no section-specific logic that would block adding new bento sections)
 
 ---
 
@@ -113,7 +115,7 @@
 - **Phase 3 (US1)**: Depends on Phase 2 — core shell
 - **Phase 4 (US2)**: Depends on US1 — a11y applies to shell components
 - **Phase 5 (US3)**: Depends on US1 — responsive applies to shell
-- **Phase 6 (Polish)**: Depends on US1, US2, US3 (T028, T029)
+- **Phase 6 (Polish)**: Depends on US1, US2, US3 (T028, T029, T030)
 
 ### User Story Dependencies
 
@@ -124,6 +126,7 @@
 ### Parallel Opportunities
 
 - T001, T002 can run in parallel
+- T005b can run in parallel with T003–T007 (different files)
 - T008–T013 can run in parallel (logo + skeletons)
 - US2 and US3 can run in parallel after US1 (different concerns)
 

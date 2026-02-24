@@ -52,6 +52,8 @@ MUST use generic, actionable copy. Example: "Something went wrong. Try again." I
 
 `colSpan` maps to `col-span-{n}` for lg; responsive spans for smaller breakpoints.
 
+**Wireframe-driven mapping (010)**: Game Plan ≈ 4 cols, Discovery Feed ≈ 5 cols, Deadline Calendar ≈ 3 cols. Migration from 4-col base: colSpan 2→6, colSpan 4→12.
+
 ---
 
 ## GlobalHeader
@@ -62,8 +64,11 @@ Contains, in order (left to right):
 2. **Search bar**: Placeholder input, non-functional
 3. **Notification center**: Bell icon, optional badge (count or hidden when 0)
 4. **Debt Lifted ring**: Progress ring with numeric value (placeholder: e.g., $47,250)
+5. **User profile/account dropdown** (placeholder): For Parent Link (009) and account actions. Non-functional in this spec.
 
 Logo MUST be replaceable (component or `src` prop) without layout changes.
+
+DebtLiftedRing MUST be composable—exported as a standalone component so it can be rendered in the header and, if needed later, in other sections (e.g., within Game Plan).
 
 ---
 

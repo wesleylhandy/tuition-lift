@@ -15,11 +15,17 @@ Deliver a high-fidelity 'Premium Academic' shell and design system for the Tuiti
 
 ### Session 2025-02-24
 
-- Q: Should the dashboard route be behind authentication (login required) or accessible to unauthenticated visitors? → A: Protected—dashboard requires authentication; unauthenticated users are redirected to login.
+- Q: Should the dashboard route be behind authentication (login required) or accessible to unauthenticated visitors? → A: Protected—dashboard requires authentication; unauthenticated users are redirected to the landing route (`/`).
 - Q: Should the welcome message area and bottom stats row be in scope for this spec? → A: In scope—include both as placeholder/skeleton shells.
 - Q: When a section fails to load, should the shell show a distinct error state or keep showing the loading skeleton? → A: Distinct error state per section with retry; user-friendly messages only—no application internals, stack traces, or technical details exposed.
 - Q: Should "textured" Clarity Off-White be a visual pattern or a warm solid color? → A: Warm solid—no pattern; use a warm off-white hex value only.
 - Q: Should the header include the TuitionLift logo and tagline? → A: Yes—include logo and "Scholarship Command Center" tagline; use a replaceable placeholder asset until the final logo is available.
+- Q: Where should the Parent Link (009) live in the new shell? → A: In the user profile/account dropdown—not in the bento grid.
+- Q: Where should Application Tracker, ROI Comparison, and COA Comparison (006, 009) live? → A: May need additional bento cards that fit within the 3-column layout; design the bento grid to accommodate future sections without layout changes.
+
+- Q: When an unauthenticated user navigates to /dashboard, which route should they be redirected to? → A: `/` (landing). Redirect to landing page; landing will have sign-in/sign-up CTAs. Landing and login are deferred specs.
+- Q: Who owns the loading/error state for wrapped components (GamePlan, MatchInbox)? → A: SectionShell owns status—parent page fetches data and passes `status` (loading|error|content) to SectionShell. Components receive only `children` when status=content. Components do not manage their own loading.
+- Q: How should BentoGridItem colSpan map to the 12-column base? → A: Wireframe-driven—derive spans from wireframe proportions (Game Plan ≈ 4 cols, Discovery Feed ≈ 5 cols, Calendar ≈ 3 cols) and document per section.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -33,7 +39,7 @@ A returning user opens the dashboard and sees a cohesive, branded layout with th
 
 **Acceptance Scenarios**:
 
-1. **Given** an unauthenticated user navigates to the dashboard, **When** the request is processed, **Then** they are redirected to the login route.
+1. **Given** an unauthenticated user navigates to the dashboard, **When** the request is processed, **Then** they are redirected to the landing route (`/`).
 2. **Given** an authenticated user navigates to the dashboard, **When** the page loads, **Then** they see a global header with TuitionLift branding (logo + tagline), search bar, notification center, and Debt Lifted progress ring area.
 3. **Given** the dashboard loads, **When** content is not yet available, **Then** the welcome area, three main sections (Today's Game Plan, Discovery Feed, Deadline Calendar), and bottom stats row display loading skeletons in their designated positions.
 4. **Given** the dashboard renders, **When** the user views any text, **Then** headers use the serif font and body/utility text uses the sans-serif font per the design system.
@@ -99,9 +105,9 @@ A user views the dashboard on a tablet or mobile device. The bento grid reflows 
 
 #### Layout Components
 
-- **FR-008**: The dashboard route MUST be protected; unauthenticated users MUST be redirected to login.
+- **FR-008**: The dashboard route MUST be protected; unauthenticated users MUST be redirected to the landing route (`/`).
 - **FR-009**: A Global Header MUST be present, containing: branding (logo + "Scholarship Command Center" tagline), a search bar, a notification center, and a Debt Lifted progress ring area. The logo MUST be a replaceable placeholder (e.g., SVG or image) until the final brand asset is available; swapping the asset MUST NOT require layout changes.
-- **FR-010**: The Debt Lifted progress ring MUST display a numeric value (e.g., $47,250) with appropriate styling; the ring MUST visually indicate progress toward a goal.
+- **FR-010**: The Debt Lifted progress ring MUST display a numeric value (e.g., $47,250) with appropriate styling; the ring MUST visually indicate progress toward a goal. The ring MUST appear in the Global Header; the component MUST be composable so it can be rendered in additional places (e.g., within sections) if requirements change.
 - **FR-011**: A responsive Bento Grid container MUST span 12 columns (base) and reflow for smaller viewports.
 - **FR-012**: The shell MUST include a welcome message area (e.g., "Welcome back, [Name]" and progress copy such as "You're $X closer to your goal") as a placeholder/skeleton until real data is available.
 - **FR-013**: The shell MUST include a bottom stats row with four metric slots (e.g., APPLICATIONS, MATCH SCORE, ACTIVE DEADLINES, TOTAL POTENTIAL) as placeholder/skeleton shells.
@@ -132,6 +138,16 @@ The welcome area and stats row will be populated by existing or future data sour
 
 If any aggregate or profile field is missing, the implementation plan for populating these shells should propose the minimal DB/extensions needed—not this shell spec.
 
+### Prior Spec Alignment (006, 009)
+
+| Prior Spec | Feature | 010 Placement |
+|------------|---------|----------------|
+| 009 | Parent Link | User profile/account dropdown (not in bento grid) |
+| 006 | Application Tracker | Future bento card within 3-column layout |
+| 009 | ROI Comparison, COA Comparison | Future bento cards within 3-column layout |
+
+The bento grid MUST be designed to accommodate additional cards without layout changes. The three core sections (Today's Game Plan, Discovery Feed, Deadline Calendar) define the MVP shell; Application Tracker, ROI, and COA may be added as additional cards in follow-up work.
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
@@ -150,7 +166,7 @@ If any aggregate or profile field is missing, the implementation plan for popula
 - "Clarity" Off-White is a warm solid color (no texture or pattern); exact value aligns with #fafaf9 or similar per existing design tokens in the codebase.
 - The Debt Lifted progress ring shows a single value (e.g., $47,250); the full goal amount and progress calculation logic may be defined in a separate spec.
 - Search bar and notification center are non-functional placeholders for this spec; interaction behavior will be specified in subsequent specs.
-- Redirect target for unauthenticated /dashboard is /onboard; a dedicated landing page and login route will be addressed in a future spec.
+- Redirect target for unauthenticated /dashboard is `/` (landing); landing will have sign-in/sign-up CTAs. 010 scope includes a minimal `/` placeholder route so the redirect works; full landing page design is deferred. Dedicated login and onboarding flows will be addressed in future specs.
 - Logo placeholder is used until the final TuitionLift brand logo exists; plan.md will define a replaceable asset (e.g., SVG) that can be swapped without layout changes.
 - Loading skeletons are the default/initial state for the welcome area, stats row, and three bento sections until their respective feature specs deliver real data.
 - Welcome area and stats row placeholders do not require DB schema changes; data contracts for populating them will be defined when those features are implemented (plan.md or linked specs).
