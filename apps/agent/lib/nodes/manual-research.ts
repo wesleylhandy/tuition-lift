@@ -26,25 +26,58 @@ function extractDeadline(text: string): string | null {
   return date.toISOString().slice(0, 10);
 }
 
+import { extractFromPdf } from "../scout/extract-pdf";
+import { extractFromVision } from "../scout/extract-vision";
+
 /**
  * Extracts scholarship data from file (Storage path).
- * T025 wires: fetch from Storage, detect MIME, call extract-pdf or extract-vision.
+ * T025: fetch from Storage, detect MIME from path, call extract-pdf or extract-vision.
+ * When extracted URL present, verify with CycleVerifier.
  */
 async function extractFromFile(
-  _filePath: string,
+  filePath: string,
   ctx: ManualResearchContext
 ): Promise<ExtractedScholarshipData | null> {
   const { runId, userId, supabase } = ctx;
-  await supabase
-    .from("scout_runs")
-    .update({
-      step: "error",
-      message: "File extraction not yet implemented. Use URL or name for now.",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", runId)
-    .eq("user_id", userId);
-  return null;
+
+  const { data: blob, error: downloadError } = await supabase.storage
+    .from("scout_uploads")
+    .download(filePath);
+
+  if (downloadError || !blob) {
+    throw new Error("Could not load file. Please try again.");
+  }
+
+  const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
+  const buffer = await blob.arrayBuffer();
+
+  let extracted: ExtractedScholarshipData;
+
+  if (ext === "pdf") {
+    extracted = await extractFromPdf(buffer);
+  } else if (ext === "png" || ext === "jpg" || ext === "jpeg") {
+    const base64 = Buffer.from(buffer).toString("base64");
+    extracted = await extractFromVision(
+      base64,
+      ext === "png" ? "image/png" : "image/jpeg"
+    );
+  } else {
+    throw new Error("Unsupported file type. Please upload PDF, PNG, or JPG.");
+  }
+
+  if (extracted.url && extracted.url.trim()) {
+    const cycleResult = verifyCycle({
+      deadline: extracted.deadline,
+      url: extracted.url,
+    });
+    extracted = {
+      ...extracted,
+      deadline: cycleResult.deadline ?? extracted.deadline,
+      verification_status: cycleResult.verification_status,
+    };
+  }
+
+  return extracted;
 }
 
 /** Extracts dollar amount from text. Returns first match or null. */
@@ -95,10 +128,20 @@ export async function runManualResearchNode(
         await updateRun({ step: "error", message: "Missing file_path for file input." });
         return;
       }
-      await updateRun({ step: "reading_document", message: "Reading document..." });
+      await updateRun({
+        step: "reading_document",
+        message: "Nice scouting! I'm scanning that document now.",
+      });
       const extracted = await extractFromFile(filePath, ctx);
       if (extracted) {
-        await updateRun({ step: "complete", message: `Extracted "${extracted.title}".`, result: extracted });
+        const amountStr =
+          extracted.amount != null ? `$${extracted.amount.toLocaleString()} ` : "";
+        const deadlineStr = extracted.deadline ? ` Deadline: ${extracted.deadline}.` : "";
+        await updateRun({
+          step: "complete",
+          message: `I've extracted a ${amountStr}award: "${extracted.title}".${deadlineStr}`,
+          result: extracted,
+        });
       }
       return;
     }
@@ -114,7 +157,7 @@ export async function runManualResearchNode(
 
     await updateRun({
       step: "searching_sources",
-      message: "Searching official sources...",
+      message: "Looking up that scholarship for you…",
     });
 
     const results = await search(query);
@@ -129,7 +172,7 @@ export async function runManualResearchNode(
 
     await updateRun({
       step: "calculating_trust",
-      message: "Calculating trust score...",
+      message: "Verifying trust score and deadline…",
     });
 
     const trust = await scoreTrust({
@@ -165,9 +208,14 @@ export async function runManualResearchNode(
       trust_report: trust.trust_report,
     };
 
+    const amountStr =
+      amount != null ? `$${amount.toLocaleString()} award` : "scholarship";
+    const deadlineStr = cycleResult.deadline
+      ? `. Deadline verified: ${cycleResult.deadline}`
+      : "";
     await updateRun({
       step: "complete",
-      message: `Found "${top.title}". Trust score: ${trust.trust_score}.`,
+      message: `I've found a ${amountStr}. Trust score: ${trust.trust_score}/100${deadlineStr}.`,
       result: extracted,
     });
   } catch (err) {

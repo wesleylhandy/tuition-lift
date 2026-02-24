@@ -16,7 +16,8 @@
     "./lib/coach/check-in-batch": "./lib/coach/check-in-batch.ts",
     "./lib/coach/check-in-complete": "./lib/coach/check-in-complete.ts",
     "./lib/coach/micro-task": "./lib/coach/micro-task.ts",
-    "./lib/nodes/manual-research": "./lib/nodes/manual-research.ts"
+    "./lib/nodes/manual-research": "./lib/nodes/manual-research.ts",
+    "./lib/scout/fuzzy-dedup": "./lib/scout/fuzzy-dedup.ts"
   },
   "scripts": {
     "build": "tsc",
@@ -30,8 +31,10 @@
     "@langchain/openai": "^0.3.0",
     "@repo/db": "workspace:*",
     "@supabase/supabase-js": "^2.90.0",
+    "canvas": "^3.2.1",
     "fuzzball": "^2.2.3",
     "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.624",
     "whois-json": "^2.0.4",
     "zod": "^3.24.0"
   },

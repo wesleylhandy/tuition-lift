@@ -8,6 +8,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScoutEntryPoint } from "./scout-entry-point";
+import { ScoutProcessingHUD } from "./scout-processing-hud";
 import { ScoutVerificationForm } from "./scout-verification-form";
 import type { ScoutProcessInput } from "./scout-entry-point";
 import type { ExtractedScholarshipData } from "@repo/db";
@@ -36,6 +37,9 @@ export function ScoutModal({
   const [runId, setRunId] = useState<string | null>(null);
   const [confirmPending, setConfirmPending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    existingTitle: string;
+  } | null>(null);
 
   const { step, message, result, error: statusError, loading } = useScoutStatus(
     flowStep === "processing" || flowStep === "verification" ? runId : null
@@ -56,6 +60,7 @@ export function ScoutModal({
     setRunId(null);
     setSubmitError(null);
     setConfirmPending(false);
+    setDuplicateWarning(null);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -87,16 +92,20 @@ export function ScoutModal({
   }, [flowStep, step, result, message, statusError]);
 
   const handleConfirm = useCallback(
-    async (edited: ExtractedScholarshipData) => {
+    async (
+      edited: ExtractedScholarshipData,
+      options?: { forceAdd?: boolean }
+    ) => {
       setConfirmPending(true);
       setSubmitError(null);
-      const res = await confirmScoutScholarship(edited);
+      setDuplicateWarning(null);
+      const res = await confirmScoutScholarship(edited, options);
       setConfirmPending(false);
       if (res.success && "scholarshipId" in res) {
         onSuccess?.(res.scholarshipId, res.applicationId);
         handleClose();
       } else if (res.success === false && "duplicate" in res && res.duplicate) {
-        setSubmitError(`This may already be in your list: ${res.existingTitle}`);
+        setDuplicateWarning({ existingTitle: res.existingTitle });
       } else if (!res.success) {
         setSubmitError((res as { error: string }).error);
       }
@@ -139,7 +148,23 @@ export function ScoutModal({
           role="alert"
           className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          {submitError}
+          <p>{submitError}</p>
+          {(submitError.includes("No data found") ||
+            submitError.includes("Could not load") ||
+            submitError.includes("Unsupported")) && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Try a clearer image, upload as PNG/JPG, or enter the URL or
+              scholarship name manually.
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setSubmitError(null)}
+            className="mt-2 text-xs font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-electric-mint focus:ring-offset-2"
+            aria-label="Dismiss error and try again"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -152,17 +177,10 @@ export function ScoutModal({
         )}
 
         {showProcessing && (
-          <section
-            aria-label="Processing status"
-            aria-busy
-            className="min-h-[60px] rounded-lg border bg-muted/20 p-4"
-          >
-            <p className="text-sm font-medium">{message ?? "Processing…"}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {step === "searching_sources" && "Searching official sources…"}
-              {step === "calculating_trust" && "Calculating trust score…"}
-            </p>
-          </section>
+          <ScoutProcessingHUD
+            step={step}
+            message={message}
+          />
         )}
 
         {showVerification && (
@@ -170,6 +188,7 @@ export function ScoutModal({
             data={result}
             onConfirm={handleConfirm}
             onCancel={handleCancelVerification}
+            duplicateWarning={duplicateWarning ?? undefined}
             pending={confirmPending}
           />
         )}

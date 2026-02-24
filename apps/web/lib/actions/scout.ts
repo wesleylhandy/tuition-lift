@@ -1,8 +1,8 @@
 "use server";
 
 /**
- * Scout Server Actions — startScoutProcess, confirmScoutScholarship.
- * Per contracts/scout-server-actions.md. T014, T018.
+ * Scout Server Actions — uploadScoutFile, startScoutProcess, confirmScoutScholarship.
+ * Per contracts/scout-server-actions.md. T014, T018, T022.
  */
 import { z } from "zod";
 import { createServerSupabaseClient } from "../supabase/server";
@@ -14,6 +14,71 @@ import {
 } from "@repo/db";
 import { getCurrentAcademicYear } from "../utils/academic-year";
 import { runManualResearchNode } from "agent/lib/nodes/manual-research";
+import { checkFuzzyDuplicate } from "agent/lib/scout/fuzzy-dedup";
+
+const SCOUT_MAX_FILE_SIZE_BYTES =
+  (parseFloat(process.env.SCOUT_MAX_FILE_SIZE_MB ?? "10") || 10) * 1024 * 1024;
+const VALID_MIMES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+] as const;
+
+// --- uploadScoutFile (T022) ---
+
+export type UploadScoutFileResult =
+  | { success: true; path: string }
+  | { success: false; error: string };
+
+export async function uploadScoutFile(
+  formData: FormData
+): Promise<UploadScoutFileResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return { success: false, error: "No file provided" };
+  }
+
+  if (!VALID_MIMES.includes(file.type as (typeof VALID_MIMES)[number])) {
+    return { success: false, error: "Please upload PDF, PNG, or JPG only" };
+  }
+  if (file.size > SCOUT_MAX_FILE_SIZE_BYTES) {
+    return {
+      success: false,
+      error: `File too large (max ${Math.round(SCOUT_MAX_FILE_SIZE_BYTES / 1024 / 1024)} MB)`,
+    };
+  }
+
+  const ext = file.type === "application/pdf" ? "pdf" : file.type === "image/png" ? "png" : "jpg";
+  const uuid = crypto.randomUUID();
+  const path = `${user.id}/${uuid}.${ext}`;
+
+  const buffer = await file.arrayBuffer();
+  const { error: uploadError } = await supabase.storage
+    .from("scout_uploads")
+    .upload(path, buffer, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return {
+      success: false,
+      error: uploadError.message ?? "Failed to upload file",
+    };
+  }
+
+  return { success: true, path };
+}
 
 /** Local ScholarshipMetadata schema for confirmScoutScholarship; mirrors agent discovery schemas */
 const scoringFactorsSchema = z.object({
@@ -91,11 +156,15 @@ export async function startScoutProcess(
     return { success: false, error: "Failed to create scout run" };
   }
 
-  await runManualResearchNode(scoutInput, {
-    runId: run.id,
-    userId: user.id,
-    supabase,
-  });
+  try {
+    await runManualResearchNode(scoutInput, {
+      runId: run.id,
+      userId: user.id,
+      supabase,
+    });
+  } catch {
+    // Node updates scout_runs to error; still return run_id so client can poll and see error state.
+  }
 
   return { success: true, run_id: run.id };
 }
@@ -104,6 +173,7 @@ export async function startScoutProcess(
 
 export type ConfirmScoutResult =
   | { success: true; scholarshipId: string; applicationId: string }
+  | { success: true; scholarshipId: string; applicationId: string; potentiallyExpired: true }
   | { success: false; error: string }
   | { success: false; duplicate: true; existingTitle: string };
 
@@ -145,7 +215,8 @@ function toPrimaryCategory(categories: string[]): ScholarshipCategory {
 }
 
 export async function confirmScoutScholarship(
-  data: unknown
+  data: unknown,
+  options?: { forceAdd?: boolean }
 ): Promise<ConfirmScoutResult> {
   const supabase = await createServerSupabaseClient();
   const {
@@ -164,7 +235,27 @@ export async function confirmScoutScholarship(
   }
 
   const extracted = parsed.data;
+
+  if (!options?.forceAdd) {
+    const dup = await checkFuzzyDuplicate(extracted.title, user.id, supabase);
+    if (dup.match) {
+      return {
+        success: false,
+        duplicate: true,
+        existingTitle: dup.existingTitle,
+      };
+    }
+  }
+
+  const deadline = extracted.deadline ?? null;
+  const today = new Date().toISOString().slice(0, 10);
+  const potentiallyExpired =
+    deadline !== null && deadline < today ? true : undefined;
+
   const metadata = toScholarshipMetadata(extracted);
+  if (potentiallyExpired && metadata.verification_status !== "potentially_expired") {
+    metadata.verification_status = "potentially_expired";
+  }
   const metaParsed = ScholarshipMetadataSchema.safeParse(metadata);
   if (!metaParsed.success) {
     return { success: false, error: "Invalid metadata" };
@@ -239,20 +330,34 @@ export async function confirmScoutScholarship(
             .eq("scholarship_id", existing.id)
             .eq("academic_year", academicYear)
             .maybeSingle();
-          return {
-            success: true,
-            scholarshipId: existing.id,
-            applicationId: existingApp?.id ?? "",
-          };
+          return potentiallyExpired
+            ? {
+                success: true,
+                scholarshipId: existing.id,
+                applicationId: existingApp?.id ?? "",
+                potentiallyExpired: true,
+              }
+            : {
+                success: true,
+                scholarshipId: existing.id,
+                applicationId: existingApp?.id ?? "",
+              };
         }
         return { success: false, error: "Failed to add application" };
       }
 
-      return {
-        success: true,
-        scholarshipId: existing.id,
-        applicationId: app.id,
-      };
+      return potentiallyExpired
+        ? {
+            success: true,
+            scholarshipId: existing.id,
+            applicationId: app.id,
+            potentiallyExpired: true,
+          }
+        : {
+            success: true,
+            scholarshipId: existing.id,
+            applicationId: app.id,
+          };
     }
   }
 
@@ -282,9 +387,16 @@ export async function confirmScoutScholarship(
     return { success: false, error: "Failed to add application" };
   }
 
-  return {
-    success: true,
-    scholarshipId: inserted.id,
-    applicationId: app.id,
-  };
+  return potentiallyExpired
+    ? {
+        success: true,
+        scholarshipId: inserted.id,
+        applicationId: app.id,
+        potentiallyExpired: true,
+      }
+    : {
+        success: true,
+        scholarshipId: inserted.id,
+        applicationId: app.id,
+      };
 }

@@ -11,7 +11,10 @@ import type { ExtractedScholarshipData } from "@repo/db";
 
 export interface ScoutVerificationFormProps {
   data: ExtractedScholarshipData;
-  onConfirm: (edited: ExtractedScholarshipData) => void;
+  onConfirm: (
+    edited: ExtractedScholarshipData,
+    options?: { forceAdd?: boolean }
+  ) => void;
   onCancel: () => void;
   duplicateWarning?: { existingTitle: string };
   pending?: boolean;
@@ -26,9 +29,12 @@ export function ScoutVerificationForm({
 }: ScoutVerificationFormProps) {
   const [edited, setEdited] = useState<ExtractedScholarshipData>(data);
 
-  const handleConfirm = useCallback(() => {
-    onConfirm(edited);
-  }, [edited, onConfirm]);
+  const handleConfirm = useCallback(
+    (forceAdd?: boolean) => {
+      onConfirm(edited, forceAdd ? { forceAdd: true } : undefined);
+    },
+    [edited, onConfirm]
+  );
 
   const updateField = useCallback(
     <K extends keyof ExtractedScholarshipData>(
@@ -41,12 +47,15 @@ export function ScoutVerificationForm({
   );
 
   const research = edited.research_required ?? {};
+  const today = new Date().toISOString().slice(0, 10);
+  const potentiallyExpired =
+    edited.deadline != null && edited.deadline < today;
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        handleConfirm();
+        handleConfirm(false);
       }}
       className="space-y-4"
       aria-label="Verify scholarship details"
@@ -54,11 +63,42 @@ export function ScoutVerificationForm({
       {duplicateWarning && (
         <div
           role="alert"
-          className="rounded-lg border border-amber-500/50 bg-amber-50 p-3 text-sm text-amber-800"
+          className="rounded-lg border border-amber-500/50 bg-amber-50 p-4 text-sm text-amber-800"
+          aria-labelledby="duplicate-warning-title"
         >
-          <p>
+          <p id="duplicate-warning-title">
             This scholarship may already be in your list:{" "}
             <strong>{duplicateWarning.existingTitle}</strong>
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleConfirm(true)}
+              disabled={pending}
+              className="min-h-[44px] rounded-md bg-amber-200 px-4 py-2 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Add Anyway
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={pending}
+              className="min-h-[44px] rounded-md border border-amber-600/50 px-4 py-2 text-sm font-medium text-amber-800 transition-colors hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      {potentiallyExpired && (
+        <div
+          role="status"
+          className="rounded-lg border border-muted-foreground/40 bg-muted/30 p-3 text-sm text-muted-foreground"
+          aria-live="polite"
+        >
+          <p>
+            <strong>Potentially Expired:</strong> This scholarship&apos;s
+            deadline has passed. It may no longer be active.
           </p>
         </div>
       )}

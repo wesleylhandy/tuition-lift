@@ -76,13 +76,13 @@
 
 ### Implementation for US2
 
-- [ ] T021 [P] [US2] Implement ScoutDropZone in apps/web/components/dashboard/scout/scout-drop-zone.tsx — drag-and-drop area, accept application/pdf image/png image/jpeg, onFileSelect callback, max 10 MB, reject with clear message for invalid type/size
-- [ ] T022 [US2] Implement uploadScoutFile Server Action in apps/web/lib/actions/scout.ts — validate MIME (PDF/PNG/JPG) and size ≤ 10 MB, upload to scout_uploads/{user_id}/{uuid}.{ext}, return path or error
-- [ ] T023 [US2] Implement extract-vision in apps/agent/lib/scout/extract-vision.ts — GPT-4o vision extraction from base64 image, return ExtractedScholarshipData with research_required flags
-- [ ] T024 [US2] Implement extract-pdf in apps/agent/lib/scout/extract-pdf.ts — pdf-parse for digital PDFs (text density check); route to Vision LLM if scanned; return ExtractedScholarshipData
-- [ ] T025 [US2] Wire file path to manual_research node — when input_type=file, fetch from Storage, detect MIME (PDF vs image), call extract-pdf or extract-vision; verify extracted URL with CycleVerifier when present; update scout_runs
-- [ ] T026 [US2] Integrate ScoutDropZone into ScoutEntryPoint — on file select call uploadScoutFile, then startScoutProcess with file_path; show processing
-- [ ] T027 [US2] Handle extraction edge cases — unsupported file type rejection, "No data found" error state with retry/manual option, poor quality scan (flag research_required)
+- [x] T021 [P] [US2] Implement ScoutDropZone in apps/web/components/dashboard/scout/scout-drop-zone.tsx — drag-and-drop area, accept application/pdf image/png image/jpeg, onFileSelect callback, max 10 MB, reject with clear message for invalid type/size
+- [x] T022 [US2] Implement uploadScoutFile Server Action in apps/web/lib/actions/scout.ts — validate MIME (PDF/PNG/JPG) and size ≤ 10 MB, upload to scout_uploads/{user_id}/{uuid}.{ext}, return path or error
+- [x] T023 [US2] Implement extract-vision in apps/agent/lib/scout/extract-vision.ts — GPT-4o vision extraction from base64 image, return ExtractedScholarshipData with research_required flags
+- [x] T024 [US2] Implement extract-pdf in apps/agent/lib/scout/extract-pdf.ts — pdf-parse for digital PDFs (text density check); route to Vision LLM if scanned; return ExtractedScholarshipData
+- [x] T025 [US2] Wire file path to manual_research node — when input_type=file, fetch from Storage, detect MIME (PDF vs image), call extract-pdf or extract-vision; verify extracted URL with CycleVerifier when present; update scout_runs
+- [x] T026 [US2] Integrate ScoutDropZone into ScoutEntryPoint — on file select call uploadScoutFile, then startScoutProcess with file_path; show processing
+- [x] T027 [US2] Handle extraction edge cases — unsupported file type rejection, "No data found" error state with retry/manual option, poor quality scan (flag research_required)
 
 **Checkpoint**: US2 complete — Add by file upload; independently testable
 
@@ -96,9 +96,9 @@
 
 ### Implementation for US3
 
-- [ ] T028 [P] [US3] Implement ScoutProcessingHUD in apps/web/components/dashboard/scout/scout-processing-hud.tsx — displays step badges and optional message; props: step, message, persona (coach|advisor)
-- [ ] T029 [US3] Add persona message generation in manual_research node — Coach messages for encouragement (e.g., "Nice scouting! I'm scanning that flyer now"); Advisor for facts (e.g., "I've extracted a $2,000 award. Deadline verified March 15, 2026"); store in scout_runs or API response
-- [ ] T030 [US3] Wire ScoutProcessingHUD to ScoutModal — show HUD when step in (reading_document, searching_sources, calculating_trust); pass step, message from status poll
+- [x] T028 [P] [US3] Implement ScoutProcessingHUD in apps/web/components/dashboard/scout/scout-processing-hud.tsx — displays step badges and optional message; props: step, message, persona (coach|advisor)
+- [x] T029 [US3] Add persona message generation in manual_research node — Coach messages for encouragement (e.g., "Nice scouting! I'm scanning that flyer now"); Advisor for facts (e.g., "I've extracted a $2,000 award. Deadline verified March 15, 2026"); store in scout_runs or API response
+- [x] T030 [US3] Wire ScoutProcessingHUD to ScoutModal — show HUD when step in (reading_document, searching_sources, calculating_trust); pass step, message from status poll
 
 **Checkpoint**: US3 complete — Processing HUD with persona feedback; independently testable
 
@@ -112,10 +112,10 @@
 
 ### Implementation for US5
 
-- [ ] T031 [US5] Implement fuzzy-dedup in apps/agent/lib/scout/fuzzy-dedup.ts — checkFuzzyDuplicate(title, userId) queries user's scholarship titles, uses fuzzball.ratio, returns match if ≥ threshold (0.85)
-- [ ] T032 [US5] Integrate fuzzy check into confirmScoutScholarship — before upsert, call checkFuzzyDuplicate; if match return { success: false, duplicate: true, existingTitle }; add "Add Anyway" UX in verification form
-- [ ] T033 [US5] Add potentially_expired handling in confirmScoutScholarship — when deadline < today, include potentiallyExpired: true in result; show warning in verification form but allow save; flag verification_status when persisting
-- [ ] T034 [US5] Add DuplicateWarningBanner in ScoutVerificationForm per contracts/scout-ui-components.md — "This scholarship may already be in your list: [title]" with Add Anyway | Cancel buttons
+- [x] T031 [US5] Implement fuzzy-dedup in apps/agent/lib/scout/fuzzy-dedup.ts — checkFuzzyDuplicate(title, userId) queries user's scholarship titles, uses fuzzball.ratio, returns match if ≥ threshold (0.85)
+- [x] T032 [US5] Integrate fuzzy check into confirmScoutScholarship — before upsert, call checkFuzzyDuplicate; if match return { success: false, duplicate: true, existingTitle }; add "Add Anyway" UX in verification form
+- [x] T033 [US5] Add potentially_expired handling in confirmScoutScholarship — when deadline < today, include potentiallyExpired: true in result; show warning in verification form but allow save; flag verification_status when persisting
+- [x] T034 [US5] Add DuplicateWarningBanner in ScoutVerificationForm per contracts/scout-ui-components.md — "This scholarship may already be in your list: [title]" with Add Anyway | Cancel buttons
 
 **Checkpoint**: US5 complete — Dedup and cycle freshness; independently testable
 

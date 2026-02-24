@@ -2,10 +2,13 @@
 
 /**
  * ScoutEntryPoint — Shell composing input field + drop zone slots (T011).
- * ScoutInputField (T013); ScoutDropZone (T021) placeholder.
+ * ScoutInputField (T013); ScoutDropZone (T021) T026.
  * Per contracts/scout-ui-components.md.
  */
+import { useCallback, useState } from "react";
 import { ScoutInputField, toScoutProcessInput } from "./scout-input-field";
+import { ScoutDropZone } from "./scout-drop-zone";
+import { uploadScoutFile } from "@/lib/actions/scout";
 
 export type ScoutProcessInput =
   | { input_type: "url"; url: string }
@@ -24,16 +27,42 @@ export function ScoutEntryPoint({
   disabled = false,
   initialUrl,
 }: ScoutEntryPointProps) {
-  const handleInputSubmit = (value: string) => {
-    const input = toScoutProcessInput(value);
-    onSubmit(input);
-  };
+  const [uploading, setUploading] = useState(false);
+  const [dropError, setDropError] = useState<string | null>(null);
+
+  const handleInputSubmit = useCallback(
+    (value: string) => {
+      const input = toScoutProcessInput(value);
+      onSubmit(input);
+    },
+    [onSubmit]
+  );
+
+  const handleFileSelect = useCallback(
+    async (file: File) => {
+      setDropError(null);
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await uploadScoutFile(formData);
+      setUploading(false);
+      if (result.success) {
+        onSubmit({ input_type: "file", file_path: result.path });
+      } else {
+        setDropError(result.error);
+      }
+    },
+    [onSubmit]
+  );
+
+  const isDisabled = disabled || uploading;
 
   return (
     <div
-      className={`flex flex-col gap-4 ${disabled ? "pointer-events-none opacity-60" : ""}`}
+      className={`flex flex-col gap-4 ${isDisabled ? "pointer-events-none opacity-60" : ""}`}
       aria-label="Add scholarship by URL, name, or file upload"
-      aria-disabled={disabled}
+      aria-disabled={isDisabled}
+      aria-busy={uploading}
     >
       {/* ScoutInputField — T013 */}
       <section aria-label="URL or name input">
@@ -41,7 +70,7 @@ export function ScoutEntryPoint({
           onSubmit={handleInputSubmit}
           placeholder="Enter scholarship name or URL"
           ariaLabel="Scholarship name or URL"
-          disabled={disabled}
+          disabled={isDisabled}
           defaultValue={initialUrl ?? ""}
         />
       </section>
@@ -53,14 +82,20 @@ export function ScoutEntryPoint({
         <div className="flex-1 border-t border-muted-foreground/20" />
       </div>
 
-      {/* Slot: ScoutDropZone — T021 */}
-      <section
-        aria-label="File drop zone"
-        className="min-h-[80px] rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 p-4 flex items-center justify-center"
-      >
-        <p className="text-sm text-muted-foreground">
-          ScoutDropZone (placeholder) — PDF, PNG, JPG
-        </p>
+      {/* ScoutDropZone — T021, T026 */}
+      <section aria-label="File drop zone">
+        {dropError && (
+          <p
+            role="alert"
+            className="mb-2 text-sm text-destructive"
+          >
+            {dropError}
+          </p>
+        )}
+        <ScoutDropZone
+          onFileSelect={handleFileSelect}
+          disabled={isDisabled}
+        />
       </section>
     </div>
   );
