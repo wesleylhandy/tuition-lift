@@ -23,6 +23,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-13
 - Supabase (PostgreSQL) — profiles extensions, app_settings, parent_students, parent_contributions, institutions, career_outcomes; RLS on all new tables (009-squeezed-middle-roi)
 - TypeScript 5.x, Node 20+ + Next.js 16 (App Router), React 19, Tailwind CSS v4, lucide-react, @supabase/ssr (010-bento-shell-design-system)
 - N/A (no schema changes) (010-bento-shell-design-system)
+- TypeScript 5.x + Next.js (App Router), React 19, LangGraph, LangChain, OpenAI (GPT-4o), pdf-parse, fuzzball, Supabase (007-scout-vision-ingestion)
+- Supabase (PostgreSQL + Storage); `scout_uploads` bucket; optional `scout_runs` table (007-scout-vision-ingestion)
 
 - TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
 - TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
@@ -48,6 +50,9 @@ TypeScript 5.9: Follow standard conventions
 - 010-bento-shell-design-system: Added TypeScript 5.x, Node 20+ + Next.js 16 (App Router), React 19, Tailwind CSS v4, lucide-react, @supabase/ssr
 - 009-squeezed-middle-roi: Added TypeScript 5.x (Node 18+) + Next.js (App Router), React 19, LangGraph JS, Supabase, Zod, Inngest (existing)
 - 008-quick-onboarder: Added TypeScript 5.x, Node 20+ + Next.js (App Router), React 19, Supabase (@supabase/supabase-js, @supabase/ssr), Tailwind CSS, Shadcn/ui, Zod
+- 007-scout-vision-ingestion: Added TypeScript 5.x + Next.js (App Router), React 19, LangGraph, LangChain, OpenAI (GPT-4o), pdf-parse, fuzzball, Supabase
+- 005-coach-execution-engine: Added TypeScript 5.x (Node.js) + Inngest, Resend, React Email, LangGraph (Coach_Prioritization node), @repo/db, Supabase
+- 004-advisor-discovery-engine: Added TypeScript 5.x (Node.js) + LangGraph, LangChain, Tavily API, @langchain/langgraph-checkpoint-postgres, @repo/db
 
 
 <!-- MANUAL ADDITIONS START -->
