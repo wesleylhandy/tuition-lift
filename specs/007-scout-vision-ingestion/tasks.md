@@ -21,10 +21,10 @@
 
 **Purpose**: Project initialization, dependencies, and storage
 
-- [ ] T001 Install Scout dependencies (pdf-parse, fuzzball) in apps/agent via pnpm add pdf-parse fuzzball --filter apps/agent
-- [ ] T002 Create scout_uploads Storage bucket in Supabase with RLS policies per data-model.md §3 (path pattern {user_id}/{uuid}.{ext}, private, 10 MB max)
-- [ ] T003 [P] Add scout_runs migration in packages/database/supabase/migrations/ (id, user_id, step, result jsonb, created_at, updated_at) with RLS for authenticated users
-- [ ] T004 [P] Add SCOUT_MAX_FILE_SIZE_MB, SCOUT_DEDUP_SIMILARITY_THRESHOLD, SCOUT_VISION_MODEL to env validation in apps/agent/lib/env.ts
+- [x] T001 Install Scout dependencies (pdf-parse, fuzzball) in apps/agent via pnpm add pdf-parse fuzzball --filter apps/agent
+- [x] T002 Create scout_uploads Storage bucket in Supabase with RLS policies per data-model.md §3 (path pattern {user_id}/{uuid}.{ext}, private, 10 MB max)
+- [x] T003 [P] Add scout_runs migration in packages/database/supabase/migrations/ (id, user_id, step, result jsonb, created_at, updated_at) with RLS for authenticated users
+- [x] T004 [P] Add SCOUT_MAX_FILE_SIZE_MB, SCOUT_DEDUP_SIMILARITY_THRESHOLD, SCOUT_VISION_MODEL to env validation in apps/agent/lib/env.ts
 
 ---
 
@@ -34,14 +34,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create Scout Zod schemas (ScoutInputSchema, ExtractedScholarshipDataSchema, ScoutStepSchema, verification_status enum) in apps/agent/lib/scout/schemas.ts or packages/database
-- [ ] T006 Implement POST /api/scout/process route in apps/web/app/api/scout/process/route.ts — authenticate, validate JSON body (input_type, url|name|file_path), create scout_run, directly invoke manual_research_node (per research §12), return run_id
-- [ ] T007 Implement GET /api/scout/status/[runId] route in apps/web/app/api/scout/status/[runId]/route.ts — authenticate, verify run belongs to user, return step, message, result from scout_runs
-- [ ] T008 Create manual_research_node (or Scout subgraph) in apps/agent/lib/nodes/manual-research.ts — accepts ScoutInput, for URL/name: call Tavily + TrustScorer + CycleVerifier; for file: delegate to extract; update scout_runs step/result
-- [ ] T009 Implement URL/name Scout flow in manual-research node — use TavilyClient.search with URL or name as query (per research §11), score trust via TrustScorer, verify cycle; include scoring_factors and trust_report in ExtractedScholarshipData; write to scout_runs result, set step=complete
-- [ ] T010 Create ScoutModal shell in apps/web/components/dashboard/scout/scout-modal.tsx — Dialog with open/onOpenChange, composes placeholder for entry + HUD + form per contracts/scout-ui-components.md
-- [ ] T011 Create ScoutEntryPoint shell in apps/web/components/dashboard/scout/scout-entry-point.tsx — placeholder composing input field + drop zone slots per contract
-- [ ] T012 Add Scout CTA and modal trigger to dashboard (e.g., Add Scholarship button) in apps/web/app/(auth)/dashboard/page.tsx or Application Tracker component
+- [x] T005 Create Scout Zod schemas (ScoutInputSchema, ExtractedScholarshipDataSchema, ScoutStepSchema, verification_status enum) in apps/agent/lib/scout/schemas.ts or packages/database
+- [x] T006 Implement POST /api/scout/process route in apps/web/app/api/scout/process/route.ts — authenticate, validate JSON body (input_type, url|name|file_path), create scout_run, directly invoke manual_research_node (per research §12), return run_id
+- [x] T007 Implement GET /api/scout/status/[runId] route in apps/web/app/api/scout/status/[runId]/route.ts — authenticate, verify run belongs to user, return step, message, result from scout_runs
+- [x] T008 Create manual_research_node (or Scout subgraph) in apps/agent/lib/nodes/manual-research.ts — accepts ScoutInput, for URL/name: call Tavily + TrustScorer + CycleVerifier; for file: delegate to extract; update scout_runs step/result
+- [x] T009 Implement URL/name Scout flow in manual-research node — use TavilyClient.search with URL or name as query (per research §11), score trust via TrustScorer, verify cycle; include scoring_factors and trust_report in ExtractedScholarshipData; write to scout_runs result, set step=complete
+- [x] T010 Create ScoutModal shell in apps/web/components/dashboard/scout/scout-modal.tsx — Dialog with open/onOpenChange, composes placeholder for entry + HUD + form per contracts/scout-ui-components.md
+- [x] T011 Create ScoutEntryPoint shell in apps/web/components/dashboard/scout/scout-entry-point.tsx — placeholder composing input field + drop zone slots per contract
+- [x] T012 Add Scout CTA and modal trigger to dashboard (e.g., Add Scholarship button) in apps/web/app/(auth)/dashboard/page.tsx or Application Tracker component
 
 **Checkpoint**: Foundation ready — Scout API and modal shell exist; URL/name flow can be wired
 

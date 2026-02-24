@@ -47,6 +47,23 @@ export {
 } from './check-in-tasks';
 export type { CheckInTaskSchema } from './check-in-tasks';
 
+export {
+  ScoutInputSchema,
+  ExtractedScholarshipDataSchema,
+  scoutStepEnum,
+  scoutVerificationStatusEnum,
+  scoutScoringFactorsSchema,
+  researchRequiredSchema,
+} from './scout';
+export type {
+  ScoutInput,
+  ScoutStep,
+  ExtractedScholarshipData,
+  ScoutVerificationStatus,
+  ScoutScoringFactors,
+  ResearchRequired,
+} from './scout';
+
 /**
  * Validates data against schema; throws ZodError on failure.
  * Use before DB writes to reject invalid payloads.
