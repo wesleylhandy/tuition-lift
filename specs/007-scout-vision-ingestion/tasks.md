@@ -129,6 +129,7 @@
 - [x] T036 Add loading/empty state handling — skeleton or spinner during status poll; no mock data per Constitution
 - [x] T037 Verify WCAG 2.1 AA for Scout components — focus trap in modal, aria labels, contrast; semantic HTML (button, input, dialog)
 - [ ] T038 Run quickstart.md verification — manual test: URL path, file path, dedup, expired; confirm Application Tracker updates (see quickstart.md §Verification)
+- [x] T039 [P] Add prompt-injection hardening to Scout extraction — apps/agent/lib/scout/prompt-injection-hardening.ts: delimiters (DOCUMENT_CONTENT_BEGIN/END), ignore-instructions, system message for text extraction; update extract-vision.ts extractFromText (system+user) and extractFromVision (hardened prompt) per Constitution §4
 
 ---
 

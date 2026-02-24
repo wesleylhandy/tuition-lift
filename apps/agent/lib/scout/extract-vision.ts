@@ -2,11 +2,17 @@
  * extract-vision: GPT-4o vision extraction from base64 image (T023).
  * Extracts scholarship data from images (PNG/JPG) and scanned PDF pages.
  * Returns ExtractedScholarshipData with research_required flags.
+ * Prompt-injection hardening: delimiters and ignore-instructions (Constitution §4).
  */
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
 import { parseScoutEnv } from "../env";
 import type { ExtractedScholarshipData } from "@repo/db";
+import {
+  buildDocumentUserMessage,
+  TEXT_EXTRACTION_SYSTEM_INSTRUCTION,
+  VISION_EXTRACTION_INSTRUCTION,
+} from "./prompt-injection-hardening";
 
 const VISION_EXTRACT_SCHEMA = z.object({
   title: z.string().min(1).describe("Scholarship name"),
@@ -32,14 +38,10 @@ const VISION_EXTRACT_SCHEMA = z.object({
 
 type VisionExtractOutput = z.infer<typeof VISION_EXTRACT_SCHEMA>;
 
-const PROMPT = `Extract scholarship information from this document image.
-Return structured data. Use YYYY-MM-DD for deadline. Use dollar amount as number (no $ or commas).
-Set research_required to true for any field you are uncertain about or had to infer.
-If no value found, use null (or empty string for url). Be conservative: when in doubt, mark research_required true.`;
-
 /**
  * Extracts scholarship data from plain text via GPT-4o (no vision).
  * Used for digital PDFs with sufficient text density.
+ * Hardened: uses delimiters and ignore-instructions to resist prompt injection.
  */
 export async function extractFromText(
   text: string
@@ -53,10 +55,12 @@ export async function extractFromText(
     strict: true,
   });
 
+  const documentMessage = buildDocumentUserMessage(text);
   const result = (await llm.invoke([
+    { role: "system" as const, content: TEXT_EXTRACTION_SYSTEM_INSTRUCTION },
     {
       role: "user" as const,
-      content: `${PROMPT}\n\nDocument text:\n${text.slice(0, 15000)}`,
+      content: documentMessage,
     },
   ])) as VisionExtractOutput;
 
@@ -101,7 +105,7 @@ export async function extractFromVision(
     {
       role: "user" as const,
       content: [
-        { type: "text" as const, text: PROMPT },
+        { type: "text" as const, text: VISION_EXTRACTION_INSTRUCTION },
         {
           type: "image_url" as const,
           image_url: { url: dataUrl },
