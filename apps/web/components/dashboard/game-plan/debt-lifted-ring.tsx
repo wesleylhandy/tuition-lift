@@ -12,6 +12,8 @@ export interface DebtLiftedRingProps {
   goalCents?: number;
   /** Compact variant for header; uses smaller ring and text */
   compact?: boolean;
+  /** Dark variant for dark backgrounds (off-white text); default for light backgrounds */
+  variant?: "default" | "dark";
   className?: string;
 }
 
@@ -28,6 +30,7 @@ export function DebtLiftedRing({
   totalCents,
   goalCents,
   compact = false,
+  variant = "default",
   className = "",
 }: DebtLiftedRingProps) {
   const displayTotal = formatCurrency(totalCents);
@@ -35,6 +38,9 @@ export function DebtLiftedRing({
   const progress = goal > 0 ? Math.min(totalCents / goal, 1) : 0;
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference * (1 - progress);
+  const isDark = variant === "dark";
+  const textPrimary = isDark ? "text-off-white" : "text-navy";
+  const textSecondary = isDark ? "text-electric-mint/80" : "text-muted-foreground";
 
   if (compact) {
     return (
@@ -55,7 +61,7 @@ export function DebtLiftedRing({
             fill="none"
             stroke="currentColor"
             strokeWidth="8"
-            className="text-muted/30"
+            className={isDark ? "text-off-white/30" : "text-muted/30"}
           />
           <circle
             cx="50"
@@ -73,10 +79,12 @@ export function DebtLiftedRing({
           />
         </svg>
         <div className="flex flex-col">
-          <p className="font-heading text-sm font-semibold leading-tight text-navy">
+          <p
+            className={`font-heading text-sm font-semibold leading-tight ${textPrimary}`}
+          >
             {displayTotal}
           </p>
-          <p className="text-[10px] text-muted-foreground leading-tight">
+          <p className={`text-[10px] leading-tight ${textSecondary}`}>
             Debt lifted
           </p>
         </div>
@@ -120,10 +128,12 @@ export function DebtLiftedRing({
         />
       </svg>
       <div className="text-center">
-        <p className="font-heading text-lg font-semibold text-navy">
+        <p
+          className={`font-heading text-lg font-semibold leading-tight ${textPrimary}`}
+        >
           {displayTotal}
         </p>
-        <p className="text-xs text-muted-foreground">Debt lifted</p>
+        <p className={`text-xs leading-tight ${textSecondary}`}>Debt lifted</p>
       </div>
     </div>
   );

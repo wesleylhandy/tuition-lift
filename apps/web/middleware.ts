@@ -36,18 +36,33 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // T005: Protect /dashboard; redirect unauthenticated users to / (landing)
   const pathname = request.nextUrl.pathname;
-  const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
-  if (isDashboard && !user) {
-    return NextResponse.redirect(new URL("/", request.url));
+  const isDashboard =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  const isScout = pathname === "/scout" || pathname.startsWith("/scout/");
+
+  // US3 T016: Protect /dashboard and /scout; redirect unauthenticated to /login?redirectTo=
+  if ((isDashboard || isScout) && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirectTo", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // US3 T016: Redirect authenticated users with incomplete onboarding from /dashboard, /scout to /onboard
+  if ((isDashboard || isScout) && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_complete")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.onboarding_complete === false) {
+      return NextResponse.redirect(new URL("/onboard", request.url));
+    }
   }
 
   // T029: Only check profile for /onboard when user is authenticated
-  if (
-    pathname === "/onboard" &&
-    user
-  ) {
+  if (pathname === "/onboard" && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("onboarding_complete")
@@ -67,5 +82,7 @@ export const config = {
     "/onboard",
     "/dashboard",
     "/dashboard/:path*",
+    "/scout",
+    "/scout/:path*",
   ],
 };

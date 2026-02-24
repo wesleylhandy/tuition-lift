@@ -86,8 +86,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Extend `apps/web/middleware.ts`: add `/scout` and `/scout/:path*` to matcher; redirect unauthenticated from /dashboard and /scout to `/login?redirectTo=${encodeURIComponent(pathname)}` instead of `/`; fetch profile for /dashboard and /scout, redirect authenticated users with `onboarding_complete=false` to `/onboard`
-- [ ] T017 [US3] Verify `redirectTo` flows: middleware sets it; login/callback use `getSafeRedirectTo`; test allowlist rejects `//`, `javascript:`, external URLs
+- [x] T016 [US3] Extend `apps/web/middleware.ts`: add `/scout` and `/scout/:path*` to matcher; redirect unauthenticated from /dashboard and /scout to `/login?redirectTo=${encodeURIComponent(pathname)}` instead of `/`; fetch profile for /dashboard and /scout, redirect authenticated users with `onboarding_complete=false` to `/onboard`
+- [x] T017 [US3] Verify `redirectTo` flows: middleware sets it; login/callback use `getSafeRedirectTo`; test allowlist rejects `//`, `javascript:`, external URLs
 
 **Checkpoint**: User Story 3 complete — protected routes and redirectTo flow work correctly
 
@@ -101,8 +101,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T018 [US4] Refactor `apps/web/components/landing/landing-header.tsx` to be session-aware — Server Component with `createServerClient` (or parent passes user), render Guest: "Login" → `/login`, "Get Started" → `/auth/check-email` (or landing hero flow); render Auth: reuse Avatar + Debt Lifted HUD patterns from `apps/web/components/dashboard/global-header.tsx` (Debt Lifted HUD shows placeholder/skeleton until data available per FR-013)
-- [ ] T019 [US4] Ensure LandingHeader (or shared Navbar) is used on landing, login, auth pages; session fetched server-side where possible to avoid flash
+- [x] T018 [US4] Refactor `apps/web/components/landing/landing-header.tsx` to be session-aware — Server Component with `createServerClient` (or parent passes user), render Guest: "Login" → `/login`, "Get Started" → `/auth/check-email` (or landing hero flow); render Auth: reuse Avatar + Debt Lifted HUD patterns from `apps/web/components/dashboard/global-header.tsx` (Debt Lifted HUD shows placeholder/skeleton until data available per FR-013)
+- [x] T019 [US4] Ensure LandingHeader (or shared Navbar) is used on landing, login, auth pages; session fetched server-side where possible to avoid flash
 
 **Checkpoint**: User Story 4 complete — Navbar correctly shows Guest vs Authenticated state
 
