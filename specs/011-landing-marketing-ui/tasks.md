@@ -55,10 +55,10 @@
 
 **Independent Test**: Load landing page; verify hero content and form visible; enter valid email, click Get Started → redirect to /onboard?email=...; invalid email shows validation message.
 
-- [ ] T012 [P] [US1] Create FloatingPreviewCards with two static exemplar cards (scholarship match, priorities/tasks); subtle motion; prefers-reduced-motion check in apps/web/components/landing/floating-preview-cards.tsx
-- [ ] T013 [P] [US1] Create HeroSection with heading "Lift the Weight of Student Debt" (emphasize "Student Debt"), supporting copy, email input, "Get Started" button, "Free to start. No credit card required", form action=redirectToSignUp in apps/web/components/landing/hero-section.tsx
-- [ ] T014 [US1] Create LandingHeader with logo and "Login / Sign Up" link to /onboard in apps/web/components/landing/landing-header.tsx
-- [ ] T015 [US1] Compose apps/web/app/page.tsx with LandingHeader, HeroSection (embed FloatingPreviewCards); use dark navy gradient background per plan; wire hero form to redirectToSignUp from apps/web/lib/actions/landing.ts
+- [x] T012 [P] [US1] Create FloatingPreviewCards with two static exemplar cards (scholarship match, priorities/tasks); subtle motion; prefers-reduced-motion check in apps/web/components/landing/floating-preview-cards.tsx
+- [x] T013 [P] [US1] Create HeroSection with heading "Lift the Weight of Student Debt" (emphasize "Student Debt"), supporting copy, email input, "Get Started" button, "Free to start. No credit card required", form action=redirectToSignUp in apps/web/components/landing/hero-section.tsx
+- [x] T014 [US1] Create LandingHeader with logo and "Login / Sign Up" link to /onboard in apps/web/components/landing/landing-header.tsx
+- [x] T015 [US1] Compose apps/web/app/page.tsx with LandingHeader, HeroSection (embed FloatingPreviewCards); use dark navy gradient background per plan; wire hero form to redirectToSignUp from apps/web/lib/actions/landing.ts
 
 **Checkpoint**: US1 complete — hero captures email and routes to Auth; Login / Sign Up in header works
 
@@ -70,9 +70,9 @@
 
 **Independent Test**: Load landing page; verify stats bar and testimonials render with real data or show loading/empty state; no hardcoded fake content.
 
-- [ ] T016 [P] [US2] Create StatsBar component: fetch landing_stats (stat_key='default'), display total_debt_lifted_cents, student_count, match_rate_percent; loading skeleton, empty fallback per contracts/landing-sections.md in apps/web/components/landing/stats-bar.tsx
-- [ ] T017 [P] [US2] Create TestimonialGrid component: fetch testimonials ordered by display_order; cards with quote, star_rating, avatar_url, student_name, class_year; loading skeleton, empty state per contracts/landing-sections.md in apps/web/components/landing/testimonial-grid.tsx
-- [ ] T018 [US2] Add StatsBar and TestimonialGrid to apps/web/app/page.tsx; pass stats and testimonials from page (Server Component fetch) or fetch inside child Server Components
+- [x] T016 [P] [US2] Create StatsBar component: fetch landing_stats (stat_key='default'), display total_debt_lifted_cents, student_count, match_rate_percent; loading skeleton, empty fallback per contracts/landing-sections.md in apps/web/components/landing/stats-bar.tsx
+- [x] T017 [P] [US2] Create TestimonialGrid component: fetch testimonials ordered by display_order; cards with quote, star_rating, avatar_url, student_name, class_year; loading skeleton, empty state per contracts/landing-sections.md in apps/web/components/landing/testimonial-grid.tsx
+- [x] T018 [US2] Add StatsBar and TestimonialGrid to apps/web/app/page.tsx; pass stats and testimonials from page (Server Component fetch) or fetch inside child Server Components
 
 **Checkpoint**: US2 complete — stats and testimonials display with proper states
 
@@ -84,8 +84,8 @@
 
 **Independent Test**: Scroll to feature section; verify title, subheading, four feature cards with icon, title, description; section animates into view on scroll.
 
-- [ ] T019 [P] [US3] Create FeatureShowcase component: static config for four features (AI Matching, Trust Verification, Smart Deadlines, Coach's Guidance); bento-style grid; each card: icon, title, short description in apps/web/components/landing/feature-showcase.tsx
-- [ ] T020 [US3] Add FeatureShowcase to apps/web/app/page.tsx; wrap in useScrollReveal for scroll-triggered animation; ensure prefers-reduced-motion disables animation
+- [x] T019 [P] [US3] Create FeatureShowcase component: static config for four features (AI Matching, Trust Verification, Smart Deadlines, Coach's Guidance); bento-style grid; each card: icon, title, short description in apps/web/components/landing/feature-showcase.tsx
+- [x] T020 [US3] Add FeatureShowcase to apps/web/app/page.tsx; wrap in useScrollReveal for scroll-triggered animation; ensure prefers-reduced-motion disables animation
 
 **Checkpoint**: US3 complete — feature grid visible with scroll reveal
 
