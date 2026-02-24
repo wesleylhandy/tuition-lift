@@ -30,9 +30,9 @@ export function OnboardWizard() {
   }
 
   return (
-    <div className="flex min-h-0 w-full justify-center overflow-x-hidden px-4 py-6 sm:px-6">
+    <div className="flex min-h-0 w-full justify-center overflow-x-hidden">
       <div
-        className="mx-auto w-full max-w-[450px] rounded-lg border bg-card p-6 shadow-lg"
+        className="flex w-full max-w-[450px] flex-col gap-6 rounded-lg border bg-card p-8 shadow-lg sm:p-10"
         aria-label="Quick onboarder wizard"
         role="region"
       >

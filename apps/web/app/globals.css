@@ -9,6 +9,7 @@
   --color-navy: #1a1a40;
   --color-electric-mint: #00ffab;
   --color-off-white: #fafaf9;
+  --color-slate: #64748b;
   /* Font families: serif for headings, sans-serif for body */
   --font-heading: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-body: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
@@ -22,6 +23,7 @@
   --color-navy: #1a1a40;
   --color-electric-mint: #00ffab;
   --color-off-white: #fafaf9;
+  --color-slate: #64748b;
   --font-heading: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-body: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -36,6 +38,7 @@
 
 html,
 body {
+  font-size: 16px;
   max-width: 100vw;
   overflow-x: hidden;
 }
@@ -47,9 +50,8 @@ body {
 
 * {
   box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
+/* Avoid margin: 0 and padding: 0 on * — they override Tailwind spacing utilities (space-y-*, p-*, gap). */
 
 a {
   color: inherit;

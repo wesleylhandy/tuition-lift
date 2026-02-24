@@ -36,9 +36,16 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // T005: Protect /dashboard; redirect unauthenticated users to / (landing)
+  const pathname = request.nextUrl.pathname;
+  const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  if (isDashboard && !user) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   // T029: Only check profile for /onboard when user is authenticated
   if (
-    request.nextUrl.pathname === "/onboard" &&
+    pathname === "/onboard" &&
     user
   ) {
     const { data: profile } = await supabase
@@ -57,10 +64,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match /onboard only for T029 onboarding redirect.
-     * Extend matcher if other middleware logic is added later.
-     */
     "/onboard",
+    "/dashboard",
+    "/dashboard/:path*",
   ],
 };

@@ -28,10 +28,10 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
 
   return (
     <>
-      <div>
+      <div className="flex flex-col gap-3">
         <label
           htmlFor="step3-sai"
-          className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium"
         >
           Student Aid Index (SAI){" "}
           <span className="text-muted-foreground">(optional)</span>
@@ -57,14 +57,14 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           aria-describedby={error ? "step3-error" : "step3-sai-hint"}
           aria-invalid={!!error}
         />
-        <p id="step3-sai-hint" className="mt-1 text-xs text-muted-foreground">
+        <p id="step3-sai-hint" className="text-xs text-muted-foreground">
           From your FAFSA; leave blank if unknown
         </p>
       </div>
-      <div>
+      <div className="flex flex-col gap-3">
         <label
           htmlFor="step3-pell"
-          className="mb-1 block text-sm font-medium"
+          className="block text-sm font-medium"
         >
           Pell Grant eligibility{" "}
           <span className="text-muted-foreground">(optional)</span>
@@ -124,11 +124,11 @@ export function Step3Form({ onSuccess }: Step3FormProps) {
   }
 
   return (
-    <div data-step={3}>
-      <p className="mb-4 text-sm text-muted-foreground" role="status">
+    <div data-step={3} className="flex flex-col gap-6">
+      <p className="text-sm text-muted-foreground" role="status">
         {COACH_TIP}
       </p>
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="flex flex-col gap-6">
         <FormFieldsWithStatus error={error} />
         {error && (
           <p id="step3-error" className="text-sm text-destructive" role="alert">

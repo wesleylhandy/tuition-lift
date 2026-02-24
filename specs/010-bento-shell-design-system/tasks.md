@@ -17,8 +17,8 @@
 
 **Purpose**: Project initialization and dependencies
 
-- [ ] T001 Add lucide-react dependency in apps/web/package.json
-- [ ] T002 [P] Add --color-slate (#64748b) to @theme and :root in apps/web/app/globals.css
+- [x] T001 Add lucide-react dependency in apps/web/package.json
+- [x] T002 [P] Add --color-slate (#64748b) to @theme and :root in apps/web/app/globals.css
 
 ---
 
@@ -28,12 +28,12 @@
 
 **Checkpoint**: Foundation ready — user story implementation can begin
 
-- [ ] T003 Load Playfair Display and Inter via next/font/google in apps/web/app/layout.tsx and assign to --font-heading and --font-body
-- [ ] T004 Ensure 16px base font size on html or body in apps/web/app/globals.css
-- [ ] T005 Extend middleware matcher to include /dashboard and /dashboard/* in apps/web/middleware.ts; redirect unauthenticated users to / (landing)
-- [ ] T005b [P] Create minimal / placeholder route (sign-in CTA) in apps/web/app/page.tsx so auth redirect has valid target; full landing design deferred
-- [ ] T006 Create SectionShell component with status (loading|error|content), onRetry, skeletonVariant, title in apps/web/components/dashboard/section-shell.tsx
-- [ ] T007 Implement SectionShell error state with user-friendly message and 44×44px retry button in apps/web/components/dashboard/section-shell.tsx
+- [x] T003 Load Playfair Display and Inter via next/font/google in apps/web/app/layout.tsx and assign to --font-heading and --font-body
+- [x] T004 Ensure 16px base font size on html or body in apps/web/app/globals.css
+- [x] T005 Extend middleware matcher to include /dashboard and /dashboard/* in apps/web/middleware.ts; redirect unauthenticated users to / (landing)
+- [x] T005b [P] Create minimal / placeholder route (sign-in CTA) in apps/web/app/page.tsx so auth redirect has valid target; full landing design deferred
+- [x] T006 Create SectionShell component with status (loading|error|content), onRetry, skeletonVariant, title in apps/web/components/dashboard/section-shell.tsx
+- [x] T007 Implement SectionShell error state with user-friendly message and 44×44px retry button in apps/web/components/dashboard/section-shell.tsx
 
 ---
 
@@ -45,19 +45,19 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Create LogoPlaceholder with inline SVG "TL" monogram in apps/web/components/dashboard/logo-placeholder.tsx
-- [ ] T009 [P] [US1] Create generic list-skeleton (list-like structure) in apps/web/components/dashboard/skeletons/list-skeleton.tsx
-- [ ] T010 [P] [US1] Create generic card-skeleton (card-like structure) in apps/web/components/dashboard/skeletons/card-skeleton.tsx
-- [ ] T011 [P] [US1] Create welcome-skeleton (text-line variant) in apps/web/components/dashboard/skeletons/welcome-skeleton.tsx
-- [ ] T012 [P] [US1] Create stats-skeleton (four-card row variant) in apps/web/components/dashboard/skeletons/stats-skeleton.tsx
-- [ ] T013 [P] [US1] Create deadline-calendar-skeleton (calendar grid + list variant) in apps/web/components/dashboard/skeletons/deadline-calendar-skeleton.tsx
-- [ ] T014 [US1] Create GlobalHeader with LogoPlaceholder, search bar placeholder, notification center (Lucide Bell), user profile/account dropdown placeholder (for Parent Link 009), DebtLiftedRing in apps/web/components/dashboard/global-header.tsx
-- [ ] T015 [US1] Update BentoGrid to grid-cols-12 at lg; update BentoGridItem colSpan to support 1–12; apply wireframe-driven mapping (Game Plan 4, Discovery Feed 5, Deadline Calendar 3 cols) per contracts/component-shell.md in apps/web/components/dashboard/bento-grid.tsx
-- [ ] T016 [US1] Create WelcomeAreaShell using SectionShell and welcome-skeleton in apps/web/components/dashboard/welcome-area-shell.tsx
-- [ ] T017 [US1] Create StatsRowShell using SectionShell and stats-skeleton in apps/web/components/dashboard/stats-row-shell.tsx
-- [ ] T018 [US1] Create DeadlineCalendarShell using SectionShell and deadline-calendar-skeleton in apps/web/components/dashboard/deadline-calendar-shell.tsx
-- [ ] T019 [US1] Compose dashboard page with GlobalHeader, WelcomeAreaShell, BentoGrid (GamePlan, MatchInbox, DeadlineCalendarShell wrapped in SectionShell), StatsRowShell; omit ReconnectionIndicator for now in apps/web/app/(auth)/dashboard/page.tsx. Refactor GamePlan to accept optional `showDebtLifted?: boolean` (default true); pass false when composing for 010 since header owns Debt Lifted.
-- [ ] T020 [US1] Wire SectionShell skeletonVariants: list (generic list-skeleton) for GamePlan, card (generic card-skeleton) for MatchInbox, calendar for DeadlineCalendar; default status=loading in apps/web/app/(auth)/dashboard/page.tsx
+- [x] T008 [P] [US1] Create LogoPlaceholder with inline SVG "TL" monogram in apps/web/components/dashboard/logo-placeholder.tsx
+- [x] T009 [P] [US1] Create generic list-skeleton (list-like structure) in apps/web/components/dashboard/skeletons/list-skeleton.tsx
+- [x] T010 [P] [US1] Create generic card-skeleton (card-like structure) in apps/web/components/dashboard/skeletons/card-skeleton.tsx
+- [x] T011 [P] [US1] Create welcome-skeleton (text-line variant) in apps/web/components/dashboard/skeletons/welcome-skeleton.tsx
+- [x] T012 [P] [US1] Create stats-skeleton (four-card row variant) in apps/web/components/dashboard/skeletons/stats-skeleton.tsx
+- [x] T013 [P] [US1] Create deadline-calendar-skeleton (calendar grid + list variant) in apps/web/components/dashboard/skeletons/deadline-calendar-skeleton.tsx
+- [x] T014 [US1] Create GlobalHeader with LogoPlaceholder, search bar placeholder, notification center (Lucide Bell), user profile/account dropdown placeholder (for Parent Link 009), DebtLiftedRing in apps/web/components/dashboard/global-header.tsx
+- [x] T015 [US1] Update BentoGrid to grid-cols-12 at lg; update BentoGridItem colSpan to support 1–12; apply wireframe-driven mapping (Game Plan 4, Discovery Feed 5, Deadline Calendar 3 cols) per contracts/component-shell.md in apps/web/components/dashboard/bento-grid.tsx
+- [x] T016 [US1] Create WelcomeAreaShell using SectionShell and welcome-skeleton in apps/web/components/dashboard/welcome-area-shell.tsx
+- [x] T017 [US1] Create StatsRowShell using SectionShell and stats-skeleton in apps/web/components/dashboard/stats-row-shell.tsx
+- [x] T018 [US1] Create DeadlineCalendarShell using SectionShell and deadline-calendar-skeleton in apps/web/components/dashboard/deadline-calendar-shell.tsx
+- [x] T019 [US1] Compose dashboard page with GlobalHeader, WelcomeAreaShell, BentoGrid (GamePlan, MatchInbox, DeadlineCalendarShell wrapped in SectionShell), StatsRowShell; omit ReconnectionIndicator for now in apps/web/app/(auth)/dashboard/page.tsx. Refactor GamePlan to accept optional `showDebtLifted?: boolean` (default true); pass false when composing for 010 since header owns Debt Lifted.
+- [x] T020 [US1] Wire SectionShell skeletonVariants: list (generic list-skeleton) for GamePlan, card (generic card-skeleton) for MatchInbox, calendar for DeadlineCalendar; default status=loading in apps/web/app/(auth)/dashboard/page.tsx
 
 **Checkpoint**: User Story 1 complete — dashboard shell renders with all sections in skeleton state; auth redirect works.
 

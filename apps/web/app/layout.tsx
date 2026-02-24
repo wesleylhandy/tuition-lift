@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-heading",
+  subsets: ["latin"],
+});
+const inter = Inter({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -24,7 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body
+        className={`${playfairDisplay.variable} ${inter.variable} ${geistSans.variable} ${geistMono.variable}`}
+      >
         {children}
         <Toaster richColors position="bottom-right" />
       </body>

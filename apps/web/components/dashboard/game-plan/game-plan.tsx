@@ -39,7 +39,12 @@ function toTopThreeTask(t: Top3ApiItem): TopThreeTask {
   };
 }
 
-export function GamePlan() {
+export interface GamePlanProps {
+  /** When false, hide DebtLiftedRing (header owns it). Default true. */
+  showDebtLifted?: boolean;
+}
+
+export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [data, setData] = useState<GamePlanData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,7 +128,9 @@ export function GamePlan() {
         </p>
       ) : (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-          <DebtLiftedRing totalCents={debtLifted} />
+          {showDebtLifted && (
+            <DebtLiftedRing totalCents={debtLifted} />
+          )}
           <div className="min-w-0 flex-1 space-y-3">
             <TopThreeTasks tasks={top3} />
             <NextWinCountdown

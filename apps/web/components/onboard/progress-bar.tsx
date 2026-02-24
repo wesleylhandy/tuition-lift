@@ -15,7 +15,7 @@ export interface ProgressBarProps {
 export function ProgressBar({ currentStep, totalSteps = 3 }: ProgressBarProps) {
   return (
     <div
-      className="mb-6"
+      className="shrink-0"
       role="progressbar"
       aria-valuenow={currentStep}
       aria-valuemin={1}
@@ -23,7 +23,7 @@ export function ProgressBar({ currentStep, totalSteps = 3 }: ProgressBarProps) {
       aria-label={`Step ${currentStep} of ${totalSteps}`}
       aria-live="polite"
     >
-      <p className="mb-2 text-sm font-medium text-foreground">
+      <p className="mb-3 text-sm font-medium text-foreground">
         Step {currentStep} of {totalSteps}
       </p>
       <div
