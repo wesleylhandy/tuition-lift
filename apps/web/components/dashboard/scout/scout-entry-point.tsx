@@ -2,9 +2,10 @@
 
 /**
  * ScoutEntryPoint — Shell composing input field + drop zone slots (T011).
- * Placeholder slots for ScoutInputField (T013) and ScoutDropZone (T021).
+ * ScoutInputField (T013); ScoutDropZone (T021) placeholder.
  * Per contracts/scout-ui-components.md.
  */
+import { ScoutInputField, toScoutProcessInput } from "./scout-input-field";
 
 export type ScoutProcessInput =
   | { input_type: "url"; url: string }
@@ -23,23 +24,26 @@ export function ScoutEntryPoint({
   disabled = false,
   initialUrl,
 }: ScoutEntryPointProps) {
+  const handleInputSubmit = (value: string) => {
+    const input = toScoutProcessInput(value);
+    onSubmit(input);
+  };
+
   return (
     <div
       className={`flex flex-col gap-4 ${disabled ? "pointer-events-none opacity-60" : ""}`}
       aria-label="Add scholarship by URL, name, or file upload"
       aria-disabled={disabled}
     >
-      {/* Slot: ScoutInputField — T013 */}
-      <section
-        aria-label="URL or name input"
-        className="min-h-[52px] rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 p-3"
-      >
-        <p className="text-sm text-muted-foreground">
-          ScoutInputField (placeholder) — Enter scholarship name or URL
-          {initialUrl && (
-            <span className="block mt-1 text-xs">Prefill: {initialUrl}</span>
-          )}
-        </p>
+      {/* ScoutInputField — T013 */}
+      <section aria-label="URL or name input">
+        <ScoutInputField
+          onSubmit={handleInputSubmit}
+          placeholder="Enter scholarship name or URL"
+          ariaLabel="Scholarship name or URL"
+          disabled={disabled}
+          defaultValue={initialUrl ?? ""}
+        />
       </section>
 
       {/* Divider: "or" between input and drop zone */}

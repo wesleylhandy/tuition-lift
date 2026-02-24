@@ -2,12 +2,18 @@
 
 /**
  * ScoutModal — Dialog shell for Scout flow (T010).
- * Composes ScoutEntryPoint, ScoutProcessingHUD, ScoutVerificationForm.
- * Per contracts/scout-ui-components.md.
+ * Composes ScoutEntryPoint, ScoutProcessingHUD placeholder, ScoutVerificationForm.
+ * T019: Full US1 flow — entry → process → poll → verify → confirm.
+ * T020: Cancel/dismiss discards temp data.
  */
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScoutEntryPoint } from "./scout-entry-point";
+import { ScoutVerificationForm } from "./scout-verification-form";
 import type { ScoutProcessInput } from "./scout-entry-point";
+import type { ExtractedScholarshipData } from "@repo/db";
+import { startScoutProcess } from "@/lib/actions/scout";
+import { confirmScoutScholarship } from "@/lib/actions/scout";
+import { useScoutStatus } from "@/lib/hooks/use-scout-status";
 
 export interface ScoutModalProps {
   open: boolean;
@@ -17,6 +23,8 @@ export interface ScoutModalProps {
   initialUrl?: string;
 }
 
+type FlowStep = "entry" | "processing" | "verification" | "error";
+
 export function ScoutModal({
   open,
   onOpenChange,
@@ -24,10 +32,14 @@ export function ScoutModal({
   initialUrl,
 }: ScoutModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [flowStep, setFlowStep] = useState<FlowStep>("entry");
+  const [runId, setRunId] = useState<string | null>(null);
+  const [confirmPending, setConfirmPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleEntrySubmit = (_input: ScoutProcessInput) => {
-    // Will wire to startScoutProcess in T014/T019
-  };
+  const { step, message, result, error: statusError, loading } = useScoutStatus(
+    flowStep === "processing" || flowStep === "verification" ? runId : null
+  );
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -39,13 +51,68 @@ export function ScoutModal({
     }
   }, [open]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
+    setFlowStep("entry");
+    setRunId(null);
+    setSubmitError(null);
+    setConfirmPending(false);
     onOpenChange(false);
-  };
+  }, [onOpenChange]);
 
-  const handleCancel = () => {
-    handleClose();
-  };
+  const handleEntrySubmit = useCallback(async (input: ScoutProcessInput) => {
+    setSubmitError(null);
+    const res = await startScoutProcess(input);
+    if (!res.success) {
+      setSubmitError(res.error);
+      return;
+    }
+    setRunId(res.run_id);
+    setFlowStep("processing");
+  }, []);
+
+  useEffect(() => {
+    if (flowStep !== "processing") return;
+    if (statusError) {
+      setSubmitError(statusError);
+      setFlowStep("error");
+      return;
+    }
+    if (step === "complete" && result) {
+      setFlowStep("verification");
+    }
+    if (step === "error") {
+      setSubmitError(message ?? "Processing failed");
+      setFlowStep("error");
+    }
+  }, [flowStep, step, result, message, statusError]);
+
+  const handleConfirm = useCallback(
+    async (edited: ExtractedScholarshipData) => {
+      setConfirmPending(true);
+      setSubmitError(null);
+      const res = await confirmScoutScholarship(edited);
+      setConfirmPending(false);
+      if (res.success && "scholarshipId" in res) {
+        onSuccess?.(res.scholarshipId, res.applicationId);
+        handleClose();
+      } else if (res.success === false && "duplicate" in res && res.duplicate) {
+        setSubmitError(`This may already be in your list: ${res.existingTitle}`);
+      } else if (!res.success) {
+        setSubmitError((res as { error: string }).error);
+      }
+    },
+    [onSuccess, handleClose]
+  );
+
+  const handleCancelVerification = useCallback(() => {
+    setFlowStep("entry");
+    setRunId(null);
+  }, []);
+
+  const showEntry = flowStep === "entry" || flowStep === "error";
+  const showProcessing =
+    flowStep === "processing" && (loading || step !== "complete");
+  const showVerification = flowStep === "verification" && result;
 
   return (
     <dialog
@@ -53,7 +120,7 @@ export function ScoutModal({
       className="max-w-lg w-full rounded-lg border bg-background p-6 shadow-lg [&::backdrop]:bg-black/50"
       aria-labelledby="scout-modal-title"
       aria-describedby="scout-modal-desc"
-      onCancel={handleCancel}
+      onCancel={handleClose}
       onClose={handleClose}
     >
       <h2
@@ -67,32 +134,47 @@ export function ScoutModal({
         details.
       </p>
 
+      {submitError && (
+        <div
+          role="alert"
+          className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          {submitError}
+        </div>
+      )}
+
       <div className="mt-6 flex flex-col gap-6">
-        {/* ScoutEntryPoint — T011; initialUrl prefill wired in T014 */}
-        <ScoutEntryPoint onSubmit={handleEntrySubmit} initialUrl={initialUrl} />
+        {showEntry && (
+          <ScoutEntryPoint
+            onSubmit={handleEntrySubmit}
+            initialUrl={initialUrl}
+          />
+        )}
 
-        {/* Placeholder: ScoutProcessingHUD — T028 */}
-        <section
-          aria-label="Processing status"
-          className="min-h-[60px] rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-3"
-        >
-          <p className="text-sm text-muted-foreground">
-            ScoutProcessingHUD (placeholder) — step badges + persona message
-          </p>
-        </section>
+        {showProcessing && (
+          <section
+            aria-label="Processing status"
+            aria-busy
+            className="min-h-[60px] rounded-lg border bg-muted/20 p-4"
+          >
+            <p className="text-sm font-medium">{message ?? "Processing…"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {step === "searching_sources" && "Searching official sources…"}
+              {step === "calculating_trust" && "Calculating trust score…"}
+            </p>
+          </section>
+        )}
 
-        {/* Placeholder: ScoutVerificationForm — T017 */}
-        <section
-          aria-label="Verification form"
-          className="min-h-[100px] rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-3"
-        >
-          <p className="text-sm text-muted-foreground">
-            ScoutVerificationForm (placeholder) — Confirm | Cancel
-          </p>
-        </section>
+        {showVerification && (
+          <ScoutVerificationForm
+            data={result}
+            onConfirm={handleConfirm}
+            onCancel={handleCancelVerification}
+            pending={confirmPending}
+          />
+        )}
       </div>
 
-      {/* Focus trap: dialog manages focus by default; close button for accessibility */}
       <div className="mt-6 flex justify-end">
         <button
           type="button"

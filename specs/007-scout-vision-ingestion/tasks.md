@@ -55,14 +55,14 @@
 
 ### Implementation for US1 + US4
 
-- [ ] T013 [P] [US1] Implement ScoutInputField in apps/web/components/dashboard/scout/scout-input-field.tsx — input for name/URL, placeholder "Enter scholarship name or URL", onSubmit callback
-- [ ] T014 [US1] Wire ScoutInputField to startScoutProcess in apps/web/lib/actions/scout.ts — startScoutProcess calls POST /api/scout/process with input_type url|name, returns run_id
-- [ ] T015 [US1] Implement status polling in ScoutModal (or custom hook) — poll GET /api/scout/status/{runId} every 1–2s until step=complete or error; store step, message, result in state
-- [ ] T016 [P] [US4] Implement ScoutField in apps/web/components/dashboard/scout/scout-field.tsx — label, value, onChange, researchRequired prop, type text|number|date|url; aria-describedby for research required
-- [ ] T017 [US4] Implement ScoutVerificationForm in apps/web/components/dashboard/scout/scout-verification-form.tsx — maps ExtractedScholarshipData to ScoutField components, research_required styling, Confirm and Cancel buttons
-- [ ] T018 [US4] Implement confirmScoutScholarship Server Action in apps/web/lib/actions/scout.ts — Zod validate, map ExtractedScholarshipData to DiscoveryResult + ScholarshipMetadata per data-model §4, upsert scholarship (reuse 004 pattern), insert application with getCurrentAcademicYear(), return scholarshipId and applicationId
-- [ ] T019 [US1] Integrate Scout flow in ScoutModal — show ScoutEntryPoint initially; on submit show processing state then ScoutVerificationForm when complete; on confirm call confirmScoutScholarship, close modal, refresh tracker
-- [ ] T020 [US1] Add cancel/dismiss handling — closing modal without confirm discards temp data; no scholarship or application created
+- [x] T013 [P] [US1] Implement ScoutInputField in apps/web/components/dashboard/scout/scout-input-field.tsx — input for name/URL, placeholder "Enter scholarship name or URL", onSubmit callback
+- [x] T014 [US1] Wire ScoutInputField to startScoutProcess in apps/web/lib/actions/scout.ts — startScoutProcess calls POST /api/scout/process with input_type url|name, returns run_id
+- [x] T015 [US1] Implement status polling in ScoutModal (or custom hook) — poll GET /api/scout/status/{runId} every 1–2s until step=complete or error; store step, message, result in state
+- [x] T016 [P] [US4] Implement ScoutField in apps/web/components/dashboard/scout/scout-field.tsx — label, value, onChange, researchRequired prop, type text|number|date|url; aria-describedby for research required
+- [x] T017 [US4] Implement ScoutVerificationForm in apps/web/components/dashboard/scout/scout-verification-form.tsx — maps ExtractedScholarshipData to ScoutField components, research_required styling, Confirm and Cancel buttons
+- [x] T018 [US4] Implement confirmScoutScholarship Server Action in apps/web/lib/actions/scout.ts — Zod validate, map ExtractedScholarshipData to DiscoveryResult + ScholarshipMetadata per data-model §4, upsert scholarship (reuse 004 pattern), insert application with getCurrentAcademicYear(), return scholarshipId and applicationId
+- [x] T019 [US1] Integrate Scout flow in ScoutModal — show ScoutEntryPoint initially; on submit show processing state then ScoutVerificationForm when complete; on confirm call confirmScoutScholarship, close modal, refresh tracker
+- [x] T020 [US1] Add cancel/dismiss handling — closing modal without confirm discards temp data; no scholarship or application created
 
 **Checkpoint**: US1 + US4 complete — Add by URL/name with verification form; independently testable
 

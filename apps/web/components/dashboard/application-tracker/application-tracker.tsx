@@ -126,10 +126,13 @@ export function ApplicationTracker() {
   const hasOutcomes =
     (buckets.Won?.length ?? 0) > 0 || (buckets.Lost?.length ?? 0) > 0;
 
-  const handleScoutSuccess = useCallback(() => {
-    setScoutModalOpen(false);
-    refetch();
-  }, [refetch]);
+  const handleScoutSuccess = useCallback(
+    (_scholarshipId: string, _applicationId: string) => {
+      setScoutModalOpen(false);
+      refetch();
+    },
+    [refetch]
+  );
 
   return (
     <section
