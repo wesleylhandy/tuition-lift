@@ -51,5 +51,10 @@ curl -I http://localhost:3000/dashboard
 
 ### 7. Supabase Dashboard Config
 
+Run `pnpm --filter web verify:supabase-auth` to validate env vars and print expected Redirect URLs.
+
+- **URL Configuration** → Site URL: match app origin (e.g. `http://localhost:3000`)
 - **URL Configuration** → Redirect URLs: Add `http://localhost:3000/auth/callback` (dev), production URL for prod
-- **Auth** → Email: Magic Link enabled, 1h expiry (default)
+- **Auth** → Providers → Email: Enabled; Magic Link enabled, 1h expiry (default)
+
+Full checklist: [SUPABASE_AUTH_VERIFICATION.md](./SUPABASE_AUTH_VERIFICATION.md)

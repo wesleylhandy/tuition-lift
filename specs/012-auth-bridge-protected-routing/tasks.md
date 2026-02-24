@@ -23,8 +23,8 @@
 
 **Purpose**: Verify prerequisites and create directory structure
 
-- [ ] T001 [P] Create `apps/web/lib/auth/` and `apps/web/components/auth/` directories
-- [ ] T002 Verify Supabase Auth config: Email + Magic Link enabled; Site URL and `{origin}/auth/callback` in Redirect URLs
+- [x] T001 [P] Create `apps/web/lib/auth/` and `apps/web/components/auth/` directories
+- [x] T002 Verify Supabase Auth config: Email + Magic Link enabled; Site URL and `{origin}/auth/callback` in Redirect URLs
 
 ---
 
@@ -34,9 +34,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] Create `getSafeRedirectTo` in `apps/web/lib/auth/redirect-allowlist.ts` per contracts/redirect-allowlist.md (allowed prefixes: /dashboard, /scout, /onboard)
-- [ ] T004 Extend `apps/web/lib/rate-limit.ts` with `checkAndIncrementFailedLoginRateLimit(email)` — 5 attempts per email per 15 minutes; ensure signup/Magic Link use 3/email/hour per contract
-- [ ] T005 Create `apps/web/lib/actions/auth.ts` with `signIn`, `signUp`, `requestMagicLink` Server Actions per contracts/auth-server-actions.md — wire rate limits, Zod validation, `getSafeRedirectTo` for redirect handling
+- [x] T003 [P] Create `getSafeRedirectTo` in `apps/web/lib/auth/redirect-allowlist.ts` per contracts/redirect-allowlist.md (allowed prefixes: /dashboard, /scout, /onboard)
+- [x] T004 Extend `apps/web/lib/rate-limit.ts` with `checkAndIncrementFailedLoginRateLimit(email)` — 5 attempts per email per 15 minutes; ensure signup/Magic Link use 3/email/hour per contract
+- [x] T005 Create `apps/web/lib/actions/auth.ts` with `signIn`, `signUp`, `requestMagicLink` Server Actions per contracts/auth-server-actions.md — wire rate limits, Zod validation, `getSafeRedirectTo` for redirect handling
 
 **Checkpoint**: Foundation ready — user story implementation can begin
 
@@ -50,11 +50,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Update `redirectToSignUp` in `apps/web/lib/actions/landing.ts` to redirect to `/auth/check-email?email=` instead of `/onboard?email=`
-- [ ] T007 [P] [US1] Create `apps/web/components/auth/check-email-view.tsx` — instructions for Magic Link or Password Setup, "Send Magic Link" button, "Set password" link to `/auth/password-setup?email=`
-- [ ] T008 [US1] Create `apps/web/app/auth/check-email/page.tsx` — read `email` from searchParams, render CheckEmailView, wire `requestMagicLink` for Send Magic Link button
-- [ ] T009 [P] [US1] Create `apps/web/components/auth/password-setup-form.tsx` — password fields (min 8 chars), validation, submit calls `signUp` from auth actions
-- [ ] T010 [US1] Create `apps/web/app/auth/password-setup/page.tsx` — read `email` from searchParams, render PasswordSetupForm, wire `signUp`; on success redirect to `/onboard`; ensure invalid email blocked on landing form (existing Zod in landing.ts)
+- [x] T006 [US1] Update `redirectToSignUp` in `apps/web/lib/actions/landing.ts` to redirect to `/auth/check-email?email=` instead of `/onboard?email=`
+- [x] T007 [P] [US1] Create `apps/web/components/auth/check-email-view.tsx` — instructions for Magic Link or Password Setup, "Send Magic Link" button, "Set password" link to `/auth/password-setup?email=`
+- [x] T008 [US1] Create `apps/web/app/auth/check-email/page.tsx` — read `email` from searchParams, render CheckEmailView, wire `requestMagicLink` for Send Magic Link button
+- [x] T009 [P] [US1] Create `apps/web/components/auth/password-setup-form.tsx` — password fields (min 8 chars), validation, submit calls `signUp` from auth actions
+- [x] T010 [US1] Create `apps/web/app/auth/password-setup/page.tsx` — read `email` from searchParams, render PasswordSetupForm, wire `signUp`; on success redirect to `/onboard`; ensure invalid email blocked on landing form (existing Zod in landing.ts)
 
 **Checkpoint**: User Story 1 complete — landing → Check Email → Password Setup flow works
 
@@ -68,11 +68,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] Create `apps/web/app/auth/callback/route.ts` — GET handler, extract `code` or `token_hash` from query, exchange via `exchangeCodeForSession` or `verifyOtp`, redirect using `getSafeRedirectTo` to onboarding or dashboard based on `onboarding_complete`
-- [ ] T012 [P] [US2] Create `apps/web/components/auth/login-form.tsx` — email + password fields, submit calls `signIn` from auth actions; display error from action
-- [ ] T013 [US2] Create `apps/web/app/login/page.tsx` — render LoginForm; pass `redirectTo` from searchParams to signIn for post-login redirect
-- [ ] T014 [US2] Wire `getSafeRedirectTo` in auth actions (`signIn`, `signUp`) and callback route — honor `redirectTo` from form/URL when allowlisted; default to `/onboard` (new) or `/dashboard` (returning)
-- [ ] T015 [US2] Extend `apps/web/app/(onboard)/onboard/layout.tsx` to accept `?email=` for Password Setup return path; ensure users arriving from Password Setup (session exists) can resume at Step 2 if profile exists
+- [x] T011 [US2] Create `apps/web/app/auth/callback/route.ts` — GET handler, extract `code` or `token_hash` from query, exchange via `exchangeCodeForSession` or `verifyOtp`, redirect using `getSafeRedirectTo` to onboarding or dashboard based on `onboarding_complete`
+- [x] T012 [P] [US2] Create `apps/web/components/auth/login-form.tsx` — email + password fields, submit calls `signIn` from auth actions; display error from action
+- [x] T013 [US2] Create `apps/web/app/login/page.tsx` — render LoginForm; pass `redirectTo` from searchParams to signIn for post-login redirect
+- [x] T014 [US2] Wire `getSafeRedirectTo` in auth actions (`signIn`, `signUp`) and callback route — honor `redirectTo` from form/URL when allowlisted; default to `/onboard` (new) or `/dashboard` (returning)
+- [x] T015 [US2] Extend `apps/web/app/(onboard)/onboard/layout.tsx` to accept `?email=` for Password Setup return path; ensure users arriving from Password Setup (session exists) can resume at Step 2 if profile exists
 
 **Checkpoint**: User Story 2 complete — full auth flow (Password, Magic Link, Login) with correct post-auth routing
 

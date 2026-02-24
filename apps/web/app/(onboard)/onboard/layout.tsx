@@ -2,6 +2,8 @@
  * Onboarding wizard layout.
  * Route group (onboard) — no segment in URL; /onboard.
  * T028: Resume step resolution — fetch profile, redirect if complete, pass initialStep to OnboardWizard.
+ * T015: Users arriving from Password Setup (session + profile exist) resume at Step 2; ?email= in URL
+ * preserved by PasswordSetupForm redirect for Step1Form prefill when accessed directly.
  */
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";

@@ -13,7 +13,7 @@ export function FloatingPreviewCards() {
       aria-hidden
     >
       {/* Scholarship match exemplar — top/right on row layout */}
-      <div className="animate-float-subtle w-[180px] shrink-0 rounded-lg border border-electric-mint/30 bg-navy/90 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:w-[200px] sm:self-end">
+      <div className="motion-safe:animate-float-subtle w-[180px] shrink-0 rounded-lg border border-electric-mint/30 bg-navy/90 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:w-[200px] sm:self-end">
         <p className="text-xs font-medium text-electric-mint">Gates Scholarship</p>
         <p className="mt-1 text-[10px] text-off-white/80">94% match</p>
         <div className="mt-2 h-1 w-full rounded-full bg-navy">
@@ -22,7 +22,7 @@ export function FloatingPreviewCards() {
       </div>
 
       {/* Priorities / tasks exemplar — bottom/left on row layout */}
-      <div className="animate-float-subtle-delay w-[160px] shrink-0 self-start rounded-lg border border-electric-mint/30 bg-navy/90 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:w-[180px]">
+      <div className="motion-safe:animate-float-subtle-delay w-[160px] shrink-0 self-start rounded-lg border border-electric-mint/30 bg-navy/90 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:w-[180px]">
         <p className="text-xs font-medium text-electric-mint">Today&apos;s Priorities</p>
         <ul className="mt-1.5 space-y-1 text-[10px] text-off-white/80">
           <li className="flex items-center gap-1.5">

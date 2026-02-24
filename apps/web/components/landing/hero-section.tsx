@@ -48,9 +48,10 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative grid min-h-[85vh] grid-cols-1 items-center gap-8 px-4 py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 xl:px-12"
+      className="relative px-4 py-16 lg:px-8 xl:px-12"
       aria-labelledby="hero-heading"
     >
+      <div className="mx-auto grid min-h-[85vh] w-full max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
       <div className="order-2 mx-auto flex max-w-2xl flex-col items-center text-center lg:order-1 lg:mx-0 lg:items-start lg:text-left">
         <h1
           id="hero-heading"
@@ -105,6 +106,7 @@ export function HeroSection() {
 
       <div className="order-1 flex min-h-[280px] items-center justify-center lg:order-2 lg:min-h-[320px]">
         <FloatingPreviewCards />
+      </div>
       </div>
     </section>
   );
