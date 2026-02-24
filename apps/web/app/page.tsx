@@ -24,7 +24,7 @@ export default async function Home() {
   const stats = await fetchLandingStats();
 
   return (
-    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body">
+    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
       <LandingHeader />
       <main aria-label="TuitionLift landing">
         <HeroSection />

@@ -17,7 +17,7 @@ function GetStartedButton() {
     <button
       type="submit"
       disabled={pending}
-      className="min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-electric-mint px-6 py-3 font-medium text-navy transition-colors hover:bg-electric-mint/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy disabled:cursor-not-allowed disabled:opacity-70"
+      className="min-h-[44px] min-w-[44px] shrink-0 cursor-pointer rounded-lg bg-electric-mint px-6 py-3 font-medium !text-navy transition-colors hover:bg-electric-mint/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy disabled:cursor-not-allowed disabled:opacity-70"
       aria-label="Get started with your email"
     >
       {pending ? (

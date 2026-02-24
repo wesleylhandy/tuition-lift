@@ -13,12 +13,12 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body">
+    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
       <LandingHeader />
       <main className="mx-auto max-w-3xl px-4 py-12">
         <Link
           href="/"
-          className="mb-8 inline-block text-sm text-electric-mint transition-colors hover:text-electric-mint/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+          className="mb-8 inline-block cursor-pointer text-sm text-electric-mint transition-colors hover:text-electric-mint/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
         >
           ← Back to home
         </Link>

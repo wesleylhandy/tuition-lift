@@ -39,7 +39,7 @@ export function CtaSection({ totalDebtLiftedCents }: CtaSectionProps) {
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
           <Link
             href="/onboard"
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-electric-mint px-6 py-3 font-medium text-navy transition-colors hover:bg-electric-mint/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+            className="min-h-[44px] min-w-[44px] flex cursor-pointer items-center justify-center rounded-lg bg-electric-mint px-6 py-3 font-medium !text-navy transition-colors hover:bg-electric-mint/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
             aria-label="Start free today"
           >
             Start Free Today

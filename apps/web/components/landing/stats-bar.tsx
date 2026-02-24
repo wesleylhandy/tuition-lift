@@ -28,8 +28,11 @@ export function StatsBarSkeleton() {
   return (
     <section
       className="grid grid-cols-1 gap-6 px-4 py-12 sm:grid-cols-3 sm:gap-8"
-      aria-label="Platform statistics (loading)"
+      aria-labelledby="stats-skeleton-heading"
     >
+      <h2 id="stats-skeleton-heading" className="sr-only">
+        Platform statistics (loading)
+      </h2>
       {[1, 2, 3].map((i) => (
         <div
           key={i}
@@ -60,8 +63,11 @@ function StatsBarContent({ stats }: { stats: LandingStatsSchema | null }) {
     return (
       <section
         className="px-4 py-12 text-center"
-        aria-label="Platform statistics"
+        aria-labelledby="stats-heading"
       >
+        <h2 id="stats-heading" className="sr-only">
+          Platform statistics
+        </h2>
         <p className="text-off-white/80">Join our community</p>
       </section>
     );
@@ -87,8 +93,11 @@ function StatsBarContent({ stats }: { stats: LandingStatsSchema | null }) {
   return (
     <section
       className="grid grid-cols-1 gap-6 px-4 py-12 sm:grid-cols-3 sm:gap-8"
-      aria-label="Platform statistics"
+      aria-labelledby="stats-heading"
     >
+      <h2 id="stats-heading" className="sr-only">
+        Platform statistics
+      </h2>
       {metrics.map(({ value, label }) => (
         <div
           key={label}

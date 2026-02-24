@@ -139,10 +139,10 @@
 
 **Purpose**: Accessibility, performance, validation
 
-- [ ] T032 [P] Ensure all interactive elements (buttons, links, inputs) meet 44×44px touch target and WCAG 2.1 AA contrast in apps/web/components/landing/
-- [ ] T033 [P] Add semantic landmarks (main, nav) and heading hierarchy (one h1, sequential) in apps/web/app/page.tsx and landing components
-- [ ] T034 Add seed SQL for landing_stats (stat_key='default', total_debt_lifted_cents=240000000, student_count=15000, match_rate_percent=94) in packages/database or migration; document in quickstart
-- [ ] T035 Run quickstart.md verification: landing loads, stats/testimonials, hero form redirects (SC-001: email capture in under 30s), footer links, Lighthouse 90+, responsive, reduced motion
+- [x] T032 [P] Ensure all interactive elements (buttons, links, inputs) meet 44×44px touch target and WCAG 2.1 AA contrast in apps/web/components/landing/
+- [x] T033 [P] Add semantic landmarks (main, nav) and heading hierarchy (one h1, sequential) in apps/web/app/page.tsx and landing components
+- [x] T034 Add seed SQL for landing_stats (stat_key='default', total_debt_lifted_cents=240000000, student_count=15000, match_rate_percent=94) in packages/database or migration; document in quickstart
+- [x] T035 Run quickstart.md verification: landing loads, stats/testimonials, hero form redirects (SC-001: email capture in under 30s), footer links, Lighthouse 90+, responsive, reduced motion
 
 ---
 

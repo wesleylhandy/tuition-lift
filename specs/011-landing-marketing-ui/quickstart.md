@@ -22,10 +22,9 @@ pnpm --filter @repo/db db:push
 # 3. Generate types
 pnpm --filter @repo/db db:generate
 
-# 4. Seed landing_stats (initial values)
-# Run seed script or manual INSERT - see packages/database/scripts/ or migrations
-# Example: INSERT INTO landing_stats (stat_key, total_debt_lifted_cents, student_count, match_rate_percent)
-#          VALUES ('default', 240000000, 15000, 94);
+# 4. Seed landing_stats (automatic via migration)
+# Migration 00000000000034_landing_stats_seed.sql seeds default row on db:push.
+# Values: $2.4M lifted, 15K students, 94% match rate.
 
 # 5. Seed testimonials (optional; can start empty)
 # INSERT testimonials as needed for social proof section
@@ -40,7 +39,9 @@ pnpm --filter web dev
 
 ### landing_stats
 
-After migration, seed at least one row:
+Seeding is automatic via migration `00000000000034_landing_stats_seed.sql` (runs on `pnpm --filter @repo/db db:push`). Default row: `stat_key='default'`, `total_debt_lifted_cents=240000000` ($2.4M), `student_count=15000`, `match_rate_percent=94`.
+
+To seed manually (e.g. if skipping migrations):
 
 ```sql
 INSERT INTO public.landing_stats (stat_key, total_debt_lifted_cents, student_count, match_rate_percent)
@@ -99,12 +100,12 @@ const { data: testimonials } = await db
 
 ## Verification Checklist
 
-- [ ] Landing loads without errors
-- [ ] Stats bar shows values or empty state
-- [ ] Testimonials render or empty state
+- [ ] Landing loads without errors — `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/` → 200
+- [ ] Stats bar shows values or empty state — requires landing_stats seed (migration 00000000000034)
+- [ ] Testimonials render or empty state — seed testimonials per Data Setup above
 - [ ] Hero form validates email and redirects to /onboard?email=... (SC-001: flow completable in under 30s)
 - [ ] Footer links navigate to /privacy, /terms, /contact
 - [ ] Contact page: static "Email us at support@tuitionlift.com" (form deferred post-MVP)
-- [ ] Lighthouse Performance and Best Practices ≥ 90
-- [ ] Responsive at 375px, 768px, 1440px
-- [ ] Reduced motion disables/simplifies animations
+- [ ] Lighthouse Performance and Best Practices ≥ 90 — `npx lighthouse http://localhost:3000 --view`
+- [ ] Responsive at 375px, 768px, 1440px — Chrome DevTools device toolbar
+- [ ] Reduced motion disables/simplifies animations — DevTools → Rendering → Emulate CSS media feature prefers-reduced-motion
