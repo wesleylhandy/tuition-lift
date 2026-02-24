@@ -23,6 +23,8 @@ export interface ScoutProcessingHUDProps {
   step: ScoutStep;
   message?: string | null;
   persona?: "coach" | "advisor";
+  /** Show loading spinner when polling (T036) */
+  loading?: boolean;
 }
 
 /** Derives persona from step when not provided: Coach for process steps, Advisor for verification. */
@@ -35,6 +37,7 @@ export function ScoutProcessingHUD({
   step,
   message,
   persona,
+  loading = false,
 }: ScoutProcessingHUDProps) {
   const effectivePersona = persona ?? derivePersona(step);
   const currentIndex = PROCESSING_STEPS.indexOf(step);
@@ -43,8 +46,8 @@ export function ScoutProcessingHUD({
   return (
     <section
       aria-label="Processing status"
-      aria-busy
-      className="min-h-[60px] rounded-lg border bg-muted/20 p-4"
+      aria-busy={loading}
+      className="min-h-[80px] rounded-lg border bg-muted/20 p-4"
     >
       {showBadges && (
         <div
@@ -75,11 +78,17 @@ export function ScoutProcessingHUD({
         </div>
       )}
       <p
-        className={`mt-3 text-sm ${effectivePersona === "coach" ? "font-medium text-navy" : "text-muted-foreground"}`}
+        className={`mt-3 flex items-center gap-2 text-sm ${effectivePersona === "coach" ? "font-medium text-navy" : "text-muted-foreground"}`}
         role="status"
         aria-live="polite"
       >
-        {message ?? (step === "reading_document" && "Processing…")}
+        {loading && !message && (
+          <span
+            className="size-4 shrink-0 animate-spin rounded-full border-2 border-electric-mint border-t-transparent"
+            aria-hidden
+          />
+        )}
+        {message ?? (loading ? "Loading…" : (STEP_LABELS[step] ?? "Processing…"))}
       </p>
       {effectivePersona === "coach" && (
         <span className="sr-only">Encouraging Coach message</span>

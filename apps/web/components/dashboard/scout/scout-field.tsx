@@ -69,7 +69,9 @@ export function ScoutField({
           onChange={handleChange}
           placeholder="https://..."
           className={inputClass}
-          aria-describedby={ariaDescribedBy}
+          aria-describedby={
+            researchRequired ? (ariaDescribedBy ?? `${inputId}-hint`) : ariaDescribedBy
+          }
           aria-invalid={researchRequired}
         />
         {researchRequired && (

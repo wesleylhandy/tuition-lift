@@ -63,6 +63,9 @@ export function ScoutInputField({
 
   return (
     <div className="flex gap-2">
+      <span id="scout-input-hint" className="sr-only">
+        Enter a URL or scholarship name to search
+      </span>
       <input
         type="text"
         value={value}
