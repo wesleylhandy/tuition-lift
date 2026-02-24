@@ -26,6 +26,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-13
 - TypeScript 5.x + Next.js (App Router), React 19, LangGraph, LangChain, OpenAI (GPT-4o), pdf-parse, fuzzball, Supabase (007-scout-vision-ingestion)
 - Supabase (PostgreSQL + Storage); `scout_uploads` bucket; optional `scout_runs` table (007-scout-vision-ingestion)
 - Supabase (PostgreSQL) — profiles extensions, sai_zone_config, merit_tier_config, parent_students, parent_contributions, institutions, career_outcomes, user_saved_schools; RLS on all new tables (009-squeezed-middle-roi)
+- Supabase (PostgreSQL) — new tables: `landing_stats`, `testimonials` (011-landing-marketing-ui)
 
 - TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
 - TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
@@ -48,9 +49,9 @@ npm test && npm run lint
 TypeScript 5.9: Follow standard conventions
 
 ## Recent Changes
+- 011-landing-marketing-ui: Added TypeScript 5.x, Node 20+ + Next.js 16 (App Router), React 19, Tailwind CSS v4, lucide-react, @supabase/ssr
 - 009-squeezed-middle-roi: Added TypeScript 5.x (Node 18+) + Next.js (App Router), React 19, LangGraph JS, Supabase, Zod, Inngest (existing)
 - 010-bento-shell-design-system: Added TypeScript 5.x, Node 20+ + Next.js 16 (App Router), React 19, Tailwind CSS v4, lucide-react, @supabase/ssr
-- 009-squeezed-middle-roi: Added TypeScript 5.x (Node 18+) + Next.js (App Router), React 19, LangGraph JS, Supabase, Zod, Inngest (existing)
 
 
 <!-- MANUAL ADDITIONS START -->

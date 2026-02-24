@@ -34,6 +34,8 @@ export {
   ExtractedScholarshipDataSchema,
   scoutStepEnum,
   scoutVerificationStatusEnum,
+  landingStatsSchema,
+  testimonialSchema,
 } from './schema/index';
 
 export type {
@@ -47,6 +49,8 @@ export type {
   ExtractedScholarshipData,
   ScoutStep,
   ScoutVerificationStatus,
+  LandingStatsSchema,
+  TestimonialSchema,
 } from './schema/index';
 
 export {
