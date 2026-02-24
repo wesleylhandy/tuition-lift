@@ -97,9 +97,9 @@
 
 **Independent Test**: Click "Start Free Today" and "Login / Sign Up" → both route through Auth; Debt Lifted widget shows platform total or fallback.
 
-- [ ] T021 [P] [US4] Create DebtLiftedWidget component: displays total_debt_lifted from landing_stats or fallback when unavailable; format as currency; sourced from same fetch as StatsBar in apps/web/components/landing/debt-lifted-widget.tsx
-- [ ] T022 [US4] Create CtaSection component: heading "Ready to Lift Your Tuition Burden?", supporting copy, "Start Free Today" button (links to /onboard), optional DebtLiftedWidget in apps/web/components/landing/cta-section.tsx
-- [ ] T023 [US4] Add CtaSection to apps/web/app/page.tsx; pass stats for DebtLiftedWidget; apply useScrollReveal
+- [x] T021 [P] [US4] Create DebtLiftedWidget component: displays total_debt_lifted from landing_stats or fallback when unavailable; format as currency; sourced from same fetch as StatsBar in apps/web/components/landing/debt-lifted-widget.tsx
+- [x] T022 [US4] Create CtaSection component: heading "Ready to Lift Your Tuition Burden?", supporting copy, "Start Free Today" button (links to /onboard), optional DebtLiftedWidget in apps/web/components/landing/cta-section.tsx
+- [x] T023 [US4] Add CtaSection to apps/web/app/page.tsx; pass stats for DebtLiftedWidget; apply useScrollReveal
 
 **Checkpoint**: US4 complete — CTA and Debt Lifted widget functional
 

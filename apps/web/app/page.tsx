@@ -1,6 +1,7 @@
 /**
  * Landing page — Hero, email capture, routes to Auth via redirectToSignUp.
- * Stats bar and testimonials for social proof. Dark navy gradient; electric mint accents.
+ * Stats bar and testimonials for social proof. CTA section with Debt Lifted widget.
+ * Dark navy gradient; electric mint accents.
  */
 
 import { Suspense } from "react";
@@ -9,26 +10,31 @@ import { HeroSection } from "@/components/landing/hero-section";
 import {
   StatsBar,
   StatsBarSkeleton,
+  fetchLandingStats,
 } from "@/components/landing/stats-bar";
 import {
   TestimonialGrid,
   TestimonialGridSkeleton,
 } from "@/components/landing/testimonial-grid";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
+import { CtaSection } from "@/components/landing/cta-section";
 
-export default function Home() {
+export default async function Home() {
+  const stats = await fetchLandingStats();
+
   return (
     <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body">
       <LandingHeader />
       <main aria-label="TuitionLift landing">
         <HeroSection />
         <Suspense fallback={<StatsBarSkeleton />}>
-          <StatsBar />
+          <StatsBar stats={stats} />
         </Suspense>
         <Suspense fallback={<TestimonialGridSkeleton />}>
           <TestimonialGrid />
         </Suspense>
         <FeatureShowcase />
+        <CtaSection totalDebtLiftedCents={stats?.total_debt_lifted_cents ?? undefined} />
       </main>
     </div>
   );

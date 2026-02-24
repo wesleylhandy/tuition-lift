@@ -1,11 +1,12 @@
 /**
  * StatsBar — Platform metrics for social proof.
- * Fetches landing_stats (stat_key='default'), displays total_debt_lifted_cents,
- * student_count, match_rate_percent. Loading skeleton, empty fallback per contracts/landing-sections.md.
+ * Fetches landing_stats (stat_key='default') when stats not provided; displays
+ * total_debt_lifted_cents, student_count, match_rate_percent. Loading skeleton,
+ * empty fallback per contracts/landing-sections.md.
  */
 
-import { createDbClient } from "@repo/db";
-import { landingStatsSchema } from "@repo/db";
+import { createDbClient, landingStatsSchema } from "@repo/db";
+import type { LandingStatsSchema } from "@repo/db";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -42,27 +43,20 @@ export function StatsBarSkeleton() {
   );
 }
 
-export async function StatsBar() {
+export async function fetchLandingStats(): Promise<LandingStatsSchema | null> {
   const db = createDbClient();
   const { data, error } = await db
     .from("landing_stats")
     .select("*")
     .eq("stat_key", "default")
     .single();
-
-  if (error || !data) {
-    return (
-      <section
-        className="px-4 py-12 text-center"
-        aria-label="Platform statistics"
-      >
-        <p className="text-off-white/80">Join our community</p>
-      </section>
-    );
-  }
-
+  if (error || !data) return null;
   const parsed = landingStatsSchema.safeParse(data);
-  if (!parsed.success) {
+  return parsed.success ? parsed.data : null;
+}
+
+function StatsBarContent({ stats }: { stats: LandingStatsSchema | null }) {
+  if (!stats) {
     return (
       <section
         className="px-4 py-12 text-center"
@@ -73,8 +67,7 @@ export async function StatsBar() {
     );
   }
 
-  const { total_debt_lifted_cents, student_count, match_rate_percent } =
-    parsed.data;
+  const { total_debt_lifted_cents, student_count, match_rate_percent } = stats;
 
   const metrics = [
     {
@@ -109,4 +102,13 @@ export async function StatsBar() {
       ))}
     </section>
   );
+}
+
+/** When stats not provided, fetches; otherwise uses passed stats (for shared fetch with CtaSection). */
+export async function StatsBar({
+  stats: statsProp,
+}: { stats?: LandingStatsSchema | null } = {}) {
+  const stats =
+    statsProp !== undefined ? statsProp : await fetchLandingStats();
+  return <StatsBarContent stats={stats} />;
 }
