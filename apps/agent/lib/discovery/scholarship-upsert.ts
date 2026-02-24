@@ -12,10 +12,11 @@ import type { DiscoveryResult } from "../schemas";
 import type { ScholarshipMetadata } from "./schemas";
 import { ScholarshipMetadataSchema } from "./schemas";
 
-/** scholarship_category enum values from 002 migration */
+/** scholarship_category enum values from 002 migration; need_blind added in 009 */
 const VALID_CATEGORIES = [
   "merit",
   "need_based",
+  "need_blind",
   "minority",
   "field_specific",
   "other",

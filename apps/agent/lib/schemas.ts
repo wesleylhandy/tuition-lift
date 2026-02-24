@@ -30,6 +30,12 @@ export const UserProfileSchema = z.object({
   state: z.string().min(1),
   /** 0–4 unweighted or 0–6 weighted; derived from profiles.gpa_unweighted or gpa_weighted */
   gpa: z.number().min(0).max(6).optional(),
+  /** SAT EBRW + Math total (400–1600). Per data-model §1. */
+  sat_total: z.number().int().min(400).max(1600).optional(),
+  /** ACT composite (1–36). Per data-model §1. */
+  act_composite: z.number().int().min(1).max(36).optional(),
+  /** Extracurricular spikes (labels only; no PII). Max 10, each max 100 chars. */
+  spikes: z.array(z.string().min(1).max(100)).max(10).optional(),
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
@@ -45,6 +51,9 @@ export const verificationStatusEnum = z.enum([
   "potentially_expired",
 ]);
 
+/** Merit tag for Coach prioritization (009 US1). */
+export const meritTagEnum = z.enum(["merit_only", "need_blind", "need_based"]);
+
 export const DiscoveryResultSchema = z.object({
   id: z.string(),
   discovery_run_id: z.string().uuid().optional(),
@@ -56,6 +65,8 @@ export const DiscoveryResultSchema = z.object({
   trust_report: z.string().optional(),
   verification_status: verificationStatusEnum.optional(),
   categories: z.array(z.string()).optional(),
+  /** For Coach prioritization: merit_only | need_blind | need_based. */
+  merit_tag: meritTagEnum.optional(),
   deadline: z.string().optional(),
   amount: z.number().nullable().optional(),
 });

@@ -11,12 +11,17 @@ Extensions to Advisor_Search, Advisor_Verify, and Coach_Prioritization for merit
 
 ## 1. load-profile.ts Extensions
 
-**Input**: profiles row, app_settings (sai_merit_threshold), .env SAI_MERIT_THRESHOLD.
+**Input**: profiles row (including sai, award_year, sat_total, act_composite, spikes), sai_zone_config (by award_year), merit_tier_config (by award_year).
+
+**Lookup**:
+- Resolve `award_year` = profiles.award_year ?? current calendar year (clamped to current or next).
+- Read sai_zone_config WHERE award_year = resolved; use merit_lean_threshold for merit-first logic.
+- Read merit_tier_config WHERE award_year = resolved; derive merit_tier from GPA/SAT/ACT (test-optional: use gpa_min_no_test when sat/act absent).
 
 **Output** (add to state/config):
 - `merit_filter_preference`: 'merit_only' | 'show_all'
-- `sai_above_merit_threshold`: boolean (sai > threshold)
-- `merit_tier`: 'top' | 'strong' | 'standard' | null (from GPA/SAT/ACT per merit-tiers config)
+- `sai_above_merit_threshold`: boolean (sai >= merit_lean_threshold from sai_zone_config)
+- `merit_tier`: tier_name from merit_tier_config (e.g. 'presidential', 'deans', 'merit', 'incentive') or null
 
 ---
 
@@ -62,5 +67,6 @@ Extensions to Advisor_Search, Advisor_Verify, and Coach_Prioritization for merit
 - `merit_filter_preference`
 - `sai_above_merit_threshold`
 - `merit_tier`
+- `award_year` (resolved; used for config lookup)
 
 Used by Advisor_Search, Advisor_Verify, Coach_Prioritization.

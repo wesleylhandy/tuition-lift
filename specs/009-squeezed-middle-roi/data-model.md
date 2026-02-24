@@ -8,7 +8,7 @@
 This feature extends:
 - **profiles** — SAT/ACT, spikes, merit_filter_preference
 - **scholarships** — add need_blind to category enum; metadata tags
-- **New tables** — app_settings, parent_students, institutions, career_outcomes, parent_contributions
+- **New tables** — sai_zone_config, merit_tier_config, parent_students, parent_contributions, institutions, career_outcomes, user_saved_schools
 - **preferences JSONB** — merit_filter_preference when not in dedicated column
 
 ---
@@ -23,12 +23,14 @@ This feature extends:
 | act_composite | integer | yes | NULL | ACT composite (1–36) |
 | spikes | text[] | yes | NULL | Extracurricular "spikes" (e.g., Water Polo, Leadership) |
 | merit_filter_preference | text | yes | 'show_all' | 'merit_only' \| 'show_all' |
+| award_year | integer | yes | NULL | User-selected; current or next year only (e.g., 2026, 2027) |
 
 ### Validation (Zod + DB)
 
 - `sat_total`: 400–1600; `act_composite`: 1–36
 - `spikes`: array of non-empty strings, max 10 items, each max 100 chars
 - `merit_filter_preference`: CHECK IN ('merit_only', 'show_all')
+- `award_year`: current or next calendar year; validated at application boundary
 
 ### RLS
 
@@ -55,15 +57,36 @@ ALTER TYPE scholarship_category ADD VALUE IF NOT EXISTS 'need_blind';
 
 ---
 
-## 3. App Settings Table (SAI Threshold)
+## 3. Award-Year-Scoped Config Tables
+
+### 3a. SAI Zone Config
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
-| key | text | NOT NULL | — | PK; e.g. 'sai_merit_threshold' |
-| value | text | NOT NULL | — | '15000' |
+| award_year | integer | NOT NULL | — | PK; e.g. 2026, 2027 |
+| pell_cutoff | integer | NOT NULL | — | Max SAI for Pell (e.g., 7395) |
+| grey_zone_end | integer | NOT NULL | — | End of Grey Zone (e.g., 25000) |
+| merit_lean_threshold | integer | NOT NULL | — | SAI above = merit-first (e.g., 30000) |
 | updated_at | timestamptz | NOT NULL | now() | |
 
-RLS: Service role only (or anon read for non-sensitive keys). App reads via Server Action or agent; .env `SAI_MERIT_THRESHOLD` overrides when set.
+RLS: Service role write; anon/service read for agent and COA comparison.
+
+### 3b. Merit Tier Config
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| award_year | integer | NOT NULL | — | PK with tier_name |
+| tier_name | text | NOT NULL | — | e.g. 'presidential', 'deans', 'merit', 'incentive' |
+| gpa_min | numeric(3,2) | yes | NULL | Unweighted |
+| gpa_max | numeric(3,2) | yes | NULL | |
+| sat_min | integer | yes | NULL | EBRW + Math |
+| sat_max | integer | yes | NULL | |
+| act_min | integer | yes | NULL | |
+| act_max | integer | yes | NULL | |
+| gpa_min_no_test | numeric(3,2) | yes | NULL | Test-optional higher GPA |
+| updated_at | timestamptz | NOT NULL | now() | |
+
+RLS: Service role write; anon/service read. PRIMARY KEY (award_year, tier_name).
 
 ---
 
@@ -111,6 +134,7 @@ RLS: Parent can INSERT/SELECT own rows where parent_id = auth.uid(); student can
 | sticker_price | numeric(12,2) | yes | NULL | |
 | automatic_merit | numeric(12,2) | yes | NULL | |
 | net_price | numeric(12,2) | yes | NULL | Computed or from College Scorecard |
+| coa | numeric(12,2) | yes | NULL | Cost of Attendance (for Demonstrated Need formula) |
 | source | text | yes | NULL | 'college_scorecard' \| 'manual' \| 'search' |
 | created_at | timestamptz | NOT NULL | now() | |
 | updated_at | timestamptz | NOT NULL | now() | |
@@ -118,6 +142,17 @@ RLS: Parent can INSERT/SELECT own rows where parent_id = auth.uid(); student can
 RLS: Public read. Insert/update via service role or admin.
 
 Indexes: `institution_type`, `state`, `name` (gin for search).
+
+### 6a. User Saved Schools (COA Comparison)
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| user_id | uuid | NOT NULL | — | FK → profiles |
+| institution_id | uuid | NOT NULL | — | FK → institutions |
+| saved_at | timestamptz | NOT NULL | now() | |
+| PRIMARY KEY (user_id, institution_id) | | | | |
+
+RLS: User SELECT/INSERT/DELETE own rows. Used for COA comparison: average COA of saved schools vs. user SAI → Need-to-Merit transition.
 
 ### Remaining Cost (Scholarship Impact)
 
@@ -147,19 +182,9 @@ Indexes: `cip_code`, `soc_code`, `major_name`.
 
 ---
 
-## 8. Merit Tier Config (Code, Not DB)
+## 8. Merit Tier Lookup (DB, Award-Year Scoped)
 
-Merit tiers defined in `packages/database/src/config/merit-tiers.ts`:
-
-```ts
-export const MERIT_TIERS = {
-  top:    { gpa_min: 3.8, sat_min: 1400, act_min: 32 },
-  strong: { gpa_min: 3.5, sat_min: 1260, act_min: 28, gpa_max: 3.79, sat_max: 1399, act_max: 31 },
-  standard: { gpa_min: 3.0, sat_min: 1100, act_min: 24, gpa_max: 3.49, sat_max: 1259, act_max: 27 },
-} as const;
-```
-
-Design allows future migration to `app_settings` or JSONB config table.
+Merit tier cutoffs stored in `merit_tier_config` table, keyed by `award_year`. Agent and matching logic read from DB using `profiles.award_year` (default current year if null). No hardcoded tier values in code. Seed script populates initial values from institutional grids (CDS, Bright Futures, HOPE); admin can update when guidelines change.
 
 ---
 
@@ -168,17 +193,19 @@ Design allows future migration to `app_settings` or JSONB config table.
 ```
 auth.users
 ├── profiles (student or parent)
-│   ├── sat_total, act_composite, spikes, merit_filter_preference (009)
+│   ├── sat_total, act_composite, spikes, merit_filter_preference, award_year (009)
 │   └── preferences.merit_filter_preference (fallback)
 ├── parent_students (parent_id, student_id)
-└── parent_contributions (parent_id, student_id)
+├── parent_contributions (parent_id, student_id)
+└── user_saved_schools (user_id, institution_id) — COA comparison
 
 scholarships
 └── category: merit | need_based | need_blind | ...
 
-institutions (curated + search)
+institutions (curated + search; includes coa)
 career_outcomes (BLS seed + extend)
-app_settings (sai_merit_threshold)
+sai_zone_config (award_year)
+merit_tier_config (award_year, tier_name)
 ```
 
 ---
@@ -187,10 +214,11 @@ app_settings (sai_merit_threshold)
 
 | Consumer | Impact |
 |----------|--------|
-| load-profile.ts | Add sat_total, act_composite, spikes; derive merit_tier; pass merit_filter_preference |
+| load-profile.ts | Add sat_total, act_composite, spikes, award_year; read sai_zone_config and merit_tier_config by award_year; derive merit_tier; pass merit_filter_preference, sai_above_threshold |
 | pii-scrub.ts | Scrub spikes (labels only, no PII); extend AnonymizedProfileSchema |
 | TrustScorer / scholarship-upsert | Set category need_blind for .edu merit; merit for non-institutional merit |
-| Advisor_Search | Use merit_filter_preference + SAI threshold; filter/deprioritize need-based when merit-first |
-| Coach_Prioritization | Prioritize merit/need_blind when SAI > threshold; respect merit_filter_preference |
-| onboarding (saveAcademicProfile) | Add SAT, ACT, spikes fields |
-| ROI comparison UI | Read institutions, career_outcomes; compute net price |
+| Advisor_Search | Use merit_filter_preference + merit_lean_threshold from sai_zone_config; filter/deprioritize need-based when merit-first |
+| Coach_Prioritization | Prioritize merit/need_blind when SAI > merit_lean_threshold; respect merit_filter_preference |
+| onboarding (saveAcademicProfile) | Add SAT, ACT, spikes, award_year fields |
+| ROI comparison UI | Read institutions, career_outcomes; compute net price; COA comparison: user_saved_schools + institutions.coa vs. user SAI |
+| COA comparison API/UI | GET user saved schools with COA; compute avg COA − SAI; show Need-to-Merit transition |

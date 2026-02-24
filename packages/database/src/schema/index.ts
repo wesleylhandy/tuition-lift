@@ -13,6 +13,7 @@ export {
   profileInsertSchema,
   profileUpdateSchema,
   pellEligibilityStatusEnum,
+  meritFilterPreferenceEnum,
 } from './profiles';
 export type {
   ProfileSchema,

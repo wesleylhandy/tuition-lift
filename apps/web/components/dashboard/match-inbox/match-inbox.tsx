@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { MatchCard } from "./match-card";
 import { LivePulse } from "./live-pulse";
+import { MeritFilterToggle } from "../merit-filter-toggle";
 import { CoachesPrepChecklist } from "../coaches-prep-checklist";
 import { MatchInboxSkeleton } from "../skeletons/match-inbox-skeleton";
 import {
@@ -156,9 +157,12 @@ export function MatchInbox() {
       aria-busy={loading}
     >
       <div className="flex flex-col gap-3">
-        <h2 className="font-heading text-lg font-semibold text-navy">
-          Match Inbox
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-heading text-lg font-semibold text-navy">
+            Match Inbox
+          </h2>
+          <MeritFilterToggle />
+        </div>
         <LivePulse userId={userId} />
       </div>
       <ul className="grid gap-3" role="list">

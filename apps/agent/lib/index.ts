@@ -6,6 +6,7 @@ export { checkpointer } from "./checkpointer";
 export { graph } from "./graph";
 export {
   loadProfile,
+  isUndecidedMajor,
   saiToHouseholdIncomeBracket,
   type HouseholdIncomeBracket,
   type LoadProfileResult,

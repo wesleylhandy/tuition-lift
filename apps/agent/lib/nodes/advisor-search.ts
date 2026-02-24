@@ -77,7 +77,10 @@ export async function advisorSearchNode(
       financial_profile: financialProfile ?? undefined,
     });
 
-    const queries = await generateQueries(profile);
+    const meritFirst =
+      state.sai_above_merit_threshold === true &&
+      state.merit_filter_preference === "merit_only";
+    const queries = await generateQueries(profile, { meritFirst });
     if (queries.length === 0) {
       return new Command({
         goto: "Advisor_Verify",

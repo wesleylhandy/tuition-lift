@@ -3,37 +3,58 @@
 **Branch**: `009-squeezed-middle-roi` | **Date**: 2025-02-24  
 **Spec**: [spec.md](./spec.md)
 
-## 1. SAI Threshold Configuration
+## 1. SAI Aid Zones (Configurable, Award-Year Scoped)
 
-**Decision**: Store SAI threshold in `app_settings` table (key-value) with `.env` override for environment-specific tuning. Default 15,000.
+**Decision**: Store SAI zone boundaries in DB, keyed by award year. Table `sai_zone_config` (or JSONB in `app_settings` per year) with: `pell_cutoff`, `grey_zone_end`, `merit_lean_threshold`. No hardcoded cutoffs. User selects award year (current or next year only); lookup uses selected year. Federal guidelines (e.g., Pell ~7,395) change yearly—config allows continual fine-tuning without deploy.
 
-**Rationale**: Spec requires configurable threshold. Database allows runtime changes without redeploy; .env supports per-environment overrides (e.g., staging vs production). Follows TuitionLift pattern for config in DB (cf. `profiles.preferences`).
+**Rationale**: Clarification requires configurable ranges, award-year scoping, and avoidance of arbitrary filtering. DB-driven config supports year-by-year updates; per-year keys allow preload of future years and historical reference.
 
 **Alternatives considered**:
-- `.env` only — simpler but requires redeploy for changes.
-- Hardcoded constant — violates spec's "configurable" requirement.
+- Single threshold in app_settings — does not support tiered zones or award-year variation.
+- Hardcoded constants — violates spec; blocks fine-tuning when federal guidelines change.
 
 ---
 
-## 2. Merit Tier Cutoffs (GPA / Test Scores)
+## 2. Merit Tier Cutoffs (Configurable, Award-Year Scoped)
 
-**Decision**: Define three fixed tiers (Top, Strong, Standard) with documented GPA/SAT/ACT ranges. Store tier definitions in `packages/database` as a config module; design schema to support future expansion (e.g., JSONB config table or versioned tier config).
+**Decision**: Store merit tier cutoffs in DB, keyed by award year. Tiers (e.g., Presidential/Elite, Dean's/Excellence, Merit/Achievement, Incentive/Recognition) with GPA/SAT/ACT ranges per tier. Design MUST support future per-institution grids (CDS Section C9/H2A, state programs like Bright Futures, HOPE/Zell Miller). Test-optional handling: configurable higher GPA thresholds when no test score; indicate "Test score may be required for highest awards" when score-lock applies.
 
-**Rationale**: Spec requires fixed, documented cutoffs. Three tiers balance simplicity and matching granularity. Config module keeps cutoffs in code for version control; future enhancement can migrate to DB.
+**Rationale**: Clarification requires merit tiers configurable in DB/admin for year-by-year updates; institutional Merit Aid Grids vary by school. CDS and state program grids are the authoritative sources. Test-optional "tax" (higher GPA when no test) and score-lock scenarios are common.
 
-**Proposed cutoffs** (to be finalized in plan):
+**Initial tier structure** (configurable; values from institutional grids):
 
-| Tier | GPA Unweighted | SAT (EBRW + Math) | ACT Composite |
-|------|----------------|-------------------|---------------|
-| Top | ≥3.8 | ≥1400 | ≥32 |
-| Strong | 3.5–3.79 | 1260–1399 | 28–31 |
-| Standard | 3.0–3.49 | 1100–1259 | 24–27 |
+| Tier | SAT Range | ACT Range | GPA (Unweighted) |
+|------|-----------|-----------|------------------|
+| Presidential/Elite | 1500–1600 | 33–36 | 3.9–4.0+ |
+| Dean's/Excellence | 1350–1490 | 29–32 | 3.7–3.89 |
+| Merit/Achievement | 1200–1340 | 25–28 | 3.5–3.69 |
+| Incentive/Recognition | 1100–1190 | 21–24 | 3.0–3.49 |
 
-Below Standard: no tier (excluded from merit-tier matching but may still match general merit). Design allows adding tiers or adjusting cutoffs via config without schema change.
+Below lowest tier: may still match general merit. Design allows per-institution override in future.
+
+---
+
+## 2a. Award Year Selection
+
+**Decision**: User selects application/award year; options limited to current calendar year and next year only (e.g., 2026, 2027). Stored in `profiles.award_year`. Supports semester-driven scholarship cycles. Default to current year when not set; require selection during intake or before merit-first/COA lookup.
+
+**Rationale**: Clarification requires user-selectable award year with constrained options. Semester-driven cycles (not just full academic year) justify current+next only. No need for multi-year history in selection.
+
+---
+
+## 2b. COA Comparison (SAI vs. Saved Schools)
+
+**Decision**: Build SAI vs. average COA of saved schools in scope for 009. Demonstrated Need formula: COA − SAI = Financial Need. When saved schools exist with COA data, compute per-school and average; visually indicate Need-to-Merit transition (positive = need-based eligible; zero/negative = merit-based). When no saved schools: fall back to configurable SAI zones; show "Add saved schools to see your Need-to-Merit transition."
+
+**Rationale**: Clarification puts COA comparison in scope. Most accurate threshold is school-specific; saved schools + COA enables personalized transition point. Requires `user_saved_schools` (or equivalent) linking users to institutions with COA; institutions table already has sticker_price/net_price—COA can be derived or added.
+
+**Data source for COA**: College Scorecard provides cost data; institutions table stores sticker_price, net_price. Add `coa` (Cost of Attendance) column or derive from College Scorecard `cost.attendance.academic_year` if available. Net price ≠ COA; COA is published by each school (required for federal aid calc).
 
 ---
 
 ## 3. Year-5 Income Data (BLS / NACE)
+
+**Docs**: [BLS API Documentation](https://www.bls.gov/developers/api_signature_v2.htm)
 
 **Decision**: Use BLS Occupational Employment and Wage Statistics (OEWS) for mean annual wages by occupation. Map majors to SOC codes via NCES CIP→SOC crosswalk. Seed initial dataset for top ~100 majors; extend via batch jobs from BLS Public Data API or bulk downloads.
 
@@ -49,6 +70,8 @@ Below Standard: no tier (excluded from merit-tier matching but may still match g
 
 ## 4. Institutional Net Price & Merit (College Scorecard)
 
+**Docs**: [College Scorecard API Documentation](https://collegescorecard.ed.gov/data/api-documentation)
+
 **Decision**: Use College Scorecard API (`api.data.gov`) for net price by income tier and institutional data. Fields: `cost.tuition_revenue_per_fte`, `aid.federal_loan_rate`, `earnings.1_yrs_after_completion.median` (and similar). Net price variables (e.g., `NPT4_PUB`) represent average net cost after aid. Automatic merit is inferred from institutional aid data where available.
 
 **Rationale**: College Scorecard is federal, free with API key, and covers net price by income. Does not separate "automatic merit" explicitly; we derive from aid components or display sticker vs. net where data exists.
@@ -60,6 +83,8 @@ Below Standard: no tier (excluded from merit-tier matching but may still match g
 ---
 
 ## 5. Alternative-Path Institution Catalog
+
+**Docs**: [College Scorecard API Documentation](https://collegescorecard.ed.gov/data/api-documentation) (see §4)
 
 **Decision**: Curated `institutions` table seeded from College Scorecard (filter by `school.degrees_awarded` and `school.locale` for community colleges, trade schools) plus manual additions from .edu sources. Optional search extends catalog via College Scorecard API by name/state. Trust: .edu sources only for seed; search results validated before add.
 

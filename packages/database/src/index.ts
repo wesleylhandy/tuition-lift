@@ -12,6 +12,7 @@ export type {
   TablesUpdate,
   Enums,
   CompositeTypes,
+  Json,
 } from './generated/database.types';
 
 export { Constants } from './generated/database.types';
@@ -53,3 +54,23 @@ export {
   decryptSai,
   withEncryptedSai,
 } from './encryption';
+
+export {
+  getSaiZoneConfig,
+  getMeritTierConfig,
+} from './config-queries';
+
+export type {
+  SaiZoneConfigRow,
+  MeritTierConfigRow,
+} from './config-queries';
+
+export {
+  getCareerOutcomesByInterest,
+  getInstitutionsForRecommendation,
+} from './major-pivot-queries';
+
+export type {
+  CareerOutcomeRow,
+  InstitutionRow,
+} from './major-pivot-queries';

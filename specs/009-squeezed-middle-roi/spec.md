@@ -14,6 +14,11 @@ Extend TuitionLift to serve students who exceed need-based aid thresholds but la
 ### Session 2025-02-24
 
 - Q: Merit-first behavior — when SAI exceeds threshold, should need-based results be filtered (hidden) or deprioritized (shown below merit)? → A: User toggle — Let the user choose between "Merit only" (filter) and "Show all" (deprioritize).
+- Q: SAI threshold model — single fixed vs tiered zones vs COA-relative? → A: Configurable ranges — Federal guidelines change yearly; all SAI thresholds and zone boundaries (e.g., Pell cutoff, Grey Zone end, Merit Lean) MUST be configurable (DB or admin); avoid arbitrary filtering that limits opportunities; support continual fine-tuning without code deploy.
+- Q: Academic merit tiers (GPA/SAT) — code module vs DB configurable? → A: Configurable + institutional-ready — Merit Aid Grids vary by institution and year (Presidential/Dean's/Merit/Incentive); tiers MUST be configurable (DB/admin) for year-by-year updates; design MUST allow future per-institution grids (CDS Section C9/H2A, state programs like Bright Futures/HOPE); must account for test-optional (higher GPA when no test, score-lock for top tiers).
+- Q: SAI vs. average COA of saved schools — in scope or future? → A: In scope for 009 — Build SAI vs. average COA of saved schools; show Need-to-Merit transition visually for user's specific situation.
+- Q: Award year and config versioning — single active vs year-scoped? → A: Award year scoped — SAI zones and merit tiers keyed by award year; runtime uses current/award-year; allows preload of future years and historical reference.
+- Q: Award year selection — system-derived vs admin vs user? → A: User-selectable, constrained — Student chooses application/award year; options limited to current year and next year only (supports semester-driven cycles, not just full academic year).
 - Q: ROI Auditor — how does a parent access and use the system? → A: Parent as separate role — Parent has a distinct account type; student can unlink at any time; parents can add income information or manual scholarship information but cannot edit other profile parts nor engage the agents.
 - Q: Merit tiers — how are "merit tiers" defined for matching? → A: Fixed tiers with documented cutoffs — Predefined tiers (e.g., Top / Strong / Standard) with GPA/test ranges; documented for matching. Design must allow future enhancement (tier structure may be revisited).
 - Q: Alternative-path institution source — where does Trade School / Community College / City College data come from? → A: Hybrid — Curated base catalog seeded from reputable .edu sources, plus optional search for additional institutions.
@@ -31,7 +36,7 @@ A high-achieving student with a high Student Aid Index (SAI) wants to filter out
 
 **Acceptance Scenarios**:
 
-1. **Given** a user's SAI exceeds the configurable threshold (default 15,000), **When** the Advisor searches for scholarships, **Then** need-blind and merit-only awards are prioritized; need-based results are filtered (hidden) when user selects "Merit only" or deprioritized (shown below) when user selects "Show all".
+1. **Given** a user's SAI exceeds the configurable merit-lean threshold, **When** the Advisor searches for scholarships, **Then** need-blind and merit-only awards are prioritized; need-based results are filtered (hidden) when user selects "Merit only" or deprioritized (shown below) when user selects "Show all".
 2. **Given** a user with high SAI has completed intake with GPA, SAT/ACT, and extracurricular "spikes", **When** results are ranked, **Then** merit tiers are used to match and surface the most relevant scholarships.
 3. **Given** search results are returned, **When** the Coach generates a Daily Game Plan, **Then** Merit-Only and Need-Blind tagged results appear first in the plan.
 
@@ -52,6 +57,7 @@ A middle-class parent (linked to a student profile) wants to compare the debt-to
 3. **Given** career outcome data is available, **When** viewing each path, **Then** projected year-5 income is shown to support debt-to-income ratio evaluation.
 4. **Given** a parent is linked, **When** they use the system, **Then** they may add income information or manual scholarship entries but cannot edit other profile parts nor engage the Advisor or Coach agents.
 5. **Given** a student has linked a parent, **When** the student chooses to unlink, **Then** the parent loses access to the student's profile immediately.
+6. **Given** a user has saved schools with COA data, **When** viewing their financial aid profile, **Then** the system shows SAI vs. average COA and visually indicates the Need-to-Merit transition point (COA − SAI = Financial Need; positive = need-based eligible, zero/negative = merit-based).
 
 ---
 
@@ -72,6 +78,9 @@ An undecided student wants the Coach to ask discerning personality questions to 
 
 ### Edge Cases
 
+- How does the system handle test-optional applicants (no SAT/ACT)? (Use configurable higher GPA thresholds for matching; when score-lock applies for top-tier scholarships, indicate "Test score may be required for highest awards.")
+- How is award year determined when no user selection exists? (Default to current year; require selection during intake or before merit-first/COA lookup.)
+- What happens when a user has no saved schools or saved schools lack COA data? (Fall back to configurable SAI zone boundaries for merit-first logic; COA comparison view shows "Add saved schools to see your Need-to-Merit transition" or similar.)
 - What happens when a user's SAI is exactly at the threshold? (Treat as above-threshold for merit-first behavior.)
 - What happens when no merit-based scholarships match the user's profile? (Surface alternative path options and indicate that merit results are limited; never show empty state without guidance.)
 - What happens when Automatic Merit data is unavailable for an institution? (Display Sticker Price only and indicate "Merit data not available.")
@@ -83,8 +92,8 @@ An undecided student wants the Coach to ask discerning personality questions to 
 
 ### Functional Requirements
 
-- **FR-001**: When a user's SAI exceeds a configurable threshold (default 15,000), the Advisor MUST prioritize need-blind and merit-only scholarships; the user MUST be able to toggle between "Merit only" (filter need-based) and "Show all" (deprioritize need-based below merit).
-- **FR-002**: The intake form MUST capture GPA, SAT/ACT scores, and "Spikes" (e.g., Water Polo, Leadership, specialty achievements) to match against merit tiers; merit tiers MUST use fixed, documented cutoffs (e.g., Top / Strong / Standard) with GPA/test ranges; the tier structure MUST be designed to allow future enhancement or revision.
+- **FR-001**: When a user's SAI exceeds the configurable merit-lean threshold, the Advisor MUST prioritize need-blind and merit-only scholarships; the user MUST be able to toggle between "Merit only" (filter need-based) and "Show all" (deprioritize need-based below merit). SAI zone boundaries MUST be configurable via DB/admin, keyed by award year. User MUST be able to select application/award year; options limited to current year and next year only (supports semester-driven scholarship cycles).
+- **FR-002**: The intake form MUST capture GPA (unweighted primary), SAT/ACT scores, "Spikes" (e.g., Water Polo, Leadership, specialty achievements), and application/award year (current or next year only) to match against merit tiers. Merit tier cutoffs MUST be configurable via DB/admin, keyed by award year; design MUST support future per-institution grids (CDS, state programs). When test score is absent (test-optional), matching MUST use higher GPA thresholds or explicitly handle score-lock scenarios.
 - **FR-003**: The system MUST scout and display Trade Schools, Community Colleges, and City Colleges as valid high-ROI alternatives alongside 4-year institutions; the base catalog MUST be curated and seeded from reputable .edu sources; optional search MAY extend the catalog with additional institutions.
 - **FR-004**: For every institution, the system MUST calculate and display Net Price by factoring Automatic Merit versus Sticker Price where data is available. The system MUST allow users to see what remains for a given institution after scholarships (awarded or potentially awarded) are applied; such views MUST avoid misrepresentation (e.g., distinguish confirmed vs. potential awards, avoid implying guaranteed funding).
 - **FR-005**: The Coach MUST integrate projected year-5 income data into recommendations when comparing paths (4-year vs. alternative education); coverage MUST include common majors and trade paths (e.g., top 50–100); design MUST allow extension via search/crawl from reputable sources for additional career paths.
@@ -93,15 +102,18 @@ An undecided student wants the Coach to ask discerning personality questions to 
 - **FR-008**: All extracurricular and achievement data MUST be scrubbed of PII before any external search or third-party API call; only anonymized or placeholder values may leave the system.
 - **FR-009**: The system MUST support a Parent role as a distinct account type linked to a student profile; the student MUST be able to unlink a parent at any time.
 - **FR-010**: Parents MUST be able to add income information and manual scholarship entries to the linked student's profile; they MUST NOT edit other profile parts nor engage the Advisor or Coach agents.
+- **FR-011**: The system MUST allow users to compare their SAI against the average Cost of Attendance (COA) of their saved schools. When saved schools exist, the system MUST compute COA − SAI = Financial Need per the Demonstrated Need formula and visually indicate the Need-to-Merit transition point for the user's specific situation (positive = need-based eligible; zero/negative = merit-based).
 
 ### Key Entities
 
-- **SAI Threshold**: Configurable value (default 15,000) that determines whether merit-first logic applies for a given user.
-- **Merit Profile**: Aggregated intake data—GPA, SAT/ACT, Spikes—used to match against merit tiers. Merit tiers use fixed cutoffs (Top / Strong / Standard) with documented GPA/test ranges; design must support future tier changes.
+- **SAI Aid Zones**: Configurable SAI range boundaries (e.g., Pell cutoff, Grey Zone end, Merit Lean) stored in DB/admin, keyed by award year—not hardcoded. User selects award year (current or next year only) to support semester-driven cycles; lookup uses selected year. Merit-first logic applies when user SAI falls above the configured merit-lean threshold; avoid arbitrary filtering that limits scholarship opportunities.
+- **Merit Profile**: Aggregated intake data—GPA (unweighted primary), SAT/ACT, Spikes—used to match against merit tiers. Merit tier cutoffs are configurable (DB/admin); design supports per-institution grids (CDS Section C9/H2A, state programs); test-optional handling (higher GPA when no test, score-lock for top tiers).
+- **Award Year**: User-selected application/award year; options limited to current year and next year only. Used for SAI zone and merit tier config lookup; supports semester-driven scholarship cycles.
 - **Institution Record**: Represents an education option (4-year, trade school, community college, city college) with Sticker Price, Automatic Merit, and computed Net Price. Alternative-path institutions are sourced from a curated catalog seeded from .edu sources, with optional search for additional institutions.
 - **Scholarship Tag**: Classification (Merit-Only, Need-Blind, Need-Based) applied by the Advisor to each result.
 - **Career Outcome**: Projected year-5 income for a given major/career path, used for ROI comparison. Base coverage for common majors and trade paths only; extensible via search/crawl from reputable sources.
 - **Parent Account**: Distinct role linked to a student profile; can add income and manual scholarships only; cannot edit other profile fields or engage agents; student may unlink at any time.
+- **Saved Schools & COA Comparison**: User's saved institutions with COA; system computes average COA and compares to user SAI (COA − SAI = Financial Need) to show Need-to-Merit transition point; when no saved schools, fallback to configurable SAI zones.
 
 ## Success Criteria *(mandatory)*
 
@@ -112,11 +124,14 @@ An undecided student wants the Coach to ask discerning personality questions to 
 - **SC-003**: Side-by-side ROI comparison (4-year vs. alternative path) displays Net Price and year-5 income for at least 3 path types when data is available.
 - **SC-004**: Daily Game Plans for merit-eligible users surface Merit-Only and Need-Blind opportunities in the first 3 actionable items.
 - **SC-005**: Zero raw PII in extracurricular/achievement data is sent to external search or third-party APIs; all such calls use placeholders or anonymized values.
+- **SC-006**: When a user has saved schools with COA data, the system displays the SAI vs. average COA comparison and clearly indicates whether the user is in the need-based or merit-based zone for their target schools.
 
 ## Assumptions
 
 - SAI and financial data are already captured in TuitionLift's intake; this feature extends how they are used for filtering and prioritization.
-- Merit tier cutoffs (GPA/test ranges) will be documented in the implementation plan; the tier model may be revisited for future enhancements.
+- Federal SAI guidelines (e.g., Pell cutoff, aid thresholds) change year to year; SAI zone boundaries will be updated via config when guidelines change—no code deploy required.
+- Award year selection is limited to current and next year to support semester-driven scholarship cycles (not only full academic-year cycles).
+- Merit tier cutoffs (GPA/SAT/ACT ranges) and SAI zone boundaries are configurable, keyed by award year; initial values informed by federal guidelines and institutional Merit Aid Grids (CDS, Bright Futures, HOPE/Zell Miller); per-institution merit grids are a future enhancement.
 - Alternative-path institution catalog is hybrid: curated base seeded from reputable .edu sources, with optional search for additional institutions.
 - Automatic Merit and Sticker Price data are available from authoritative sources (institutional, federal, or third-party) for a meaningful subset of institutions.
 - Year-5 income data (e.g., BLS/NACE) is available for common majors and trade paths; coverage is extensible via search/crawl from reputable sources.

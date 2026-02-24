@@ -46,19 +46,31 @@ export const discoveryRequested = inngest.createFunction(
       return { created: true };
     });
 
-    const { user_profile, financial_profile } = await step.run(
-      "load-profile",
-      () => loadProfile(userId)
-    );
+    const {
+      user_profile,
+      financial_profile,
+      merit_config,
+      is_undecided_major,
+    } = await step.run("load-profile", () => loadProfile(userId));
 
-    if (!user_profile?.major || !user_profile?.state) {
+    if (!user_profile?.state) {
       await step.run("mark-failed", async () => {
         await db
           .from("discovery_completions")
           .update({ status: "failed", completed_at: new Date().toISOString() })
           .eq("discovery_run_id", discoveryRunId);
       });
-      throw new Error("Profile incomplete: major and state required");
+      throw new Error("Profile incomplete: state required");
+    }
+
+    if (!is_undecided_major && !user_profile?.major) {
+      await step.run("mark-failed", async () => {
+        await db
+          .from("discovery_completions")
+          .update({ status: "failed", completed_at: new Date().toISOString() })
+          .eq("discovery_run_id", discoveryRunId);
+      });
+      throw new Error("Profile incomplete: major required (or set undecided)");
     }
 
     const config = {
@@ -72,6 +84,11 @@ export const discoveryRequested = inngest.createFunction(
     const input = {
       user_profile,
       financial_profile: financial_profile ?? undefined,
+      merit_filter_preference: merit_config?.merit_filter_preference ?? "show_all",
+      sai_above_merit_threshold: merit_config?.sai_above_merit_threshold ?? false,
+      merit_tier: merit_config?.merit_tier ?? undefined,
+      award_year: merit_config?.award_year ?? undefined,
+      is_undecided_major: is_undecided_major ?? false,
     };
 
     // graph.invoke with thread_id checkpointing — LangGraph JS persistence; config per plan.md

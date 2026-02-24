@@ -149,7 +149,8 @@ or
 ```json
 {
   "meritFilterPreference": "merit_only" | "show_all",
-  "saiAboveThreshold": true
+  "saiAboveThreshold": true,
+  "awardYear": 2026
 }
 ```
 
@@ -177,6 +178,6 @@ or
 
 ## 7. Server Actions (Onboarding)
 
-**saveAcademicProfile** (extended): Add `sat_total`, `act_composite`, `spikes` to input schema. Validate sat_total 400–1600, act_composite 1–36, spikes array max 10 items.
+**saveAcademicProfile** (extended): Add `sat_total`, `act_composite`, `spikes`, `award_year` to input schema. Validate sat_total 400–1600, act_composite 1–36, spikes array max 10 items, award_year in [current_year, current_year + 1].
 
 **New action**: `saveMeritFilterPreference(preference: 'merit_only' | 'show_all')` — updates profiles.merit_filter_preference or preferences JSONB.

@@ -194,13 +194,15 @@ export async function scoreTrust(input: {
 
 /**
  * Builds ScholarshipMetadata from TrustScoreResult for upsert.
+ * merit_tag optional for Coach prioritization (009 US1).
  */
 export function toScholarshipMetadata(
   trustResult: TrustScoreResult,
   sourceUrl: string,
   snippet: string,
   categories: string[],
-  verificationStatus: string
+  verificationStatus: string,
+  meritTag?: "merit_only" | "need_blind" | "need_based"
 ): ScholarshipMetadata {
   return {
     source_url: sourceUrl,
@@ -213,5 +215,6 @@ export function toScholarshipMetadata(
       | "ambiguous_deadline"
       | "needs_manual_review"
       | "potentially_expired",
+    ...(meritTag && { merit_tag: meritTag }),
   };
 }
