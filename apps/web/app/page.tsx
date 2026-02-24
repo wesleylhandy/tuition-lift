@@ -18,6 +18,7 @@ import {
 } from "@/components/landing/testimonial-grid";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
 import { CtaSection } from "@/components/landing/cta-section";
+import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default async function Home() {
   const stats = await fetchLandingStats();
@@ -36,6 +37,7 @@ export default async function Home() {
         <FeatureShowcase />
         <CtaSection totalDebtLiftedCents={stats?.total_debt_lifted_cents ?? undefined} />
       </main>
+      <LandingFooter />
     </div>
   );
 }

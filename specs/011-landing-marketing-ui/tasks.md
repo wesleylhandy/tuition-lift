@@ -125,11 +125,11 @@
 
 **Independent Test**: Footer visible; Privacy, Terms, Contact links navigate to correct pages.
 
-- [ ] T027 [P] [US6] Create LandingFooter with logo, "© 2026 TuitionLift", links to /privacy, /terms, /contact in apps/web/components/landing/landing-footer.tsx
-- [ ] T028 [P] [US6] Create privacy policy page at apps/web/app/privacy/page.tsx (placeholder content acceptable per research.md)
-- [ ] T029 [P] [US6] Create terms of service page at apps/web/app/terms/page.tsx (placeholder content acceptable)
-- [ ] T030 [P] [US6] Create contact page at apps/web/app/contact/page.tsx (MVP: static "Email us at support@tuitionlift.com"; contact form deferred post-MVP per quickstart)
-- [ ] T031 [US6] Add LandingFooter to apps/web/app/page.tsx
+- [x] T027 [P] [US6] Create LandingFooter with logo, "© 2026 TuitionLift", links to /privacy, /terms, /contact in apps/web/components/landing/landing-footer.tsx
+- [x] T028 [P] [US6] Create privacy policy page at apps/web/app/privacy/page.tsx (placeholder content acceptable per research.md)
+- [x] T029 [P] [US6] Create terms of service page at apps/web/app/terms/page.tsx (placeholder content acceptable)
+- [x] T030 [P] [US6] Create contact page at apps/web/app/contact/page.tsx (MVP: static "Email us at support@tuitionlift.com"; contact form deferred post-MVP per quickstart)
+- [x] T031 [US6] Add LandingFooter to apps/web/app/page.tsx
 
 **Checkpoint**: US6 complete — footer and legal pages functional
 
