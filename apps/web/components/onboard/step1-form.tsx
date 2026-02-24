@@ -4,9 +4,11 @@
  * Step1Form — Identity (Account Creation).
  * Email and password inputs; form action→signUp; Coach tip; validation errors.
  * Per FR-005 (Coach tip), FR-008 (validation errors), FR-014 (skeleton loading, block duplicate submit).
+ * Prefills email from ?email= when navigating from landing hero (redirectToSignUp).
  */
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { signUp } from "@/lib/actions/onboarding";
 
@@ -17,7 +19,13 @@ export interface Step1FormProps {
   onSuccess: () => void;
 }
 
-function FormFieldsWithStatus({ error }: { error: string | null }) {
+function FormFieldsWithStatus({
+  error,
+  defaultEmail,
+}: {
+  error: string | null;
+  defaultEmail?: string;
+}) {
   const { pending } = useFormStatus();
   return (
     <>
@@ -31,6 +39,7 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           type="email"
           required
           autoComplete="email"
+          defaultValue={defaultEmail ?? ""}
           disabled={pending}
           className="min-h-[44px] w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="you@example.com"
@@ -84,6 +93,8 @@ function SubmitButton() {
 }
 
 export function Step1Form({ onSuccess }: Step1FormProps) {
+  const searchParams = useSearchParams();
+  const defaultEmail = searchParams.get("email") ?? undefined;
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
@@ -102,7 +113,7 @@ export function Step1Form({ onSuccess }: Step1FormProps) {
         {COACH_TIP}
       </p>
       <form action={handleSubmit} className="flex flex-col gap-6">
-        <FormFieldsWithStatus error={error} />
+        <FormFieldsWithStatus error={error} defaultEmail={defaultEmail} />
         {error && (
           <p id="step1-error" className="text-sm text-destructive" role="alert">
             {error}

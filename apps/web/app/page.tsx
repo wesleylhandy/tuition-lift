@@ -1,30 +1,43 @@
-import Link from "next/link";
-
 /**
- * Minimal landing placeholder — sign-in CTA so auth redirect (T005) has valid target.
- * Full landing design deferred per plan.md.
+ * Landing page — Hero, email capture, routes to Auth via redirectToSignUp.
+ * Stats bar and testimonials for social proof. CTA section with Debt Lifted widget.
+ * Dark navy gradient; electric mint accents.
  */
-export default function Home() {
+
+import { Suspense } from "react";
+import { LandingHeader } from "@/components/landing/landing-header";
+import { HeroSection } from "@/components/landing/hero-section";
+import {
+  StatsBar,
+  StatsBarSkeleton,
+  fetchLandingStats,
+} from "@/components/landing/stats-bar";
+import {
+  TestimonialGrid,
+  TestimonialGridSkeleton,
+} from "@/components/landing/testimonial-grid";
+import { FeatureShowcase } from "@/components/landing/feature-showcase";
+import { CtaSection } from "@/components/landing/cta-section";
+import { LandingFooter } from "@/components/landing/landing-footer";
+
+export default async function Home() {
+  const stats = await fetchLandingStats();
+
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-off-white px-4 font-body">
-      <main
-        className="flex flex-col items-center gap-8 text-center"
-        aria-label="TuitionLift landing"
-      >
-        <h1 className="font-heading text-2xl font-semibold text-navy sm:text-3xl">
-          TuitionLift
-        </h1>
-        <p className="max-w-sm text-slate">
-          Fund your higher education debt-free with verified scholarship discovery.
-        </p>
-        <Link
-          href="/onboard"
-          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-electric-mint px-6 py-3 font-medium text-navy transition-colors hover:bg-electric-mint/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
-          aria-label="Sign in to get started"
-        >
-          Sign in
-        </Link>
+    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
+      <LandingHeader />
+      <main aria-label="TuitionLift landing">
+        <HeroSection />
+        <Suspense fallback={<StatsBarSkeleton />}>
+          <StatsBar stats={stats} />
+        </Suspense>
+        <Suspense fallback={<TestimonialGridSkeleton />}>
+          <TestimonialGrid />
+        </Suspense>
+        <FeatureShowcase />
+        <CtaSection totalDebtLiftedCents={stats?.total_debt_lifted_cents ?? undefined} />
       </main>
+      <LandingFooter />
     </div>
   );
 }

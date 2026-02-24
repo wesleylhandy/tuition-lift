@@ -65,6 +65,12 @@ export type {
   ResearchRequired,
 } from './scout';
 
+export { landingStatsSchema } from './landing-stats';
+export type { LandingStatsSchema } from './landing-stats';
+
+export { testimonialSchema } from './testimonials';
+export type { TestimonialSchema } from './testimonials';
+
 /**
  * Validates data against schema; throws ZodError on failure.
  * Use before DB writes to reject invalid payloads.
