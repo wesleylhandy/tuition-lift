@@ -1,7 +1,8 @@
 /**
  * Check Email page — Magic Link or Password Setup entry point.
  * Reads email from searchParams, renders CheckEmailView, wires requestMagicLink.
- * @see specs/012-auth-bridge-protected-routing spec US1, FR-003
+ * When error=expired (from callback), renders expired-link recovery view without requiring email.
+ * @see specs/012-auth-bridge-protected-routing spec US1, FR-003, T023
  */
 
 import { redirect } from "next/navigation";
@@ -14,24 +15,30 @@ const emailParamSchema = z.string().email();
 export default async function CheckEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const rawEmail = (params.email ?? "").trim();
+  const linkExpired = params.error === "expired";
 
   const parsed = emailParamSchema.safeParse(rawEmail);
-  if (!parsed.success || !rawEmail) {
+  const hasValidEmail = parsed.success && !!rawEmail;
+
+  if (!linkExpired && !hasValidEmail) {
     redirect("/");
   }
 
   return (
-    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
+    <div className="min-h-svh overflow-x-hidden bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
       <LandingHeader />
       <main
-        className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-4 py-12"
+        className="flex min-h-[calc(100vh-80px)] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-12"
         aria-label="Check your email for next steps"
       >
-        <CheckEmailView email={parsed.data} />
+        <CheckEmailView
+          email={parsed.success ? parsed.data : ""}
+          linkExpired={linkExpired}
+        />
       </main>
     </div>
   );

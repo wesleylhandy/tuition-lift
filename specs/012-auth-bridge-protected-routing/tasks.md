@@ -116,9 +116,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T020 [P] [US5] Apply design tokens (`--color-navy`, `--color-electric-mint`, `--color-off-white` from globals.css, or Tailwind utilities `bg-navy`, `text-electric-mint`) to `apps/web/app/login/page.tsx`, `apps/web/app/auth/check-email/page.tsx`, `apps/web/app/auth/password-setup/page.tsx` — dark navy gradient background, electric mint CTAs
-- [ ] T021 [US5] Ensure all interactive elements in auth components meet 44×44px min touch targets and WCAG 2.1 AA contrast; add `prefers-reduced-motion` support for any animations
-- [ ] T022 [US5] Verify responsive layout on mobile — no horizontal overflow; auth forms stack correctly
+- [x] T020 [P] [US5] Apply design tokens (`--color-navy`, `--color-electric-mint`, `--color-off-white` from globals.css, or Tailwind utilities `bg-navy`, `text-electric-mint`) to `apps/web/app/login/page.tsx`, `apps/web/app/auth/check-email/page.tsx`, `apps/web/app/auth/password-setup/page.tsx` — dark navy gradient background, electric mint CTAs
+- [x] T021 [US5] Ensure all interactive elements in auth components meet 44×44px min touch targets and WCAG 2.1 AA contrast; add `prefers-reduced-motion` support for any animations
+- [x] T022 [US5] Verify responsive layout on mobile — no horizontal overflow; auth forms stack correctly
 
 **Checkpoint**: User Story 5 complete — auth views visually cohesive with brand
 
@@ -128,9 +128,9 @@
 
 **Purpose**: Edge cases, validation, and final verification
 
-- [ ] T023 [P] Add user-friendly error handling for expired/invalid Magic Link — "This link has expired" message with link to request new link or return to login in `apps/web/app/auth/callback/route.ts` and check-email-view
-- [ ] T024 [P] Add rate-limit error display — when Magic Link/signup or login rate limit exceeded, show "Too many attempts. Please try again later." (per contract) in auth components
-- [ ] T025 Run quickstart.md validation — middleware redirect, landing→Check Email, Magic Link flow, Password Setup flow, Login flow, Navbar session state, Supabase Redirect URLs config. Additionally verify: SC-001 (auth flow completes in under 2 min), SC-005 (auth views pass WCAG 2.1 AA — run axe or similar accessibility checker), SC-006 (error messages display within 3 seconds of triggering action)
+- [x] T023 [P] Add user-friendly error handling for expired/invalid Magic Link — "This link has expired" message with link to request new link or return to login in `apps/web/app/auth/callback/route.ts` and check-email-view
+- [x] T024 [P] Add rate-limit error display — when Magic Link/signup or login rate limit exceeded, show "Too many attempts. Please try again later." (per contract) in auth components
+- [x] T025 Run quickstart.md validation — middleware redirect, landing→Check Email, Magic Link flow, Password Setup flow, Login flow, Navbar session state, Supabase Redirect URLs config. Additionally verify: SC-001 (auth flow completes in under 2 min), SC-005 (auth views pass WCAG 2.1 AA — run axe or similar accessibility checker), SC-006 (error messages display within 3 seconds of triggering action)
 
 ---
 

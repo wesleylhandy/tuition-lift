@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       return NextResponse.redirect(
-        new URL("/auth/error?error=invalid_code", request.url)
+        new URL("/auth/check-email?error=expired", request.url)
       );
     }
   } else if (tokenHash && type) {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     });
     if (error) {
       return NextResponse.redirect(
-        new URL("/auth/error?error=invalid_link", request.url)
+        new URL("/auth/check-email?error=expired", request.url)
       );
     }
   } else {

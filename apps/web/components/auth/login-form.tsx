@@ -28,7 +28,7 @@ function SubmitButton() {
       {pending ? (
         <span className="inline-flex items-center justify-center gap-2">
           <span
-            className="size-4 animate-spin rounded-full border-2 border-navy border-t-transparent"
+            className="size-4 animate-spin rounded-full border-2 border-navy border-t-transparent motion-reduce:animate-none"
             aria-hidden
           />
           Signing in…
@@ -62,7 +62,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   return (
     <form
       action={handleSubmit}
-      className="mx-auto max-w-md space-y-6"
+      className="mx-auto w-full max-w-md min-w-0 space-y-6"
       noValidate
     >
       <h1 className="font-heading text-2xl font-semibold text-off-white sm:text-3xl">

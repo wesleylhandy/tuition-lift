@@ -26,10 +26,10 @@ export default async function PasswordSetupPage({
   }
 
   return (
-    <div className="min-h-svh bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
+    <div className="min-h-svh overflow-x-hidden bg-linear-to-b from-navy via-navy to-navy/95 font-body text-off-white">
       <LandingHeader />
       <main
-        className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-4 py-12"
+        className="flex min-h-[calc(100vh-80px)] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-12"
         aria-label="Set your password to create your account"
       >
         <PasswordSetupForm email={parsed.data} />
