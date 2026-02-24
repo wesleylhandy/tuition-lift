@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement a high-fidelity 'Premium Academic' dashboard shell based on wireframes: design system (Navy, Electric Mint, Slate, Clarity Off-White; Playfair Display + Inter), global header with branding/search/notifications/Debt Lifted ring, responsive 12-column bento grid, and placeholder sections (welcome, stats row, Today's Game Plan, Discovery Feed, Deadline Calendar) with loading skeletons and per-section error states. Protect /dashboard via middleware; redirect unauthenticated users to /onboard. Surgically precise updates to existing dashboard; prefer generic, reusable components.
+Implement a high-fidelity 'Premium Academic' dashboard shell based on wireframes: design system (Navy, Electric Mint, Slate, Clarity Off-White; Playfair Display + Inter), global header with branding/search/notifications/Debt Lifted ring, responsive 12-column bento grid, and placeholder sections (welcome, stats row, Today's Game Plan, Discovery Feed, Deadline Calendar) with loading skeletons and per-section error states. Protect /dashboard via middleware; redirect unauthenticated users to `/` (landing). Include minimal `/` placeholder route in 010 scope so redirect works; full landing design deferred. Surgically precise updates to existing dashboard; prefer generic, reusable components.
 
 ## Technical Context
 
@@ -55,6 +55,7 @@ apps/web/
 ├── app/
 │   ├── globals.css           # Extend @theme (slate, fonts)
 │   ├── layout.tsx            # Add next/font (Playfair, Inter)
+│   ├── page.tsx              # Minimal / placeholder (sign-in CTA) so auth redirect works
 │   └── (auth)/dashboard/
 │       └── page.tsx          # Compose GlobalHeader, WelcomeAreaShell, BentoGrid, StatsRowShell
 ├── components/
@@ -69,7 +70,7 @@ apps/web/
 │       ├── match-inbox/         # Existing; wrap with SectionShell
 │       ├── deadline-calendar-shell.tsx # NEW (placeholder + skeleton)
 │       └── skeletons/          # Add: list-skeleton, card-skeleton, welcome-skeleton, stats-skeleton, deadline-calendar-skeleton
-└── middleware.ts              # Extend: protect /dashboard, redirect to /onboard
+└── middleware.ts              # Extend: protect /dashboard, redirect to /
 ```
 
 **Structure Decision**: Turborepo monorepo. All changes in apps/web. No packages/db changes.
@@ -97,7 +98,7 @@ Complete. See [research.md](./research.md).
 ### 2. Middleware (Auth)
 
 - Extend `config.matcher` to include `/dashboard`, `/dashboard/*`.
-- When path matches and `getUser()` returns no user, redirect to `/onboard`.
+- When path matches and `getUser()` returns no user, redirect to `/` (landing).
 - Preserve existing /onboard logic (T029).
 
 ### 3. Global Header
@@ -106,20 +107,21 @@ Complete. See [research.md](./research.md).
 - Logo: inline SVG "TL" or similar; replaceable via prop/component swap.
 - Search: placeholder input "Search scholarships, deadlines, or requirements...".
 - Notifications: Bell icon (Lucide); badge when count > 0.
-- Debt Lifted: use existing `DebtLiftedRing` with placeholder value ($47,250 or 0) until wired.
+- Debt Lifted: use existing `DebtLiftedRing` with placeholder value ($47,250 or 0) until wired. Place in header only; ensure component is composable (accepts children/slot props) so it can be rendered elsewhere (e.g., within Game Plan section) if requirements change. Remove DebtLiftedRing from GamePlan when composing for 010—header owns the single visible instance.
 
 ### 4. Bento Grid
 
 - Update `BentoGrid` to `grid-cols-12` at lg.
-- Update `BentoGridItem` colSpan to support 1–12; map existing usage (colSpan 2, 4) to equivalent 12-col spans (e.g., 2→6, 4→12).
+- Update `BentoGridItem` colSpan to support 1–12. Wireframe-driven mapping for 010: Game Plan ≈ 4 cols, Discovery Feed ≈ 5 cols, Deadline Calendar ≈ 3 cols (adjust per wireframe). For migrating existing components: colSpan 2→6, 4→12. Document mapping in contracts or quickstart.
 - Responsive: 1/2/4/12 columns for default/sm/md/lg.
+- Grid MUST accommodate additional cards (Application Tracker, ROI, COA) in future without layout changes.
 
 ### 5. Section Shells
 
 - Create `SectionShell` with `status`, `onRetry`, `skeletonVariant`, `title`.
 - Create skeletons: welcome (text lines), stats (four cards), deadline-calendar (grid + list).
 - Wrap or create: `WelcomeAreaShell`, `StatsRowShell`, `DeadlineCalendarShell`.
-- Integrate existing `GamePlan` and `MatchInbox` (Discovery Feed) via SectionShell; they become children when status=content. For now, default status=loading.
+- Integrate existing `GamePlan` and `MatchInbox` (Discovery Feed) via SectionShell; they become children when status=content. SectionShell owns loading/error status—parent page fetches data and passes status; components do not manage their own loading when wrapped. For now, default status=loading.
 - Add `deadline-calendar-shell.tsx` as a placeholder that renders SectionShell with skeletonVariant=calendar.
 
 ### 6. Error State
@@ -133,6 +135,7 @@ Complete. See [research.md](./research.md).
 - Compose: GlobalHeader, WelcomeAreaShell, BentoGrid (GamePlan, DiscoveryFeed, DeadlineCalendar), StatsRowShell. Do not include ReconnectionIndicator for now; it exists as a reusable component for future use.
 - All sections use SectionShell with status=loading initially.
 - Layout: full-width, off-white background; padding per wireframe.
+- **Prior spec alignment**: Parent Link (009) lives in user profile/account dropdown—add dropdown placeholder to header. Application Tracker, ROI, COA (006, 009) may be added as additional bento cards in future; design grid to accommodate without layout changes.
 
 ## Complexity Tracking
 
@@ -140,7 +143,7 @@ No constitution violations requiring justification.
 
 ## Verification
 
-- Unauthenticated → /dashboard redirects to /onboard.
+- Unauthenticated → /dashboard redirects to `/` (landing).
 - Authenticated → Shell renders with header, welcome, bento, stats; skeletons visible.
 - Lighthouse: Accessibility ≥ 90; check Performance and Best Practices.
 - Viewport 375px, 768px, 1280px: no horizontal scroll.

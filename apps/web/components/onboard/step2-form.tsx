@@ -27,8 +27,8 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
 
   return (
     <>
-      <div>
-        <label htmlFor="step2-intended-major" className="mb-1 block text-sm font-medium">
+      <div className="flex flex-col gap-3">
+        <label htmlFor="step2-intended-major" className="block text-sm font-medium">
           Intended major
         </label>
         <input
@@ -45,8 +45,8 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           aria-invalid={!!error}
         />
       </div>
-      <div>
-        <label htmlFor="step2-state" className="mb-1 block text-sm font-medium">
+      <div className="flex flex-col gap-3">
+        <label htmlFor="step2-state" className="block text-sm font-medium">
           State
         </label>
         <select
@@ -66,8 +66,8 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           ))}
         </select>
       </div>
-      <div>
-        <label htmlFor="step2-full-name" className="mb-1 block text-sm font-medium">
+      <div className="flex flex-col gap-3">
+        <label htmlFor="step2-full-name" className="block text-sm font-medium">
           Full name <span className="text-muted-foreground">(optional)</span>
         </label>
         <input
@@ -83,10 +83,10 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+        <div className="flex flex-col gap-3">
           <label
             htmlFor="step2-sat-total"
-            className="mb-1 block text-sm font-medium"
+            className="block text-sm font-medium"
           >
             SAT total <span className="text-muted-foreground">(optional)</span>
           </label>
@@ -101,14 +101,14 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
             placeholder="400–1600 (EBRW + Math)"
             aria-describedby="step2-sat-hint"
           />
-          <p id="step2-sat-hint" className="mt-1 text-xs text-muted-foreground">
+          <p id="step2-sat-hint" className="text-xs text-muted-foreground">
             EBRW + Math combined
           </p>
         </div>
-        <div>
+        <div className="flex flex-col gap-3">
           <label
             htmlFor="step2-act-composite"
-            className="mb-1 block text-sm font-medium"
+            className="block text-sm font-medium"
           >
             ACT composite{" "}
             <span className="text-muted-foreground">(optional)</span>
@@ -125,8 +125,8 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           />
         </div>
       </div>
-      <div>
-        <label htmlFor="step2-spikes" className="mb-1 block text-sm font-medium">
+      <div className="flex flex-col gap-3">
+        <label htmlFor="step2-spikes" className="block text-sm font-medium">
           Activities / Spikes{" "}
           <span className="text-muted-foreground">(optional)</span>
         </label>
@@ -139,14 +139,14 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           placeholder="e.g. Water Polo, Student Council, Volunteer work (comma or newline separated)"
           aria-describedby="step2-spikes-hint"
         />
-        <p id="step2-spikes-hint" className="mt-1 text-xs text-muted-foreground">
+        <p id="step2-spikes-hint" className="text-xs text-muted-foreground">
           Up to 10 activities. Use labels only (no team names or addresses).
         </p>
       </div>
-      <div>
+      <div className="flex flex-col gap-3">
         <label
           htmlFor="step2-award-year"
-          className="mb-1 block text-sm font-medium"
+          className="block text-sm font-medium"
         >
           Award year <span className="text-muted-foreground">(optional)</span>
         </label>
@@ -168,14 +168,14 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
         </select>
         <p
           id="step2-award-year-hint"
-          className="mt-1 text-xs text-muted-foreground"
+          className="text-xs text-muted-foreground"
         >
           Academic year for scholarship applications
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="step2-gpa-weighted" className="mb-1 block text-sm font-medium">
+        <div className="flex flex-col gap-3">
+          <label htmlFor="step2-gpa-weighted" className="block text-sm font-medium">
             Weighted GPA <span className="text-muted-foreground">(optional)</span>
           </label>
           <input
@@ -190,12 +190,12 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
             placeholder="0–6"
             aria-describedby="step2-gpa-weighted-hint"
           />
-          <p id="step2-gpa-weighted-hint" className="mt-1 text-xs text-muted-foreground">
+          <p id="step2-gpa-weighted-hint" className="text-xs text-muted-foreground">
             On a 0–6 scale
           </p>
         </div>
-        <div>
-          <label htmlFor="step2-gpa-unweighted" className="mb-1 block text-sm font-medium">
+        <div className="flex flex-col gap-3">
+          <label htmlFor="step2-gpa-unweighted" className="block text-sm font-medium">
             Unweighted GPA <span className="text-muted-foreground">(optional)</span>
           </label>
           <input
@@ -210,7 +210,7 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
             placeholder="0–4"
             aria-describedby="step2-gpa-unweighted-hint"
           />
-          <p id="step2-gpa-unweighted-hint" className="mt-1 text-xs text-muted-foreground">
+          <p id="step2-gpa-unweighted-hint" className="text-xs text-muted-foreground">
             On a 0–4 scale
           </p>
         </div>
@@ -256,11 +256,11 @@ export function Step2Form({ onSuccess }: Step2FormProps) {
   }
 
   return (
-    <div data-step={2}>
-      <p className="mb-4 text-sm text-muted-foreground" role="status">
+    <div data-step={2} className="flex flex-col gap-6">
+      <p className="text-sm text-muted-foreground" role="status">
         {COACH_TIP}
       </p>
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="flex flex-col gap-6">
         <FormFieldsWithStatus error={error} />
         {error && (
           <p id="step2-error" className="text-sm text-destructive" role="alert">

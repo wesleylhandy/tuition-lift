@@ -10,6 +10,8 @@ export interface DebtLiftedRingProps {
   totalCents: number;
   /** Optional goal in cents for ring fill (default: max of total or 10000) */
   goalCents?: number;
+  /** Compact variant for header; uses smaller ring and text */
+  compact?: boolean;
   className?: string;
 }
 
@@ -25,6 +27,7 @@ function formatCurrency(cents: number): string {
 export function DebtLiftedRing({
   totalCents,
   goalCents,
+  compact = false,
   className = "",
 }: DebtLiftedRingProps) {
   const displayTotal = formatCurrency(totalCents);
@@ -32,6 +35,54 @@ export function DebtLiftedRing({
   const progress = goal > 0 ? Math.min(totalCents / goal, 1) : 0;
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference * (1 - progress);
+
+  if (compact) {
+    return (
+      <div
+        className={`flex items-center gap-2 ${className}`}
+        role="status"
+        aria-label={`Debt lifted: ${displayTotal}`}
+      >
+        <svg
+          className="h-10 w-10 shrink-0 -rotate-90"
+          viewBox="0 0 100 100"
+          aria-hidden
+        >
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="8"
+            className="text-muted/30"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="8"
+            strokeLinecap="round"
+            className="text-electric-mint transition-[stroke-dashoffset] duration-500"
+            style={{
+              strokeDasharray: circumference,
+              strokeDashoffset,
+            }}
+          />
+        </svg>
+        <div className="flex flex-col">
+          <p className="font-heading text-sm font-semibold leading-tight text-navy">
+            {displayTotal}
+          </p>
+          <p className="text-[10px] text-muted-foreground leading-tight">
+            Debt lifted
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

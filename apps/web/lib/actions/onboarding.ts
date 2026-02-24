@@ -291,7 +291,10 @@ const finishOnboardingInputSchema = z.object({
       (v) => v === undefined || (v >= -1500 && v <= 999999),
       "SAI must be between -1500 and 999999."
     ),
-  pell_eligibility: pellEligibilityEnum.optional(),
+  pell_eligibility: z.preprocess(
+    (v) => (v === "" || v === undefined ? undefined : v),
+    pellEligibilityEnum.optional()
+  ),
 });
 
 export type FinishOnboardingResult = {

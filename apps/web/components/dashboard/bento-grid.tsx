@@ -1,25 +1,40 @@
 /**
  * Bento Grid — modular, responsive layout for dashboard Control Center.
- * Tailwind grid utilities with col-span, row-span for flexible block composition.
- * @see FR-018, SC-008 (320px+ viewports, no horizontal scroll)
+ * 12-column base at lg; wireframe: Game Plan 4, Discovery Feed 5, Calendar 3 cols.
+ * @see contracts/component-shell.md, FR-011
  */
 import type { ReactNode } from "react";
 
+export type BentoGridColSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
 export interface BentoGridItemProps {
   children: ReactNode;
-  /** Column span: 1–4 on desktop; maps to col-span-1..4 */
-  colSpan?: 1 | 2 | 3 | 4;
+  /** Column span: 1–12 at lg; responsive at sm/md */
+  colSpan?: BentoGridColSpan;
   /** Row span: 1–4; maps to row-span-1..4 */
   rowSpan?: 1 | 2 | 3 | 4;
   className?: string;
 }
 
-const colSpanMap = {
-  1: "col-span-1",
-  2: "col-span-1 sm:col-span-2",
-  3: "col-span-1 sm:col-span-2 lg:col-span-3",
-  4: "col-span-1 sm:col-span-2 lg:col-span-4",
-} as const;
+/**
+ * Responsive col-span mapping per contract: 1/2/4/12 cols at default/sm/md/lg.
+ * Wireframe (010): Game Plan 4, Discovery Feed 5, Calendar 3 cols.
+ * At sm (2 cols) items span 1–2; at md (4 cols) span 1–4; at lg (12 cols) span 1–12.
+ */
+const colSpanMap: Record<BentoGridColSpan, string> = {
+  1: "col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1",
+  2: "col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2",
+  3: "col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-3",
+  4: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-4",
+  5: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-5",
+  6: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-6",
+  7: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-7",
+  8: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-8",
+  9: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-9",
+  10: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-10",
+  11: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-11",
+  12: "col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-12",
+};
 
 const rowSpanMap = {
   1: "row-span-1",
@@ -55,10 +70,17 @@ export interface BentoGridProps {
  * - Desktop (lg): 4 columns
  * Children use BentoGridItem for col-span/row-span control.
  */
+/**
+ * Responsive Bento grid container.
+ * - Mobile: 1 column
+ * - sm: 2 columns
+ * - md: 4 columns
+ * - lg: 12 columns (wireframe-driven)
+ */
 export function BentoGrid({ children, className = "" }: BentoGridProps) {
   return (
     <div
-      className={`grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4 w-full max-w-full ${className}`}
+      className={`grid min-w-0 w-full max-w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-4 lg:grid-cols-12 lg:gap-6 ${className}`}
       role="presentation"
     >
       {children}

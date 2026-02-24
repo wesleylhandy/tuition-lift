@@ -21,8 +21,8 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
   const { pending } = useFormStatus();
   return (
     <>
-      <div>
-        <label htmlFor="step1-email" className="mb-1 block text-sm font-medium">
+      <div className="flex flex-col gap-3">
+        <label htmlFor="step1-email" className="block text-sm font-medium">
           Email
         </label>
         <input
@@ -38,8 +38,8 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           aria-invalid={!!error}
         />
       </div>
-      <div>
-        <label htmlFor="step1-password" className="mb-1 block text-sm font-medium">
+      <div className="flex flex-col gap-3">
+        <label htmlFor="step1-password" className="block text-sm font-medium">
           Password
         </label>
         <input
@@ -97,11 +97,11 @@ export function Step1Form({ onSuccess }: Step1FormProps) {
   }
 
   return (
-    <div data-step={1}>
-      <p className="mb-4 text-sm text-muted-foreground" role="status">
+    <div data-step={1} className="flex flex-col gap-6">
+      <p className="text-sm text-muted-foreground" role="status">
         {COACH_TIP}
       </p>
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="flex flex-col gap-6">
         <FormFieldsWithStatus error={error} />
         {error && (
           <p id="step1-error" className="text-sm text-destructive" role="alert">

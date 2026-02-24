@@ -32,7 +32,7 @@
 
 2. Authenticate via `/onboard` (sign up) or existing session.
 
-3. Navigate to `/dashboard`. Unauthenticated users are redirected to `/onboard` (per middleware).
+3. Navigate to `/dashboard`. Unauthenticated users are redirected to `/` (landing) per middleware.
 
 ## Key Paths
 
@@ -46,7 +46,7 @@
 
 ## Verification
 
-- **Unauthenticated** → Navigate to `/dashboard` → redirect to `/onboard`.
+- **Unauthenticated** → Navigate to `/dashboard` → redirect to `/` (landing).
 - **Authenticated** → See global header, welcome area, bento grid (Game Plan, Discovery Feed, Deadline Calendar), stats row. All sections show loading skeletons until wired to data.
 - **Accessibility** → Run axe-core or Lighthouse; zero critical/serious violations.
 - **Responsive** → Resize to 375px, 768px, 1280px; no horizontal scroll.

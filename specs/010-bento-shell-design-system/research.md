@@ -49,9 +49,11 @@
 
 ### 4. Auth Protection for /dashboard
 
-**Decision**: Extend middleware matcher to include `/dashboard` and protected routes. When path starts with `/dashboard` and `getUser()` returns no user, redirect to `/onboard`. The onboarding flow is the current auth entry point (signUp/signIn); a dedicated `/login` route does not exist. Use `/onboard` as redirect target until a dedicated login page is added.
+**Decision**: Extend middleware matcher to include `/dashboard` and protected routes. When path starts with `/dashboard` and `getUser()` returns no user, redirect to `/` (landing). Landing will have sign-in/sign-up CTAs; dedicated login and onboarding flows addressed in future specs.
 
-**Rationale**: Spec FR-008 requires protected dashboard. Middleware runs before layout; redirecting unauthenticated users at middleware avoids rendering any dashboard UI. Per 008 plan, onboarding is the auth entry; returning users without a login page would need one—defer to future spec. For now, `/onboard` serves as the auth gate (Step 1 has email/password; returning users can be prompted to sign in).
+**Update (spec clarification I2)**: Original decision was `/onboard`. Superseded: redirect to `/` so unauthenticated users land on the landing page.
+
+**Rationale**: Spec FR-008 requires protected dashboard. Middleware runs before layout; redirecting unauthenticated users at middleware avoids rendering any dashboard UI.
 
 **Alternatives considered**:
 - Layout-level redirect: Slower; page starts rendering before redirect.

@@ -39,7 +39,7 @@ export default async function OnboardLayout({
 
   return (
     <OnboardStepProvider initialStep={initialStep}>
-      <div className="min-h-screen bg-off-white font-body flex items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center bg-off-white p-4 font-body sm:p-6">
         {children}
       </div>
     </OnboardStepProvider>
