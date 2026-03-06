@@ -3,7 +3,7 @@
  * Per FR-002, FR-003, Constitution §4: raw PII must never leave the system.
  *
  * Use before invoking QueryGenerator, Tavily, LLM, or any third-party API.
- * Returns AnonymizedProfile containing only search-safe attributes (gpa, major, incomeBracket, pellStatus).
+ * Returns AnonymizedProfile containing only search-safe attributes (gpa, major, state, incomeBracket, pellStatus).
  */
 import type { FinancialProfile, UserProfile } from "../schemas";
 import { AnonymizedProfileSchema, type AnonymizedProfile } from "./schemas";
@@ -45,7 +45,7 @@ function scrubSpikes(raw: string[] | undefined): string[] | undefined {
 
 /**
  * Scrubs PII (full_name, SSN) from profile and returns AnonymizedProfile for external calls.
- * Only gpa, major, incomeBracket, pellStatus, spikes (labels only) included; full_name and ssn stripped.
+ * Only gpa, major, state, incomeBracket, pellStatus, spikes (labels only) included; full_name and ssn stripped.
  * US1 (009): spikes scrubbed—pass only safe activity labels, replace PII with placeholders.
  *
  * @param input - Profile that may contain PII from user_profile, financial_profile, or raw fields
@@ -65,6 +65,10 @@ export function scrubPiiFromProfile(input: ProfileWithPossiblePii): AnonymizedPr
     typeof userProfile?.major === "string" && userProfile.major.trim().length > 0
       ? userProfile.major.trim()
       : undefined;
+  const state =
+    typeof userProfile?.state === "string" && userProfile.state.trim().length >= 2
+      ? userProfile.state.trim().slice(0, 2).toUpperCase()
+      : undefined;
   const spikes = scrubSpikes(
     (userProfile as { spikes?: string[] } | undefined)?.spikes
   );
@@ -72,6 +76,7 @@ export function scrubPiiFromProfile(input: ProfileWithPossiblePii): AnonymizedPr
   const anonymized = {
     gpa,
     major,
+    state,
     incomeBracket: financialProfile?.household_income_bracket,
     pellStatus: financialProfile?.is_pell_eligible,
     spikes,
