@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
+import { OtpExpiredRedirect } from "@/components/auth/otp-expired-redirect";
 import "./globals.css";
 
 const playfairDisplay = Playfair_Display({
@@ -37,6 +38,7 @@ export default function RootLayout({
       <body
         className={`${playfairDisplay.variable} ${inter.variable} ${geistSans.variable} ${geistMono.variable}`}
       >
+        <OtpExpiredRedirect />
         {children}
         <Toaster richColors position="bottom-right" />
       </body>

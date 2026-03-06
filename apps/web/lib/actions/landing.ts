@@ -2,7 +2,7 @@
 
 /**
  * Server Actions for Landing Page.
- * Hero form submit: redirectToSignUp — validate email, rate limit, redirect to /onboard.
+ * Hero form submit: redirectToSignUp — validate email, rate limit, redirect to /auth/check-email.
  * @see specs/011-landing-marketing-ui/contracts/landing-server-actions.md
  */
 
@@ -20,7 +20,7 @@ export type RedirectToSignUpResult = {
 
 /**
  * redirectToSignUp — Accept FormData with email, validate via Zod, enforce rate limit
- * (3 attempts/email/hour per contract). Redirect to /onboard?email= on valid;
+ * (3 attempts/email/hour per contract). Redirect to /auth/check-email?email= on valid;
  * return { error } on invalid.
  */
 export async function redirectToSignUp(
@@ -40,5 +40,5 @@ export async function redirectToSignUp(
     return { error: "Too many attempts. Please try again later." };
   }
 
-  redirect(`/onboard?email=${encodeURIComponent(parsed.data.email)}`);
+  redirect(`/auth/check-email?email=${encodeURIComponent(parsed.data.email)}`);
 }

@@ -15,6 +15,19 @@
   --font-heading: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-body: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Floating preview cards: subtle vertical motion */
+  --animate-float-subtle: float-subtle 4s ease-in-out infinite;
+  --animate-float-subtle-delay: float-subtle 4s ease-in-out 1.5s infinite;
+
+  @keyframes float-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
 }
 
 :root {
@@ -59,32 +72,7 @@ a {
   text-decoration: none;
 }
 
-/* Floating preview cards: subtle motion, disabled when user prefers reduced motion */
-@keyframes float-subtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-.animate-float-subtle {
-  animation: float-subtle 4s ease-in-out infinite;
-}
-
-.animate-float-subtle-delay {
-  animation: float-subtle 4s ease-in-out infinite;
-  animation-delay: 1.5s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-float-subtle,
-  .animate-float-subtle-delay {
-    animation: none;
-  }
-}
-
+/* prefers-reduced-motion: floating cards use motion-safe: prefix in component */
 .imgDark {
   display: none;
 }
