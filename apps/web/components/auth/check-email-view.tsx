@@ -4,13 +4,15 @@
  * CheckEmailView — Instructions for Magic Link or Password Setup.
  * "Send Magic Link" button and "Set password" link.
  * When linkExpired: shows "This link has expired" with email input to request new link.
+ * After Send Magic Link: shows OTP code input for users who receive a 6-digit code.
  * @see specs/012-auth-bridge-protected-routing spec US1, FR-003, T023
  */
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { requestMagicLink } from "@/lib/actions/auth";
+import { useRouter } from "next/navigation";
+import { requestMagicLink, verifyOtp } from "@/lib/actions/auth";
 
 interface CheckEmailViewProps {
   /** Pre-filled email from landing hero query (empty when linkExpired from callback) */
@@ -43,13 +45,29 @@ function SendMagicLinkButton() {
   );
 }
 
+function VerifyOtpButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="min-h-[44px] min-w-[44px] cursor-pointer rounded-lg border border-electric-mint/50 bg-transparent px-6 py-3 font-medium text-electric-mint transition-colors hover:bg-electric-mint/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy disabled:cursor-not-allowed disabled:opacity-70"
+      aria-label="Verify code"
+    >
+      {pending ? "Verifying…" : "Verify"}
+    </button>
+  );
+}
+
 export function CheckEmailView({
   email: initialEmail,
   linkExpired = false,
 }: CheckEmailViewProps) {
+  const router = useRouter();
   const [email, setEmail] = useState(initialEmail);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   const needsEmailInput = linkExpired || !initialEmail;
 
@@ -61,8 +79,22 @@ export function CheckEmailView({
     const result = await requestMagicLink(formData);
     if (result?.success) {
       setSuccess(true);
+      setOtpError(null);
     } else if (result?.error) {
       setError(result.error);
+    }
+  }
+
+  async function handleVerifyOtp(formData: FormData) {
+    setOtpError(null);
+    formData.set("email", initialEmail || email);
+    const result = await verifyOtp(formData);
+    if (result?.error) {
+      setOtpError(result.error);
+      return;
+    }
+    if (result?.success && result?.redirect) {
+      router.push(result.redirect);
     }
   }
 
@@ -116,13 +148,54 @@ export function CheckEmailView({
         </form>
 
         {success && (
-          <p
-            className="text-sm text-electric-mint"
-            role="status"
-            aria-live="polite"
-          >
-            Magic link sent! Check your inbox.
-          </p>
+          <>
+            <p
+              className="text-sm text-electric-mint"
+              role="status"
+              aria-live="polite"
+            >
+              Magic link sent! Check your inbox.
+            </p>
+            {!linkExpired && (
+              <form
+                action={handleVerifyOtp}
+                className="flex flex-col gap-3 sm:flex-row sm:items-end"
+              >
+                <input type="hidden" name="email" value={initialEmail || email} />
+                <div className="flex flex-col gap-2 min-w-0 flex-1">
+                  <label
+                    htmlFor="otp-code"
+                    className="text-sm font-medium text-off-white"
+                  >
+                    Or enter the 6-digit code from your email
+                  </label>
+                  <input
+                    id="otp-code"
+                    name="token"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    placeholder="000000"
+                    className="min-h-[44px] w-full max-w-40 rounded-lg border border-electric-mint/40 bg-navy/50 px-4 py-3 text-off-white placeholder:text-off-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                    aria-describedby={otpError ? "otp-error" : undefined}
+                    aria-invalid={!!otpError}
+                  />
+                </div>
+                <VerifyOtpButton />
+              </form>
+            )}
+            {otpError && (
+              <p
+                id="otp-error"
+                className="text-sm text-electric-mint"
+                role="alert"
+              >
+                {otpError}
+              </p>
+            )}
+          </>
         )}
         {error && (
           <p

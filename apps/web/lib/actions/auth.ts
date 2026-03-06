@@ -198,9 +198,16 @@ export async function signUp(
       const redirect = getSafeRedirectTo(redirectTo ?? null, "/onboard");
       return { success: true, redirect };
     }
+    if (process.env.NODE_ENV === "development") {
+      console.error("[signUp] Profile insert failed:", {
+        code: insertError.code,
+        message: insertError.message,
+        details: insertError.details,
+      });
+    }
     return {
       success: false,
-      error: "Account created but setup failed. Please sign in to continue.",
+      error: "We couldn't complete your account setup. Please try again.",
     };
   }
 
@@ -257,4 +264,92 @@ export async function requestMagicLink(
   }
 
   return { success: true };
+}
+
+const verifyOtpInputSchema = z.object({
+  email: emailSchema,
+  token: z.string().length(6, "Code must be 6 digits").regex(/^\d+$/, "Code must be 6 digits"),
+});
+
+/**
+ * verifyOtp — Verify 6-digit OTP code sent via email (after requestMagicLink).
+ * Rate limit: 5 attempts per email per 15 min (same as failed login).
+ * On success: redirect to /onboard or /dashboard based on onboarding_complete.
+ */
+export async function verifyOtp(
+  formData: FormData | { email: string; token: string }
+): Promise<AuthActionResult> {
+  const { email, token } =
+    formData instanceof FormData
+      ? {
+          email: (formData.get("email") as string)?.trim() ?? "",
+          token: (formData.get("token") as string)?.trim() ?? "",
+        }
+      : formData;
+
+  const parsed = verifyOtpInputSchema.safeParse({ email, token });
+  if (!parsed.success) {
+    const msg =
+      parsed.error.errors[0]?.message ?? "Please enter a valid 6-digit code.";
+    return { success: false, error: msg };
+  }
+
+  const { allowed } = checkAndIncrementFailedLoginRateLimit(parsed.data.email);
+  if (!allowed) {
+    return {
+      success: false,
+      error: "Too many attempts. Please try again later.",
+    };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token: parsed.data.token,
+    type: "email",
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: "Invalid or expired code. Please try again.",
+    };
+  }
+
+  const user = data.user;
+  if (!user) {
+    return { success: false, error: "Invalid or expired code. Please try again." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_complete")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) {
+    const { error: insertError } = await supabase.from("profiles").insert({
+      id: user.id,
+      onboarding_complete: false,
+    });
+    if (insertError && insertError.code !== "23505") {
+      if (process.env.NODE_ENV === "development") {
+        console.error("[verifyOtp] Profile insert failed:", {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+        });
+      }
+      return {
+        success: false,
+        error: "We couldn't complete your account setup. Please try again.",
+      };
+    }
+  }
+
+  const defaultPath =
+    profile?.onboarding_complete === true ? "/dashboard" : "/onboard";
+  const redirect = getSafeRedirectTo(null, defaultPath);
+
+  return { success: true, redirect };
 }
