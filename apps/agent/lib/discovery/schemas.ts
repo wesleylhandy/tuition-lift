@@ -19,6 +19,8 @@ export const AnonymizedProfileSchema = z.object({
   /** 0–4 unweighted or 0–6 weighted; per 008 gpa model */
   gpa: z.number().min(0).max(6).optional(),
   major: z.string().min(1).optional(),
+  /** US state code (e.g., CA) for local/regional scholarships (C1, 014 FR-013). */
+  state: z.string().min(2).max(2).optional(),
   incomeBracket: householdIncomeBracketEnum.optional(),
   pellStatus: z.boolean().optional(),
   /** Activity labels only (e.g., Water Polo, Leadership). No team names or PII. */

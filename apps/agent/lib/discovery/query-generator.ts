@@ -22,6 +22,7 @@ function formatProfileForPrompt(profile: AnonymizedProfile): string {
   const parts: string[] = [];
   if (profile.gpa != null) parts.push(`GPA: ${profile.gpa.toFixed(2)}`);
   if (profile.major) parts.push(`Major: ${profile.major}`);
+  if (profile.state) parts.push(`State: ${profile.state}`);
   if (profile.incomeBracket) parts.push(`Income bracket: ${profile.incomeBracket}`);
   if (profile.pellStatus != null) {
     parts.push(
