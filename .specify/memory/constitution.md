@@ -1,10 +1,10 @@
 <!--
-  Sync Impact Report (v1.3.0)
-  Version change: 1.2.0 → 1.3.0
-  Modified principles: Added Section 10 (Reputation Engine / Trust Scoring)
-  Change type: MINOR—new principle; formalizes trust tiers, auto-fail rule, and 0-100 scoring
-  Sections 4 & 8: Cross-referenced; Section 10 supersedes ranking/priority details
-  Specs affected: None (001-waitlist-launch is pre-launch; trust rules apply to scholarship discovery features)
+  Sync Impact Report (v1.4.0)
+  Version change: 1.3.0 → 1.4.0
+  Modified principles: Section 6 (UX/UI)—expanded Accessibility with keyboard, mouse, touch, screen reader
+  Change type: MINOR—material expansion of accessibility guidance
+  Added: Keyboard operability, mouse/touch parity, screen reader support requirements
+  Templates updated: plan-template.md (Constitution Check UX/UI line)
   Follow-up TODOs: None
 -->
 
@@ -65,7 +65,10 @@ Every user-facing AI interaction that influences search, verification, or applic
 ## 6. UX/UI Principles
 
 - **Simplicity over Complexity:** If a feature is not essential for the "Search → Verify → Apply" loop, it MUST be deferred post-MVP.
-- **Accessibility:** All components MUST meet WCAG 2.1 AA standards.
+- **Accessibility:** All components MUST meet WCAG 2.1 AA standards. In addition:
+  - **Keyboard:** All interactive elements MUST be fully operable via keyboard (tab order, Enter/Space to activate, Escape to close overlays where applicable). Focus order MUST be logical; focus indicators MUST be visible.
+  - **Mouse & Touch parity:** Any action available via mouse MUST also work via touch; touch targets MUST be at least 44×44px.
+  - **Screen reader support:** Semantic HTML, ARIA attributes where needed, and meaningful labels MUST ensure screen reader users can perceive, operate, and understand all content. Live regions MUST be used for dynamic content updates.
 - **Performance:** Critical user paths (search, verify, apply) MUST achieve Lighthouse Performance and Best Practices scores of 90+ each, verified in pre-release checks.
 
 **Rationale:** Focus on the core loop and inclusive, fast UX ensures the product stays usable and trustworthy.
@@ -113,4 +116,4 @@ Every user-facing AI interaction that influences search, verification, or applic
 - **Amendments:** Changes require documentation of the change, rationale, and impact on existing specs/plans. Version MUST be incremented per semantic versioning (MAJOR: backward-incompatible principle removals/redefinitions; MINOR: new principle or material expansion; PATCH: clarifications, typos, non-semantic refinements).
 - **Compliance:** PRs and reviews MUST verify alignment with the principles above. Exceptions (e.g., complexity or new patterns) MUST be justified in the plan's Complexity Tracking table.
 
-**Version**: 1.3.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2026-02-13
+**Version**: 1.4.0 | **Ratified**: 2025-02-13 | **Last Amended**: 2025-03-06
