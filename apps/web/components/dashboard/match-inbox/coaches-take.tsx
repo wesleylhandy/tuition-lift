@@ -17,7 +17,7 @@ export function CoachesTake({
 
   return (
     <p
-      className={`text-sm text-muted-foreground line-clamp-2 ${className}`}
+      className={`text-sm leading-relaxed text-muted-foreground line-clamp-2 ${className}`}
       title={text}
     >
       {text}

@@ -11,6 +11,8 @@ import { DebtLiftedRing } from "./debt-lifted-ring";
 import { NextWinCountdown } from "./next-win-countdown";
 import { useRealtimeApplications } from "@/lib/hooks/use-realtime-applications";
 import { GamePlanSkeleton } from "../skeletons/game-plan-skeleton";
+import { useViewParamContext } from "@/components/dashboard/view-param-provider";
+import { WIDGET_IDS } from "@/lib/constants/widget-ids";
 
 interface AlternativePathItem {
   institutionType: string;
@@ -55,9 +57,18 @@ function toTopThreeTask(t: Top3ApiItem): TopThreeTask {
 export interface GamePlanProps {
   /** When false, hide DebtLiftedRing (header owns it). Default true. */
   showDebtLifted?: boolean;
+  /** Card variant: hides title and expand CTA (moved to WidgetCard). */
+  variant?: "standalone" | "card";
+  /** Called when data loads; used by GamePlanCard for status pill. */
+  onDataReady?: (data: { activeCount: number }) => void;
 }
 
-export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
+export function GamePlan({
+  showDebtLifted = true,
+  variant = "standalone",
+  onDataReady,
+}: GamePlanProps) {
+  const { expand } = useViewParamContext();
   const [userId, setUserId] = useState<string | null>(null);
   const [data, setData] = useState<GamePlanData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,12 +85,13 @@ export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
       const json = (await res.json()) as GamePlanData;
       setData(json);
       setError(null);
+      onDataReady?.({ activeCount: (json.top3 ?? []).length });
     } catch {
       setError("Failed to load game plan");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onDataReady]);
 
   useEffect(() => {
     const load = async () => {
@@ -136,15 +148,19 @@ export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
     }).format(n);
   }
 
+  const isCard = variant === "card";
+
   return (
     <section
       className="space-y-4"
-      aria-label="Coach's Game Plan"
+      aria-label={isCard ? undefined : "Coach's Game Plan"}
       aria-busy={loading}
     >
-      <h2 className="font-heading text-lg font-semibold text-navy">
-        Coach&apos;s Game Plan
-      </h2>
+      {!isCard && (
+        <h2 className="font-heading text-lg font-semibold text-navy">
+          Coach&apos;s Game Plan
+        </h2>
+      )}
       {top3.length === 0 && !data?.suggestion ? (
         <p className="text-sm text-muted-foreground">
           Add applications or run discovery to get your game plan.
@@ -160,10 +176,21 @@ export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
               deadline={nextWin.deadline}
               label={nextWin.label}
             />
+            {!isCard && top3.length > 0 && (
+              <button
+                type="button"
+                onClick={() => expand(WIDGET_IDS.kanban.id)}
+                className="text-sm font-medium text-electric-mint hover:underline focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2"
+              >
+                View Full Kanban Board
+              </button>
+            )}
           </div>
         </div>
       )}
-      {altPath && altPath.items.length >= 2 && (
+      {altPath &&
+        altPath.items.length >= 2 &&
+        top3.length > 0 && (
         <div
           className="rounded-lg border border-border bg-muted/30 p-4"
           aria-label="Alternative Path comparison"

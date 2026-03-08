@@ -19,6 +19,13 @@ import {
 import { getDismissedScholarshipIds } from "@/lib/actions/get-dismissed-ids";
 import { getTrackedScholarshipIds } from "@/lib/actions/get-tracked-scholarship-ids";
 
+export interface MatchInboxProps {
+  /** Card variant: hides internal header (title, MeritFilterToggle, LivePulse). */
+  variant?: "standalone" | "card";
+  /** Called when match count is known; for status pill. */
+  onMatchCountReady?: (count: number) => void;
+}
+
 function sortMatches(matches: DiscoveryMatch[]): DiscoveryMatch[] {
   return [...matches].sort((a, b) => {
     const trust = (b.trustScore ?? 0) - (a.trustScore ?? 0);
@@ -27,7 +34,8 @@ function sortMatches(matches: DiscoveryMatch[]): DiscoveryMatch[] {
   });
 }
 
-export function MatchInbox() {
+export function MatchInbox(props: MatchInboxProps = {}) {
+  const { variant = "standalone", onMatchCountReady } = props;
   const [userId, setUserId] = useState<string | null>(null);
   const [awardYear, setAwardYear] = useState<number | null | undefined>(undefined);
   const [hasApplicationsForOtherYear, setHasApplicationsForOtherYear] =
@@ -117,6 +125,7 @@ export function MatchInbox() {
       }));
       const filtered = raw.filter((m) => !dismissedSet.has(m.scholarshipId));
       setMatches(sortMatches(filtered));
+      onMatchCountReady?.(filtered.length);
     } catch {
       setError("Failed to load matches");
     } finally {
@@ -180,16 +189,18 @@ export function MatchInbox() {
     return <MatchInboxSkeleton />;
   }
 
+  const isCard = variant === "card";
+
   return (
     <section
-      className="space-y-4"
-      aria-label="Match Inbox"
+      className="space-y-6"
+      aria-label={isCard ? undefined : "Match Inbox"}
       aria-busy={loading}
     >
       {/* T048: Surface when user changed award_year and has existing applications for another year */}
       {hasApplicationsForOtherYear && (
         <div
-          className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700"
+          className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700"
           role="status"
         >
           You have applications for a different award year. New scholarships
@@ -197,16 +208,18 @@ export function MatchInbox() {
           unchanged.
         </div>
       )}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-heading text-lg font-semibold text-navy">
-            Match Inbox
-          </h2>
-          <MeritFilterToggle />
+      {!isCard && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-heading text-lg font-semibold text-navy">
+              Match Inbox
+            </h2>
+            <MeritFilterToggle />
+          </div>
+          <LivePulse userId={userId} />
         </div>
-        <LivePulse userId={userId} />
-      </div>
-      <ul className="grid gap-3" role="list">
+      )}
+      <ul className="grid gap-5" role="list">
         <AnimatePresence mode="popLayout">
           {matches.map((m) => (
             <li key={m.id} role="listitem">
@@ -216,9 +229,11 @@ export function MatchInbox() {
                 title={m.title}
                 url={m.url}
                 trustScore={m.trustScore}
+                matchStrength={m.needMatchScore ?? null}
                 coachTakeText={coachTakeFallback(m)}
                 amount={m.amount}
                 deadline={m.deadline}
+                categories={m.categories}
                 discoveryRunId={m.discoveryRunId}
                 needMatchScore={m.needMatchScore}
                 isTracked={trackedScholarshipIds.has(m.scholarshipId)}
