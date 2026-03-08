@@ -2,12 +2,11 @@
 
 /**
  * Server Action: getTrackedScholarshipIds
- * Returns scholarship IDs the user has in applications for the current academic year.
- * Used by Match Inbox to pass isTracked to MatchCard per T031.
+ * Returns scholarship IDs the user has in applications for their profile award year.
+ * US1 T020: Derives academic_year from profile.award_year; returns [] when award_year null.
  */
 import { createServerSupabaseClient } from "../supabase/server";
-import { createDbClient } from "@repo/db";
-import { getCurrentAcademicYear } from "../utils/academic-year";
+import { createDbClient, awardYearToAcademicYear } from "@repo/db";
 
 export async function getTrackedScholarshipIds(): Promise<string[]> {
   const supabase = await createServerSupabaseClient();
@@ -20,8 +19,18 @@ export async function getTrackedScholarshipIds(): Promise<string[]> {
     return [];
   }
 
-  const academicYear = getCurrentAcademicYear();
   const db = createDbClient();
+  const { data: profile } = await db
+    .from("profiles")
+    .select("award_year")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.award_year) {
+    return [];
+  }
+
+  const academicYear = awardYearToAcademicYear(profile.award_year);
 
   const { data: rows, error } = await db
     .from("applications")

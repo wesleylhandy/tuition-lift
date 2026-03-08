@@ -16,19 +16,26 @@ const COACH_TIP =
   "Create your account to get started! We'll help you find scholarships that match your profile.";
 
 export interface Step1FormProps {
+  /** Award year from Step 0; passed to signUp for profile insert. */
+  awardYear?: number;
   onSuccess: () => void;
 }
 
 function FormFieldsWithStatus({
   error,
   defaultEmail,
+  awardYear,
 }: {
   error: string | null;
   defaultEmail?: string;
+  awardYear?: number;
 }) {
   const { pending } = useFormStatus();
   return (
     <>
+      {awardYear != null && (
+        <input type="hidden" name="award_year" value={awardYear} />
+      )}
       <div className="flex flex-col gap-3">
         <label htmlFor="step1-email" className="block text-sm font-medium">
           Email
@@ -92,13 +99,16 @@ function SubmitButton() {
   );
 }
 
-export function Step1Form({ onSuccess }: Step1FormProps) {
+export function Step1Form({ awardYear, onSuccess }: Step1FormProps) {
   const searchParams = useSearchParams();
   const defaultEmail = searchParams.get("email") ?? undefined;
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    if (awardYear != null) {
+      formData.set("award_year", String(awardYear));
+    }
     const result = await signUp(formData);
     if (result.success) {
       onSuccess();
@@ -113,7 +123,11 @@ export function Step1Form({ onSuccess }: Step1FormProps) {
         {COACH_TIP}
       </p>
       <form action={handleSubmit} className="flex flex-col gap-6">
-        <FormFieldsWithStatus error={error} defaultEmail={defaultEmail} />
+        <FormFieldsWithStatus
+          error={error}
+          defaultEmail={defaultEmail}
+          awardYear={awardYear}
+        />
         {error && (
           <p id="step1-error" className="text-sm text-destructive" role="alert">
             {error}

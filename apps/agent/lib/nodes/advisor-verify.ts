@@ -4,11 +4,13 @@
  * Reads discovery_run_id from config.configurable; attaches to each result.
  * US2: TrustScorer integration; exclude fee_check=fail; persist to scholarships.
  * US3: need_match_score from NeedMatchScorer; order by SAI alignment + trust_score.
+ * US3 (T029-T030): Merit-First Mode — when SAI > merit_first_sai_threshold, prioritize Need-Blind/merit-tier over Pell-based.
  *
  * @see data-model.md, plan.md
  * @see LangGraph JS: Command for node-to-node handoff; config.configurable for run-scoped data
  */
 import { Command } from "@langchain/langgraph";
+import { getMeritFirstThreshold } from "@repo/db";
 import type { TuitionLiftStateType } from "../state";
 import type { DiscoveryResult } from "../schemas";
 import { createErrorEntry } from "../error-log";
@@ -72,6 +74,17 @@ function toMeritTag(
   return undefined;
 }
 
+/**
+ * US3 Merit-First: Sort priority for ranking. Lower = higher priority.
+ * need_blind first, merit_only second, need_based last.
+ */
+function meritFirstSortRank(meritTag: string | undefined): number {
+  if (meritTag === "need_blind") return 0;
+  if (meritTag === "merit_only") return 1;
+  if (meritTag === "need_based") return 2;
+  return 1; // other/undefined: treat like merit
+}
+
 export type AdvisorVerifyConfig = {
   configurable?: {
     discovery_run_id?: string;
@@ -96,6 +109,20 @@ export async function advisorVerifyNode(
     const financialProfile = state.financial_profile;
     const saiAbove = state.sai_above_merit_threshold === true;
     const meritOnly = state.merit_filter_preference === "merit_only";
+
+    // T029 US3: Fetch merit_first_sai_threshold; activate Merit-First when SAI > threshold
+    let meritFirstMode = false;
+    const awardYear = state.award_year;
+    const sai = financialProfile?.estimated_sai;
+    if (
+      typeof awardYear === "number" &&
+      typeof sai === "number"
+    ) {
+      const threshold = await getMeritFirstThreshold(awardYear);
+      if (threshold != null && sai > threshold) {
+        meritFirstMode = true;
+      }
+    }
 
     const verified: DiscoveryResult[] = [];
     for (const r of rawResults) {
@@ -159,11 +186,18 @@ export async function advisorVerifyNode(
       });
     }
 
-    filtered.sort(
-      (a, b) =>
+    // T030 US3: Merit-First Mode — prioritize Need-Blind and merit-tier over Pell-based
+    filtered.sort((a, b) => {
+      if (meritFirstMode) {
+        const rankA = meritFirstSortRank(a.merit_tag);
+        const rankB = meritFirstSortRank(b.merit_tag);
+        if (rankA !== rankB) return rankA - rankB;
+      }
+      return (
         (b.need_match_score - a.need_match_score) ||
         (b.trust_score - a.trust_score)
-    );
+      );
+    });
 
     return new Command({
       goto: "Coach_Prioritization",

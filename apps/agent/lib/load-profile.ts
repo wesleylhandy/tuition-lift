@@ -75,6 +75,8 @@ export interface LoadProfileResult {
   user_profile: UserProfile | null;
   financial_profile: FinancialProfile | null;
   merit_config: MeritConfig | null;
+  /** US1 T021: award_year from profile; used for discovery and graph state even when merit_config null */
+  award_year: number | null;
   /** US3: Triggers Coach_Major_Pivot flow instead of Advisor_Search. */
   is_undecided_major: boolean;
 }
@@ -156,7 +158,7 @@ export async function loadProfile(userId: string): Promise<LoadProfileResult> {
   const { data: row, error } = await db
     .from("profiles")
     .select(
-      "id, intended_major, state, gpa_weighted, gpa_unweighted, sai, pell_eligibility_status, sat_total, act_composite, spikes, merit_filter_preference, award_year"
+      "id, intended_major, state, gpa_weighted, gpa_unweighted, sai, pell_eligibility_status, sat_total, act_composite, spikes, merit_filter_preference, award_year, first_generation, parent_employer_category, identity_eligibility_categories"
     )
     .eq("id", userId)
     .single();
@@ -166,6 +168,7 @@ export async function loadProfile(userId: string): Promise<LoadProfileResult> {
       user_profile: null,
       financial_profile: null,
       merit_config: null,
+      award_year: null,
       is_undecided_major: false,
     };
   }
@@ -174,11 +177,13 @@ export async function loadProfile(userId: string): Promise<LoadProfileResult> {
   const user_profile = buildUserProfile(row, is_undecided_major);
   const financial_profile = buildFinancialProfile(row);
   const merit_config = await buildMeritConfig(row);
+  const award_year = typeof row.award_year === "number" ? row.award_year : null;
 
   return {
     user_profile,
     financial_profile,
     merit_config,
+    award_year,
     is_undecided_major,
   };
 }
@@ -233,6 +238,9 @@ function buildUserProfile(
     sat_total: number | null;
     act_composite: number | null;
     spikes: string[] | null;
+    first_generation?: boolean | null;
+    parent_employer_category?: string | null;
+    identity_eligibility_categories?: string[] | null;
   },
   isUndecided: boolean
 ): UserProfile | null {
@@ -265,6 +273,12 @@ function buildUserProfile(
       ).slice(0, 10)
     : undefined;
 
+  const identityCategories = Array.isArray(row.identity_eligibility_categories)
+    ? row.identity_eligibility_categories.filter(
+        (s): s is string => typeof s === "string" && s.trim().length > 0 && s.length <= 100
+      ).slice(0, 10)
+    : undefined;
+
   const parsed = UserProfileSchema.safeParse({
     id: row.id,
     major,
@@ -273,6 +287,12 @@ function buildUserProfile(
     sat_total: sat_total ?? undefined,
     act_composite: act_composite ?? undefined,
     spikes: spikes?.length ? spikes : undefined,
+    first_gen: row.first_generation === true ? true : undefined,
+    parent_employer_category:
+      typeof row.parent_employer_category === "string" && row.parent_employer_category.trim().length > 0
+        ? row.parent_employer_category.trim().slice(0, 100)
+        : undefined,
+    identity_eligibility_categories: identityCategories?.length ? identityCategories : undefined,
   });
   return parsed.success ? parsed.data : null;
 }

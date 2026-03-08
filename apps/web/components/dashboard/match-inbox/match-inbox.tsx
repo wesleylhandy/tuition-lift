@@ -29,6 +29,9 @@ function sortMatches(matches: DiscoveryMatch[]): DiscoveryMatch[] {
 
 export function MatchInbox() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [awardYear, setAwardYear] = useState<number | null | undefined>(undefined);
+  const [hasApplicationsForOtherYear, setHasApplicationsForOtherYear] =
+    useState(false);
   const [matches, setMatches] = useState<DiscoveryMatch[]>([]);
   const [trackedScholarshipIds, setTrackedScholarshipIds] = useState<Set<string>>(new Set());
   const [, setDiscoveryRunId] = useState<string | null>(null);
@@ -49,8 +52,14 @@ export function MatchInbox() {
         setLoading(false);
         return;
       }
-      const { userId: uid } = (await res.json()) as { userId: string };
-      setUserId(uid);
+      const data = (await res.json()) as {
+        userId: string;
+        awardYear?: number | null;
+        hasApplicationsForOtherYear?: boolean;
+      };
+      setUserId(data.userId);
+      setAwardYear(data.awardYear ?? null);
+      setHasApplicationsForOtherYear(data.hasApplicationsForOtherYear ?? false);
       setError(null);
     } catch {
       setError("Failed to load");
@@ -146,6 +155,27 @@ export function MatchInbox() {
     );
   }
 
+  // T023: Surface prompt when profile has no award_year — block discovery and tracking
+  if (awardYear === null && !loading) {
+    return (
+      <section
+        className="rounded-lg border border-amber-200 bg-amber-50 p-4"
+        aria-live="polite"
+      >
+        <p className="text-sm text-amber-900">
+          Select your target award year to discover and track scholarships.{" "}
+          <a
+            href="/onboard"
+            className="font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded"
+          >
+            Complete onboarding
+          </a>{" "}
+          to get started.
+        </p>
+      </section>
+    );
+  }
+
   if (loading && matches.length === 0) {
     return <MatchInboxSkeleton />;
   }
@@ -156,6 +186,17 @@ export function MatchInbox() {
       aria-label="Match Inbox"
       aria-busy={loading}
     >
+      {/* T048: Surface when user changed award_year and has existing applications for another year */}
+      {hasApplicationsForOtherYear && (
+        <div
+          className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700"
+          role="status"
+        >
+          You have applications for a different award year. New scholarships
+          you track will use your current year. Existing applications are
+          unchanged.
+        </div>
+      )}
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-heading text-lg font-semibold text-navy">
@@ -179,6 +220,7 @@ export function MatchInbox() {
                 amount={m.amount}
                 deadline={m.deadline}
                 discoveryRunId={m.discoveryRunId}
+                needMatchScore={m.needMatchScore}
                 isTracked={trackedScholarshipIds.has(m.scholarshipId)}
                 onTrackSuccess={() => {
                   setTrackedScholarshipIds((prev) =>

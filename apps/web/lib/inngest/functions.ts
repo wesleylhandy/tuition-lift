@@ -50,8 +50,19 @@ export const discoveryRequested = inngest.createFunction(
       user_profile,
       financial_profile,
       merit_config,
+      award_year,
       is_undecided_major,
     } = await step.run("load-profile", () => loadProfile(userId));
+
+    if (!award_year) {
+      await step.run("mark-failed", async () => {
+        await db
+          .from("discovery_completions")
+          .update({ status: "failed", completed_at: new Date().toISOString() })
+          .eq("discovery_run_id", discoveryRunId);
+      });
+      throw new Error("Profile incomplete: award year required. Complete onboarding step 0.");
+    }
 
     if (!user_profile?.state) {
       await step.run("mark-failed", async () => {
@@ -87,7 +98,7 @@ export const discoveryRequested = inngest.createFunction(
       merit_filter_preference: merit_config?.merit_filter_preference ?? "show_all",
       sai_above_merit_threshold: merit_config?.sai_above_merit_threshold ?? false,
       merit_tier: merit_config?.merit_tier ?? undefined,
-      award_year: merit_config?.award_year ?? undefined,
+      award_year,
       is_undecided_major: is_undecided_major ?? false,
     };
 

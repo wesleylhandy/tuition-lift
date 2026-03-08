@@ -15,6 +15,10 @@ import { AnonymizedProfileSchema, type AnonymizedProfile } from "./schemas";
 export interface ProfileWithPossiblePii {
   user_profile?: UserProfile | null;
   financial_profile?: FinancialProfile | null;
+  /** US1 T022: award_year from state for cycle-aware query generation. */
+  award_year?: number | null;
+  /** US7 C1: Saved institution names from user_saved_schools (loaded in Advisor_Search). */
+  savedInstitutionNames?: string[];
   /** PII — never passed through. Present when loading raw profiles row. */
   full_name?: string | null;
   ssn?: string | null;
@@ -73,6 +77,29 @@ export function scrubPiiFromProfile(input: ProfileWithPossiblePii): AnonymizedPr
     (userProfile as { spikes?: string[] } | undefined)?.spikes
   );
 
+  const award_year =
+    typeof input.award_year === "number" &&
+    input.award_year >= 2024 &&
+    input.award_year <= 2034
+      ? input.award_year
+      : undefined;
+
+  const first_gen = userProfile && "first_gen" in userProfile && userProfile.first_gen === true ? true : undefined;
+  const parent_employer_category =
+    userProfile && "parent_employer_category" in userProfile && typeof (userProfile as { parent_employer_category?: string }).parent_employer_category === "string"
+      ? (userProfile as { parent_employer_category: string }).parent_employer_category.trim().slice(0, 100)
+      : undefined;
+  const identity_eligibility_categories =
+    userProfile && "identity_eligibility_categories" in userProfile && Array.isArray((userProfile as { identity_eligibility_categories?: string[] }).identity_eligibility_categories)
+      ? (userProfile as { identity_eligibility_categories: string[] }).identity_eligibility_categories
+          .filter((s): s is string => typeof s === "string" && s.trim().length > 0 && s.length <= 100)
+          .slice(0, 10)
+      : undefined;
+  const savedInstitutionNames =
+    Array.isArray(input.savedInstitutionNames) && input.savedInstitutionNames.length > 0
+      ? input.savedInstitutionNames.filter((s) => typeof s === "string" && s.trim().length > 0).slice(0, 10).map((s) => s.trim().slice(0, 200))
+      : undefined;
+
   const anonymized = {
     gpa,
     major,
@@ -80,6 +107,11 @@ export function scrubPiiFromProfile(input: ProfileWithPossiblePii): AnonymizedPr
     incomeBracket: financialProfile?.household_income_bracket,
     pellStatus: financialProfile?.is_pell_eligible,
     spikes,
+    award_year,
+    first_gen,
+    parent_employer_category,
+    identity_eligibility_categories,
+    savedInstitutionNames,
   };
 
   return AnonymizedProfileSchema.parse(anonymized);

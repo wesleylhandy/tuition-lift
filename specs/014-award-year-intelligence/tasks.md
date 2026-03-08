@@ -23,7 +23,7 @@
 
 **Purpose**: Verify environment and migration numbering
 
-- [ ] T001 Verify feature branch `014-award-year-intelligence` and migration sequence (next: 35, 36, 37) in packages/database/supabase/migrations/
+- [x] T001 Verify feature branch `014-award-year-intelligence` and migration sequence (next: 35, 36, 37) in packages/database/supabase/migrations/
 
 ---
 
@@ -33,14 +33,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Create migration 00000000000035_applications_need_match_score.sql: ADD COLUMN need_match_score numeric(5,2) to applications in packages/database/supabase/migrations/
-- [ ] T003 Create migration 00000000000036_scholarship_cycle_verifications.sql: CREATE TABLE with scholarship_id, academic_year, verified_at; UNIQUE(scholarship_id, academic_year); RLS; indexes in packages/database/supabase/migrations/
-- [ ] T004 Create migration 00000000000037_merit_first_config.sql: CREATE TABLE with award_year PK, merit_first_sai_threshold, updated_at; RLS per sai_zone_config pattern in packages/database/supabase/migrations/
-- [ ] T005 [P] Add need_match_score to applicationSchema (z.number().min(0).max(100).nullable().optional()) in packages/database/src/schema/applications.ts
-- [ ] T006 [P] Add getMeritFirstThreshold(awardYear: number): Promise<number | null> in packages/database/src/config-queries.ts
-- [ ] T007 [P] Add isScholarshipVerifiedForCycle and upsertScholarshipCycleVerification helpers in packages/database/src/ (or config-queries.ts)
-- [ ] T008 Add awardYearToAcademicYear(yr: number): string helper returning "YYYY-YYYY" in packages/database/src/ or apps/web/lib/utils/academic-year.ts
-- [ ] T009 Update profile award_year Zod range to dynamic currentYear..(currentYear+4) at validation boundary; document in packages/database/src/schema/profiles.ts
+- [x] T002 Create migration 00000000000035_applications_need_match_score.sql: ADD COLUMN need_match_score numeric(5,2) to applications in packages/database/supabase/migrations/
+- [x] T003 Create migration 00000000000036_scholarship_cycle_verifications.sql: CREATE TABLE with scholarship_id, academic_year, verified_at; UNIQUE(scholarship_id, academic_year); RLS; indexes in packages/database/supabase/migrations/
+- [x] T004 Create migration 00000000000037_merit_first_config.sql: CREATE TABLE with award_year PK, merit_first_sai_threshold, updated_at; RLS per sai_zone_config pattern in packages/database/supabase/migrations/
+- [x] T005 [P] Add need_match_score to applicationSchema (z.number().min(0).max(100).nullable().optional()) in packages/database/src/schema/applications.ts
+- [x] T006 [P] Add getMeritFirstThreshold(awardYear: number): Promise<number | null> in packages/database/src/config-queries.ts
+- [x] T007 [P] Add isScholarshipVerifiedForCycle and upsertScholarshipCycleVerification helpers in packages/database/src/ (or config-queries.ts)
+- [x] T008 Add awardYearToAcademicYear(yr: number): string helper returning "YYYY-YYYY" in packages/database/src/ or apps/web/lib/utils/academic-year.ts
+- [x] T009 Update profile award_year Zod range to dynamic currentYear..(currentYear+4) at validation boundary; document in packages/database/src/schema/profiles.ts
 
 **Checkpoint**: Migrations applied; schema and config queries ready
 
@@ -52,12 +52,12 @@
 
 **Independent Test**: Start onboarding; verify Step 0 (Award Year) is first and required; select year; advance to Identity; verify award year persisted to profile.
 
-- [ ] T010 [US6] Add Step0Form (Target Award Year selector) with range currentYear..currentYear+4, required, WCAG 2.1 AA in apps/web/components/onboard/
-- [ ] T011 [US6] Update OnboardWizard to 4 steps: Step 0 (Award Year) → Step 1 (Identity) → Step 2 (Academic) → Step 3 (Financial) in apps/web/components/onboard/onboard-wizard.tsx
-- [ ] T012 [US6] Add OnboardStepProvider state for award_year; pass from Step 0 to Step 1; persist on account creation in apps/web/components/onboard/onboard-step-provider.tsx and step1-form
-- [ ] T013 [US6] Update onboarding Server Action to accept and validate award_year (currentYear..currentYear+4), include in profile upsert in apps/web/lib/actions/onboarding.ts
-- [ ] T014 [US6] Update ProgressBar for 4 steps (1 of 4, 2 of 4, etc.) in apps/web/components/onboard/progress-bar.tsx
-- [ ] T015 [US6] Update useOnboardInitialStep to handle Step 0 resume logic when user returns mid-flow in apps/web/components/onboard/onboard-step-provider.tsx
+- [x] T010 [US6] Add Step0Form (Target Award Year selector) with range currentYear..currentYear+4, required, WCAG 2.1 AA in apps/web/components/onboard/
+- [x] T011 [US6] Update OnboardWizard to 4 steps: Step 0 (Award Year) → Step 1 (Identity) → Step 2 (Academic) → Step 3 (Financial) in apps/web/components/onboard/onboard-wizard.tsx
+- [x] T012 [US6] Add OnboardStepProvider state for award_year; pass from Step 0 to Step 1; persist on account creation in apps/web/components/onboard/onboard-step-provider.tsx and step1-form
+- [x] T013 [US6] Update onboarding Server Action to accept and validate award_year (currentYear..currentYear+4), include in profile upsert in apps/web/lib/actions/onboarding.ts
+- [x] T014 [US6] Update ProgressBar for 4 steps (1 of 4, 2 of 4, etc.) in apps/web/components/onboard/progress-bar.tsx
+- [x] T015 [US6] Update useOnboardInitialStep to handle Step 0 resume logic when user returns mid-flow in apps/web/components/onboard/onboard-step-provider.tsx
 
 **Checkpoint**: New users must select award year first; selection persisted to profile
 
@@ -69,14 +69,14 @@
 
 **Independent Test**: User with award_year 2027 completes onboarding, triggers discovery, tracks scholarship; verify application uses academic_year "2027-2028"; discovery queries target 2027–2028.
 
-- [ ] T016 [US1] Update trackScholarship to fetch profile, derive academic_year from profile.award_year via awardYearToAcademicYear; block tracking when award_year null in apps/web/lib/actions/track.ts
-- [ ] T017 [US1] Add optional need_match_score param to trackScholarship; include in applications upsert when provided in apps/web/lib/actions/track.ts
-- [ ] T018 [US1] Update MatchCard to call trackScholarship(scholarshipId, needMatchScore) when Track clicked; pass needMatchScore from discovery result; remove academicYear param (track derives from profile per T016) in apps/web/components/dashboard/match-inbox/match-card.tsx
-- [ ] T019 [US1] Update confirmScoutScholarship to fetch profile, derive academic_year from award_year; block when null in apps/web/lib/actions/scout.ts
-- [ ] T020 [US1] Update getTrackedScholarshipIds to accept optional academicYear or fetch profile award_year; use derived academic year instead of getCurrentAcademicYear in apps/web/lib/actions/get-tracked-scholarship-ids.ts
-- [ ] T021 [US1] Update load-profile to ensure award_year is loaded and passed to graph state in apps/agent/lib/load-profile.ts
-- [ ] T022 [US1] Inject user award_year into Advisor query generation (QueryGenerator or advisor-search) so search targets correct cycle in apps/agent/lib/nodes/advisor-search.ts or discovery/
-- [ ] T023 [US1] Block discovery and tracking when profile has no award_year; surface prompt in UI (dashboard, Match Inbox) per edge case in apps/web/
+- [x] T016 [US1] Update trackScholarship to fetch profile, derive academic_year from profile.award_year via awardYearToAcademicYear; block tracking when award_year null in apps/web/lib/actions/track.ts
+- [x] T017 [US1] Add optional need_match_score param to trackScholarship; include in applications upsert when provided in apps/web/lib/actions/track.ts
+- [x] T018 [US1] Update MatchCard to call trackScholarship(scholarshipId, needMatchScore) when Track clicked; pass needMatchScore from discovery result; remove academicYear param (track derives from profile per T016) in apps/web/components/dashboard/match-inbox/match-card.tsx
+- [x] T019 [US1] Update confirmScoutScholarship to fetch profile, derive academic_year from award_year; block when null in apps/web/lib/actions/scout.ts
+- [x] T020 [US1] Update getTrackedScholarshipIds to accept optional academicYear or fetch profile award_year; use derived academic year instead of getCurrentAcademicYear in apps/web/lib/actions/get-tracked-scholarship-ids.ts
+- [x] T021 [US1] Update load-profile to ensure award_year is loaded and passed to graph state in apps/agent/lib/load-profile.ts
+- [x] T022 [US1] Inject user award_year into Advisor query generation (QueryGenerator or advisor-search) so search targets correct cycle in apps/agent/lib/nodes/advisor-search.ts or discovery/
+- [x] T023 [US1] Block discovery and tracking when profile has no award_year; surface prompt in UI (dashboard, Match Inbox) per edge case in apps/web/
 
 **Checkpoint**: Applications use profile-derived academic_year; discovery queries use user award year
 
@@ -88,9 +88,9 @@
 
 **Independent Test**: Trigger discovery, receive results with need_match_score, track from feed; verify application.need_match_score persisted; Scout add yields null.
 
-- [ ] T025 [US2] Verify trackScholarship upsert includes need_match_score when provided (from T017) in apps/web/lib/actions/track.ts
-- [ ] T026 [US2] Ensure Scout confirmScoutScholarship does NOT pass need_match_score (null) in apps/web/lib/actions/scout.ts
-- [ ] T027 [US2] Expose need_match_score in applications API/coach status for prioritization display in apps/web/app/api/coach/application/status/route.ts or equivalent
+- [x] T025 [US2] Verify trackScholarship upsert includes need_match_score when provided (from T017) in apps/web/lib/actions/track.ts
+- [x] T026 [US2] Ensure Scout confirmScoutScholarship does NOT pass need_match_score (null) in apps/web/lib/actions/scout.ts
+- [x] T027 [US2] Expose need_match_score in applications API/coach status for prioritization display in apps/web/app/api/coach/application/status/route.ts or equivalent
 
 **Checkpoint**: Discovery-tracked applications have need_match_score; Scout applications have null
 
@@ -102,9 +102,9 @@
 
 **Independent Test**: User with SAI > threshold completes discovery; verify top results are Need-Blind/merit-tier; change threshold in DB, verify behavior updates.
 
-- [ ] T029 [US3] Fetch merit_first_sai_threshold via getMeritFirstThreshold(profile.award_year) in Advisor flow in apps/agent/lib/nodes/advisor-verify.ts or discovery/
-- [ ] T030 [US3] When profile.sai > threshold, activate Merit-First Mode: reorder/prioritize Need-Blind and merit-tier results over Pell-based in apps/agent/lib/nodes/advisor-verify.ts
-- [ ] T031 [US3] Seed merit_first_config with default threshold (e.g., 15000) for 2025–2029 in migration or seed script in packages/database/supabase/migrations/
+- [x] T029 [US3] Fetch merit_first_sai_threshold via getMeritFirstThreshold(profile.award_year) in Advisor flow in apps/agent/lib/nodes/advisor-verify.ts or discovery/
+- [x] T030 [US3] When profile.sai > threshold, activate Merit-First Mode: reorder/prioritize Need-Blind and merit-tier results over Pell-based in apps/agent/lib/nodes/advisor-verify.ts
+- [x] T031 [US3] Seed merit_first_config with default threshold (e.g., 15000) for 2025–2029 in migration or seed script in packages/database/supabase/migrations/
 
 **Checkpoint**: High-SAI users receive merit-first ranked results
 
@@ -116,10 +116,10 @@
 
 **Independent Test**: Seed high-trust scholarships; trigger discovery; verify DB query runs first; scholarship with past deadline flagged for re-verification.
 
-- [ ] T032 [US4] Create db-first lookup module: query scholarships WHERE trust_score >= 60, match profile + award year in apps/agent/lib/discovery/db-first-lookup.ts
-- [ ] T033 [US4] Integrate scholarship_cycle_verifications: check isScholarshipVerifiedForCycle; flag past-deadline scholarships for re-verification in apps/agent/lib/discovery/db-first-lookup.ts
-- [ ] T034 [US4] Invoke DB-first lookup BEFORE external search in Advisor_Search or discovery flow in apps/agent/lib/nodes/advisor-search.ts
-- [ ] T035 [US4] Merge DB results with external search results; de-duplicate; apply cycle verification flags in apps/agent/lib/nodes/advisor-search.ts
+- [x] T032 [US4] Create db-first lookup module: query scholarships WHERE trust_score >= 60, match profile + award year in apps/agent/lib/discovery/db-first-lookup.ts
+- [x] T033 [US4] Integrate scholarship_cycle_verifications: check isScholarshipVerifiedForCycle; flag past-deadline scholarships for re-verification in apps/agent/lib/discovery/db-first-lookup.ts
+- [x] T034 [US4] Invoke DB-first lookup BEFORE external search in Advisor_Search or discovery flow in apps/agent/lib/nodes/advisor-search.ts
+- [x] T035 [US4] Merge DB results with external search results; de-duplicate; apply cycle verification flags in apps/agent/lib/nodes/advisor-search.ts
 
 **Checkpoint**: Discovery queries DB first; cycle verification enforced
 
@@ -131,9 +131,9 @@
 
 **Independent Test**: Squeezed Middle user receives Coach recommendations; when 009 catalog has data, comparison shown; when not, omitted.
 
-- [ ] T036 [US5] In Coach Game Plan / recommendations, check if user is Squeezed Middle (009 SAI zone) in apps/agent/lib/coach/
-- [ ] T037 [US5] When Squeezed Middle, query 009 Alternative Path catalog; if data exists, include Trade School vs 4-Year comparison; if not, omit block in apps/agent/lib/coach/game-plan.ts or equivalent
-- [ ] T038 [US5] Ensure comparison is clearly labeled and avoids misrepresentation per 009 in apps/agent/lib/coach/
+- [x] T036 [US5] In Coach Game Plan / recommendations, check if user is Squeezed Middle (009 SAI zone) in apps/agent/lib/coach/
+- [x] T037 [US5] When Squeezed Middle, query 009 Alternative Path catalog; if data exists, include Trade School vs 4-Year comparison; if not, omit block in apps/agent/lib/coach/game-plan.ts or equivalent
+- [x] T038 [US5] Ensure comparison is clearly labeled and avoids misrepresentation per 009 in apps/agent/lib/coach/
 
 **Checkpoint**: Squeezed Middle users get Alternative Path when data available; no empty placeholder
 
@@ -145,14 +145,14 @@
 
 **Independent Test**: User with state=CA and saved institutions triggers discovery; verify queries include "California" and institution names (e.g., "UCLA scholarships").
 
-- [ ] T039 [US7] Verify profile schema has first_generation, parent_employer_category, identity_eligibility_categories per 002/008; add migration if missing in packages/database/supabase/migrations/
-- [ ] T040 [US7] Extend AnonymizedProfileSchema with first_gen, parent_employer_category, identity_eligibility_categories (broad labels only) in apps/agent/lib/discovery/schemas.ts
-- [ ] T041 [US7] Extend formatProfileForPrompt to include first-gen, parent employer, identity angles when present in apps/agent/lib/discovery/query-generator.ts
-- [ ] T042 [US7] Vary query generation by geographic scope (local, regional, national) when state or preference available in apps/agent/lib/discovery/query-generator.ts
-- [ ] T043 [US7] Add getSavedInstitutionNamesForUser(userId: string): Promise<string[]> in packages/database — query user_saved_schools join institutions, return institution names (max 10)
-- [ ] T044 [US7] Extend AnonymizedProfileSchema with savedInstitutionNames: z.array(z.string().max(200)).max(10).optional() in apps/agent/lib/discovery/schemas.ts
-- [ ] T045 [US7] Extend formatProfileForPrompt in query-generator to include "Saved schools: X, Y" when savedInstitutionNames present in apps/agent/lib/discovery/query-generator.ts
-- [ ] T046 [US7] In Advisor_Search, load saved institution names via getSavedInstitutionNamesForUser when userId available; merge into profile before calling generateQueries in apps/agent/lib/nodes/advisor-search.ts
+- [x] T039 [US7] Verify profile schema has first_generation, parent_employer_category, identity_eligibility_categories per 002/008; add migration if missing in packages/database/supabase/migrations/
+- [x] T040 [US7] Extend AnonymizedProfileSchema with first_gen, parent_employer_category, identity_eligibility_categories (broad labels only) in apps/agent/lib/discovery/schemas.ts
+- [x] T041 [US7] Extend formatProfileForPrompt to include first-gen, parent employer, identity angles when present in apps/agent/lib/discovery/query-generator.ts
+- [x] T042 [US7] Vary query generation by geographic scope (local, regional, national) when state or preference available in apps/agent/lib/discovery/query-generator.ts
+- [x] T043 [US7] Add getSavedInstitutionNamesForUser(userId: string): Promise<string[]> in packages/database — query user_saved_schools join institutions, return institution names (max 10)
+- [x] T044 [US7] Extend AnonymizedProfileSchema with savedInstitutionNames: z.array(z.string().max(200)).max(10).optional() in apps/agent/lib/discovery/schemas.ts
+- [x] T045 [US7] Extend formatProfileForPrompt in query-generator to include "Saved schools: X, Y" when savedInstitutionNames present in apps/agent/lib/discovery/query-generator.ts
+- [x] T046 [US7] In Advisor_Search, load saved institution names via getSavedInstitutionNamesForUser when userId available; merge into profile before calling generateQueries in apps/agent/lib/nodes/advisor-search.ts
 
 **Checkpoint**: Users with state and/or saved institutions receive discovery queries targeting local/regional and institution-specific scholarships (SC-008, SC-009)
 
@@ -162,9 +162,9 @@
 
 **Purpose**: Edge cases, validation, and verification
 
-- [ ] T048 Surface "You have applications for a different year" when user changes award_year and has existing applications for other year in apps/web/ (optional UX)
-- [ ] T049 Run quickstart.md verification: SC-001, SC-002, SC-003, SC-004, SC-006, SC-008, SC-009 in specs/014-award-year-intelligence/quickstart.md
-- [ ] T050 Remove or deprecate getCurrentAcademicYear usage for application/discovery flows; replace with profile-derived academic year in apps/web/lib/utils/academic-year.ts (keep for legacy if needed)
+- [x] T048 Surface "You have applications for a different year" when user changes award_year and has existing applications for other year in apps/web/ (optional UX)
+- [x] T049 Run quickstart.md verification: SC-001, SC-002, SC-003, SC-004, SC-006, SC-008, SC-009 in specs/014-award-year-intelligence/quickstart.md
+- [x] T050 Remove or deprecate getCurrentAcademicYear usage for application/discovery flows; replace with profile-derived academic year in apps/web/lib/utils/academic-year.ts (keep for legacy if needed)
 
 ---
 

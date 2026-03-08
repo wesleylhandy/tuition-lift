@@ -25,6 +25,16 @@ export const AnonymizedProfileSchema = z.object({
   pellStatus: z.boolean().optional(),
   /** Activity labels only (e.g., Water Polo, Leadership). No team names or PII. */
   spikes: z.array(z.string().min(1).max(100)).max(10).optional(),
+  /** US1 T022: Target award year (e.g., 2027) for cycle-aware query generation. */
+  award_year: z.number().int().min(2024).max(2034).optional(),
+  /** US7 C1: First-generation college student. Broad label only. */
+  first_gen: z.boolean().optional(),
+  /** US7 C1: Parent employer category (e.g., government, tech). Broad label only. */
+  parent_employer_category: z.string().max(100).optional(),
+  /** US7 C1: Identity-based eligibility categories (broad labels; never raw PII). */
+  identity_eligibility_categories: z.array(z.string().max(100)).max(10).optional(),
+  /** US7 C1: Saved institution names from user_saved_schools for institution-specific queries. */
+  savedInstitutionNames: z.array(z.string().max(200)).max(10).optional(),
 });
 
 export type AnonymizedProfile = z.infer<typeof AnonymizedProfileSchema>;

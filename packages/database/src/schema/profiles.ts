@@ -30,8 +30,26 @@ const spikesSchema = z
   .max(10)
   .nullable()
   .optional();
-/** Award year: current or next calendar year; boundary validates. Schema accepts reasonable range. */
-const awardYearSchema = z.number().int().min(2024).max(2030).nullable().optional();
+/**
+ * Award year: dynamic range currentYear..(currentYear+4) at validation boundary.
+ * Validates at runtime so the range stays correct across year rollovers.
+ * Per 014: first required onboarding step; used for discovery and applications.
+ */
+const awardYearSchema = z
+  .number()
+  .int()
+  .nullable()
+  .optional()
+  .refine(
+    (val) => {
+      if (val === null || val === undefined) return true;
+      const year = new Date().getFullYear();
+      return val >= year && val <= year + 4;
+    },
+    (val) => ({
+      message: `award_year must be between ${new Date().getFullYear()} and ${new Date().getFullYear() + 4}`,
+    })
+  );
 
 export const profileSchema = z.object({
   id: z.string().uuid(),
@@ -58,6 +76,12 @@ export const profileSchema = z.object({
   merit_filter_preference: meritFilterPreferenceEnum.optional(),
   /** User-selected award year (current or next). Per data-model §1. */
   award_year: awardYearSchema,
+  /** First-generation college student (014 US7 C1). */
+  first_generation: z.boolean().nullable().optional(),
+  /** Broad parent employer category for discovery (e.g., government, tech). Per 014 — broad labels only. */
+  parent_employer_category: z.string().max(100).nullable().optional(),
+  /** Identity-based eligibility categories (broad labels only, no PII). Per 014. */
+  identity_eligibility_categories: z.array(z.string().max(100)).max(20).nullable().optional(),
   onboarding_complete: z.boolean().optional(),
   updated_at: z.string().datetime().optional(),
 });
