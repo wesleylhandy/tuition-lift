@@ -46,7 +46,7 @@ const awardYearSchema = z
       const year = new Date().getFullYear();
       return val >= year && val <= year + 4;
     },
-    (val) => ({
+    (_val) => ({
       message: `award_year must be between ${new Date().getFullYear()} and ${new Date().getFullYear() + 4}`,
     })
   );

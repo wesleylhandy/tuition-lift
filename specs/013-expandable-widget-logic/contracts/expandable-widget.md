@@ -15,10 +15,9 @@ Define the reusable expandable widget abstraction per FR-000. Provides expand co
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `widgetId` | `string` | Yes | ID for URL param (e.g. `kanban`, `repository`, `calendar`) |
-| `title` | `string` | Yes | Section title (for header, aria) |
-| `dashboardContent` | `ReactNode` | Yes | Compact view content |
+| `title` | `string` | Yes | Section title (for expanded overlay header, aria) |
+| `dashboardContent` | `(expandButton: ReactNode) => ReactNode` | Yes | Render prop: compact view receives expand button to inject into card |
 | `expandedContent` | `ReactNode` | Yes | Full-viewport overlay content |
-| `headerActions` | `ReactNode` | No | Optional actions in widget header (besides expand) |
 
 ### Behavior
 

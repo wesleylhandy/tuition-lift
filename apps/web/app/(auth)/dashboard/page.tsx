@@ -2,18 +2,22 @@
  * Dashboard — Premium Academic shell (010 Bento Shell).
  * GlobalHeader, WelcomeAreaShell, BentoGrid (Game Plan, Discovery Feed, Deadline Calendar), StatsRowShell.
  * All sections show loading skeletons per US1; ReconnectionIndicator omitted for 010.
+ * T016: Bento uses useViewParam for expand/collapse; T019: initialView for shareable links.
  */
 import { GlobalHeader } from "@/components/dashboard/global-header";
 import { WelcomeAreaShell } from "@/components/dashboard/welcome-area-shell";
 import { StatsRowShell } from "@/components/dashboard/stats-row-shell";
-import { DeadlineCalendarShell } from "@/components/dashboard/deadline-calendar-shell";
-import { BentoGrid, BentoGridItem } from "@/components/dashboard/bento-grid";
-import { SectionShell } from "@/components/dashboard/section-shell";
-import { GamePlan } from "@/components/dashboard/game-plan/game-plan";
-import { MatchInbox } from "@/components/dashboard/match-inbox/match-inbox";
+import { DashboardBento } from "@/components/dashboard/dashboard-bento";
+import { isValidWidgetId } from "@/lib/constants/widget-ids";
 
-export default function DashboardPage() {
-  const sectionStatus = "loading" as const;
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const sectionStatus = "content" as const;
+  const params = await searchParams;
+  const initialView = isValidWidgetId(params.view) ? params.view : null;
 
   return (
     <div className="min-h-screen min-w-0 overflow-x-hidden bg-off-white font-body">
@@ -28,29 +32,7 @@ export default function DashboardPage() {
           <WelcomeAreaShell status={sectionStatus} />
         </section>
 
-        <BentoGrid className="mb-6">
-          <BentoGridItem colSpan={4}>
-            <SectionShell
-              status={sectionStatus}
-              skeletonVariant="list"
-              title="Today's Game Plan"
-            >
-              <GamePlan showDebtLifted={false} />
-            </SectionShell>
-          </BentoGridItem>
-          <BentoGridItem colSpan={5}>
-            <SectionShell
-              status={sectionStatus}
-              skeletonVariant="card"
-              title="Discovery Feed"
-            >
-              <MatchInbox />
-            </SectionShell>
-          </BentoGridItem>
-          <BentoGridItem colSpan={3}>
-            <DeadlineCalendarShell status={sectionStatus} />
-          </BentoGridItem>
-        </BentoGrid>
+        <DashboardBento sectionStatus={sectionStatus} initialView={initialView} />
 
         <StatsRowShell status={sectionStatus} />
       </main>

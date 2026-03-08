@@ -14,7 +14,7 @@ export function TrustShield({ trustScore, className = "" }: TrustShieldProps) {
   const badge = getTrustShieldBadge(trustScore);
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${badge.className} ${className}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${badge.className} ${className}`}
       role="status"
       aria-label={`Trust: ${badge.label}`}
     >

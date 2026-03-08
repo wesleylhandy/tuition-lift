@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './generated/database.types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+/** Static refs required so Next.js inlines NEXT_PUBLIC_* in client bundles. Dynamic process.env[key] is not inlined. */
 const SUPABASE_URL = 'NEXT_PUBLIC_SUPABASE_URL';
 const SUPABASE_ANON_KEY = 'NEXT_PUBLIC_SUPABASE_ANON_KEY';
 const SUPABASE_SERVICE_ROLE_KEY = 'SUPABASE_SERVICE_ROLE_KEY';
@@ -15,6 +16,19 @@ const SUPABASE_SERVICE_ROLE_KEY = 'SUPABASE_SERVICE_ROLE_KEY';
 function getEnv(name: string): string | undefined {
   if (typeof process === 'undefined' || !process.env) return undefined;
   return process.env[name];
+}
+
+/** Use static refs for NEXT_PUBLIC_ vars so Next.js inlines them in client bundle. */
+function getSupabaseUrl(): string | undefined {
+  return typeof process !== 'undefined' && process.env
+    ? process.env.NEXT_PUBLIC_SUPABASE_URL
+    : undefined;
+}
+
+function getSupabaseAnonKey(): string | undefined {
+  return typeof process !== 'undefined' && process.env
+    ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    : undefined;
 }
 
 /** Typed Supabase client for Database. Use for explicit annotations. */
@@ -26,8 +40,8 @@ export type DbClient = SupabaseClient<Database>;
  * - Node/server: Uses service-role key if set, otherwise anon key.
  */
 export function createDbClient(): DbClient {
-  const url = getEnv(SUPABASE_URL);
-  const anonKey = getEnv(SUPABASE_ANON_KEY);
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
 
   if (!url || !anonKey) {
     throw new Error(

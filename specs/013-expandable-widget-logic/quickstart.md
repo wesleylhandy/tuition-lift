@@ -55,6 +55,14 @@
 - **Accessibility**: Expand/close controls 44×44px; keyboard operable; visible focus.
 - **Kanban DnD**: Drag task between columns; state persists (when wired to Server Action).
 
+### Automated (Playwright E2E)
+
+```bash
+# 1. Create .env.test with test user (copy from .env.test.example)
+# 2. Start app: pnpm --filter web dev  (or pnpm start for prod)
+# 3. Run: pnpm --filter web test:e2e
+```
+
 ## Contracts
 
 - [expandable-widget.md](./contracts/expandable-widget.md) — Wrapper, useViewParam, WIDGET_IDS
