@@ -11,6 +11,9 @@ import {
   ExtractedScholarshipDataSchema,
   ScoutInputSchema,
   awardYearToAcademicYear,
+  getScoutSubmissionLimit,
+  getOrCreateScoutSubmission,
+  incrementScoutSubmissionCount,
   type ExtractedScholarshipData,
   type TablesInsert,
 } from "@repo/db";
@@ -24,6 +27,61 @@ const VALID_MIMES = [
   "image/png",
   "image/jpeg",
 ] as const;
+
+/** Per contracts/scout-rate-limit-api.md §1 */
+export type CheckScoutLimitResult =
+  | { canSubmit: true; remaining: number; limit: number }
+  | { canSubmit: false; limit: number };
+
+/**
+ * Pre-check whether user can submit more Scout scholarships this cycle.
+ * Uses profile-derived academic year (award_year) to match confirmScoutScholarship.
+ */
+export async function checkScoutLimit(): Promise<CheckScoutLimitResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user?.id) {
+    throw new Error("Not authenticated");
+  }
+
+  const db = createDbClient();
+  const { data: profile } = await db
+    .from("profiles")
+    .select("award_year")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.award_year) {
+    throw new Error(
+      "Please select your target award year in onboarding before using Scout.",
+    );
+  }
+
+  const academicYear = awardYearToAcademicYear(profile.award_year);
+  const [limit, submission] = await Promise.all([
+    getScoutSubmissionLimit(),
+    getOrCreateScoutSubmission(user.id, academicYear),
+  ]);
+
+  const count = submission.count;
+
+  if (count < limit) {
+    return {
+      canSubmit: true,
+      remaining: limit - count,
+      limit,
+    };
+  }
+
+  return {
+    canSubmit: false,
+    limit,
+  };
+}
 
 // --- uploadScoutFile (T022) ---
 
@@ -176,7 +234,8 @@ export type ConfirmScoutResult =
   | { success: true; scholarshipId: string; applicationId: string }
   | { success: true; scholarshipId: string; applicationId: string; potentiallyExpired: true }
   | { success: false; error: string }
-  | { success: false; duplicate: true; existingTitle: string };
+  | { success: false; duplicate: true; existingTitle: string }
+  | { success: false; limitReached: true };
 
 /** Maps ExtractedScholarshipData to ScholarshipMetadata per data-model §4 */
 function toScholarshipMetadata(
@@ -265,6 +324,15 @@ export async function confirmScoutScholarship(
     }
   }
 
+  // T005: Rate limit check before upsert
+  const [limit, submission] = await Promise.all([
+    getScoutSubmissionLimit(),
+    getOrCreateScoutSubmission(user.id, academicYear),
+  ]);
+  if (submission.count >= limit) {
+    return { success: false, limitReached: true };
+  }
+
   const deadline = extracted.deadline ?? null;
   const today = new Date().toISOString().slice(0, 10);
   const potentiallyExpired =
@@ -295,6 +363,7 @@ export async function confirmScoutScholarship(
     deadline: extracted.deadline ?? null,
     category,
     metadata: metadataJson,
+    source: "manual",
     updated_at: now,
   };
 
@@ -319,6 +388,7 @@ export async function confirmScoutScholarship(
           deadline: scholarshipRow.deadline,
           category: scholarshipRow.category,
           metadata: scholarshipRow.metadata,
+          source: "manual",
           updated_at: now,
         })
         .eq("id", existing.id);
@@ -348,6 +418,7 @@ export async function confirmScoutScholarship(
             .eq("scholarship_id", existing.id)
             .eq("academic_year", academicYear)
             .maybeSingle();
+          await incrementScoutSubmissionCount(user.id, academicYear);
           return potentiallyExpired
             ? {
                 success: true,
@@ -364,6 +435,7 @@ export async function confirmScoutScholarship(
         return { success: false, error: "Failed to add application" };
       }
 
+      await incrementScoutSubmissionCount(user.id, academicYear);
       return potentiallyExpired
         ? {
             success: true,
@@ -405,6 +477,7 @@ export async function confirmScoutScholarship(
     return { success: false, error: "Failed to add application" };
   }
 
+  await incrementScoutSubmissionCount(user.id, academicYear);
   return potentiallyExpired
     ? {
         success: true,

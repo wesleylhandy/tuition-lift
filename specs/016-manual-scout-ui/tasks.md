@@ -28,10 +28,10 @@
 
 **Purpose**: Project initialization, rate limit schema, scout config, and scholarship provenance
 
-- [ ] T001 Create `scout_submissions` migration in `packages/database/supabase/migrations/00000000000040_scout_submissions.sql` per contracts/scout-rate-limit-api.md §3 (CREATE TABLE, RLS, UNIQUE(user_id, academic_year))
-- [ ] T001a [P] Create `scout_config` migration in `packages/database/supabase/migrations/00000000000042_scout_config.sql` per data-model.md §1a: CREATE TABLE scout_config (id, scout_submission_limit DEFAULT 15, updated_at); RLS SELECT public; INSERT default row (15)
-- [ ] T001b [P] Create `scholarships_source` migration in `packages/database/supabase/migrations/00000000000041_scholarships_source.sql`: add `source text` with CHECK (source IN ('manual','search','warehouse','institution')); nullable for backward compat per data-model.md §2
-- [ ] T002 [P] Add `getScoutSubmissionLimit()` in `packages/database/src/config-queries.ts`; read scout_config.scout_submission_limit, fallback 15; export from @repo/db per contracts/scout-rate-limit-api.md §4
+- [x] T001 Create `scout_submissions` migration in `packages/database/supabase/migrations/00000000000040_scout_submissions.sql` per contracts/scout-rate-limit-api.md §3 (CREATE TABLE, RLS, UNIQUE(user_id, academic_year))
+- [x] T001a [P] Create `scout_config` migration in `packages/database/supabase/migrations/00000000000042_scout_config.sql` per data-model.md §1a: CREATE TABLE scout_config (id, scout_submission_limit DEFAULT 15, updated_at); RLS SELECT public; INSERT default row (15)
+- [x] T001b [P] Create `scholarships_source` migration in `packages/database/supabase/migrations/00000000000041_scholarships_source.sql`: add `source text` with CHECK (source IN ('manual','search','warehouse','institution')); nullable for backward compat per data-model.md §2
+- [x] T002 [P] Add `getScoutSubmissionLimit()` in `packages/database/src/config-queries.ts`; read scout_config.scout_submission_limit, fallback 15; export from @repo/db per contracts/scout-rate-limit-api.md §4
 
 ---
 
@@ -41,9 +41,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Implement `getOrCreateScoutSubmission(userId, academicYear)` in `packages/database/` for `scout_submissions` upsert; caller (apps/web) supplies academic year via existing `getCurrentAcademicYear()` from apps/web/lib/utils/academic-year.ts
-- [ ] T004 Implement `checkScoutLimit` Server Action in `apps/web/lib/actions/scout.ts` returning `CheckScoutLimitResult` per contracts/scout-rate-limit-api.md §1; use `getScoutSubmissionLimit()` from @repo/db
-- [ ] T005 Extend `confirmScoutScholarship` in `apps/web/lib/actions/scout.ts`: add rate-limit check before upsert (use `getScoutSubmissionLimit()`); increment `scout_submissions.count` on success; set `source = 'manual'` on scholarship upsert; return `{ success: false; limitReached: true }` when count ≥ limit per data-model.md §6
+- [x] T003 Implement `getOrCreateScoutSubmission(userId, academicYear)` in `packages/database/` for `scout_submissions` upsert; caller (apps/web) supplies academic year via existing `getCurrentAcademicYear()` from apps/web/lib/utils/academic-year.ts
+- [x] T004 Implement `checkScoutLimit` Server Action in `apps/web/lib/actions/scout.ts` returning `CheckScoutLimitResult` per contracts/scout-rate-limit-api.md §1; use `getScoutSubmissionLimit()` from @repo/db
+- [x] T005 Extend `confirmScoutScholarship` in `apps/web/lib/actions/scout.ts`: add rate-limit check before upsert (use `getScoutSubmissionLimit()`); increment `scout_submissions.count` on success; set `source = 'manual'` on scholarship upsert; return `{ success: false; limitReached: true }` when count ≥ limit per data-model.md §6
 
 **Checkpoint**: Rate limit enforced; confirmation flow ready for UI integration
 
