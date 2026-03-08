@@ -138,7 +138,7 @@ A student on a mobile device or using keyboard/assistive technology can complete
 - **FR-012**: System MUST support full keyboard navigability for all interactive elements within the Scout flow.
 - **FR-013**: System MUST ensure the Confirm action and key interactions meet high-contrast requirements for accessibility.
 - **FR-014**: System MUST use smooth modal entrance and view-transition animations that do not obstruct usability.
-- **FR-015**: System MUST enforce a per-user limit of 10–20 successful Scout submissions per scholarship cycle. When the limit is reached, the system MUST display a friendly message (e.g., "You've reached your Scout limit for this cycle. Request more or wait until next year."), block further submissions, and offer the option to request more. Future premium tier may raise or remove this limit.
+- **FR-015**: System MUST enforce a per-user limit of 10–20 successful Scout submissions per scholarship cycle. The limit MUST be configurable without redeploy (see plan/data-model for implementation). When the limit is reached, the system MUST display a friendly message (e.g., "You've reached your Scout limit for this cycle. Request more or wait until next year."), block further submissions, and offer the option to request more. Future premium tier may raise the limit.
 - **FR-016**: System MUST record scholarship provenance via `source` when Scout confirms: set `source = 'manual'` for Scout-originated scholarships. Enables "Added from Scout" display and future cross-source deduplication (see data-model.md §2).
 
 ### Key Entities
@@ -155,7 +155,7 @@ A student on a mobile device or using keyboard/assistive technology can complete
 - The dashboard layout and shell from existing specs (e.g., 006, 010) provide the context for the Scout entry placement.
 - The user's award year is available in their profile or session for cycle verification.
 - File type and size limits from spec 007 apply; the UI reflects those limits in error messaging.
-- Scout submissions are limited to 10–20 successful uploads per user per scholarship cycle. **"Request more" MVP**: UI shows the option when limit reached; blocks further submissions. Backend flow (support ticket, premium upgrade) deferred; button may link to contact or show "Coming soon."
+- Scout submissions are limited per user per scholarship cycle; limit configurable without redeploy (default 15). **"Request more" MVP**: UI shows the option when limit reached; blocks further submissions. Backend flow (support ticket, premium upgrade) deferred; button may link to contact or show "Coming soon." Admin can raise limit via config.
 - Premium academic aesthetic aligns with the design system established in spec 010.
 - **Paste URL card**: Accepts both URLs and scholarship names; the 007 backend treats name input as a search query (manual_research node). No separate "name only" card—same flow as 007.
 

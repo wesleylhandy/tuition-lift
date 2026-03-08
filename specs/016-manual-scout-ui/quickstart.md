@@ -9,16 +9,13 @@
 
 ## Setup
 
-1. **Run migrations** (scout_submissions + scholarships.source):
+1. **Run migrations** (scout_submissions, scout_config, scholarships.source):
    ```bash
    pnpm db:push --filter @repo/db
    ```
-   Migrations: contracts/scout-rate-limit-api.md §3; data-model.md §2.
+   Migrations: contracts/scout-rate-limit-api.md §3, §4; data-model.md §1a, §2.
 
-2. **Optional env**:
-   ```bash
-   SCOUT_SUBMISSION_LIMIT=15
-   ```
+2. **Limit config**: Stored in `scout_config` table (default 15). Update via SQL or admin UI; no env var.
 
 ## Verification
 
@@ -58,9 +55,13 @@
 
 ### Manual: Rate Limit
 
-1. Complete 15 (or configured limit) Scout submissions in the same academic year.
+1. Complete 15 (or limit from scout_config) Scout submissions in the same academic year.
 2. **Verify**: Next confirm returns limit-reached; friendly message with "Request more" option; no persistence.
 3. (Optional) Verify "Request more" flow if implemented.
+
+### Performance (SC-002)
+
+1. Complete full flow (select → extract → verify → confirm) for a typical document; verify it completes in <90s under normal conditions (optional).
 
 ### Accessibility
 
@@ -77,4 +78,4 @@
 | Input Cards   | `apps/web/components/dashboard/scout/scout-input-card.tsx` (etc.) |
 | Verification  | `apps/web/components/dashboard/scout/scout-verification-view.tsx` |
 | Rate limit    | `apps/web/lib/actions/scout.ts` (checkScoutLimit, confirmScoutScholarship) |
-| Migration     | `packages/database/supabase/migrations/*_scout_submissions.sql` |
+| Migrations    | `*_scout_submissions.sql`, `*_scout_config.sql`, `*_scholarships_source.sql` |

@@ -24,6 +24,7 @@ type CheckScoutLimitResult =
 **Logic**:
 - Get `user_id` from auth
 - Get `academic_year` from `getCurrentAcademicYear()`
+- Get `limit` from `getScoutSubmissionLimit()` (@repo/db; reads `scout_config.scout_submission_limit`; fallback 15)
 - Query `scout_submissions` for (user_id, academic_year)
 - If no row or count < limit: `{ canSubmit: true, remaining: limit - count, limit }`
 - Else: `{ canSubmit: false, limit }`
@@ -75,8 +76,12 @@ CREATE POLICY "Users can manage own scout submissions"
 
 ---
 
-## 4. Environment
+## 4. scout_config (Global DB Configuration)
 
-| Variable               | Default | Notes                    |
-|------------------------|---------|--------------------------|
-| SCOUT_SUBMISSION_LIMIT | 15      | Max submissions per cycle |
+**Table**: `scout_config` (single row). See data-model.md §1a.
+
+| Column                  | Type    | Default | Notes                    |
+|-------------------------|---------|---------|--------------------------|
+| scout_submission_limit  | integer | 15      | Max submissions per cycle|
+
+**Query**: `getScoutSubmissionLimit(): Promise<number>` in `packages/database/src/config-queries.ts`; exported from `@repo/db`. Returns limit; fallback 15 if no row.

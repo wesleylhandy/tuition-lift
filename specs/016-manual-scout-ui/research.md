@@ -64,12 +64,13 @@
 
 ### 5. Rate Limit Storage (10–20 Submissions per Cycle)
 
-**Decision**: Add a **scout_submissions** table or **extend profiles** with a counter. Preferred: new table `scout_submissions(user_id, academic_year, count)` or `profiles.scout_submissions_count` + `profiles.scout_submissions_year`. On each successful `confirmScoutScholarship`, increment count for current user and academic year. If count ≥ limit (configurable 10–20, default 15), return `{ success: false, limitReached: true }` and block persistence. Expose `GET /api/scout/limit` or include limit info in a Server Action `checkScoutLimit()` called before opening Scout or before confirm. Reset logic: per academic year (e.g., `getCurrentAcademicYear()`); cycle resets when year changes.
+**Decision**: Add a **scout_submissions** table or **extend profiles** with a counter. Preferred: new table `scout_submissions(user_id, academic_year, count)` or `profiles.scout_submissions_count` + `profiles.scout_submissions_year`. Add **scout_config** table (single row) for global limit: `scout_submission_limit` (default 15). On each successful `confirmScoutScholarship`, increment count for current user and academic year. If count ≥ limit (from `getScoutSubmissionLimit()`), return `{ success: false, limitReached: true }` and block persistence. Expose limit via Server Action `checkScoutLimit()` called before opening Scout or before confirm. Reset logic: per academic year (e.g., `getCurrentAcademicYear()`); cycle resets when year changes.
 
-**Rationale**: Spec FR-015: "per-user limit of 10–20 successful Scout submissions per scholarship cycle." A dedicated count is cleaner than scanning applications table. `profiles` could work but risks schema drift; new table keeps Scout concerns isolated.
+**Rationale**: Spec FR-015: "per-user limit of 10–20 successful Scout submissions per scholarship cycle." A dedicated count is cleaner than scanning applications table. `profiles` could work but risks schema drift; new table keeps Scout concerns isolated. Limit in `scout_config` (DB) enables admin adjustment without redeploy; matches existing config pattern (sai_zone_config, merit_first_config).
 
 **Alternatives considered**:
 - Count from applications where source=scout: Accurate but slower; requires tagging applications.
+- Env var SCOUT_SUBMISSION_LIMIT: Requires redeploy to change; DB config allows runtime adjustment.
 - In-memory/cache: Not durable across serverless invocations; DB required.
 - profiles JSONB: Flexible but less structured; table is clearer.
 
