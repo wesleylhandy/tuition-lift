@@ -32,6 +32,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-13
 - TypeScript 5.9, Node ≥18 + Next.js 16, React 19, LangGraph 1.1, Supabase, Zod 3.24 (014-award-year-intelligence)
 - Supabase (PostgreSQL); RLS on all tables (014-award-year-intelligence)
 - TypeScript 5.9, Node ≥18 + Next.js 16, React 19, LangGraph 1.1, Supabase, Zod 3.24, Tailwind CSS 4, Shadcn/ui (015-unified-mvp)
+- TypeScript 5.x + Next.js 16 (App Router), React 19, Tailwind CSS, Shadcn/ui, @repo/db (016-manual-scout-ui)
+- Supabase (scout_uploads bucket, scout_runs table); rate limit tracking via profiles or new scout_submissions table (016-manual-scout-ui)
 
 - TypeScript 5.9 + @supabase/supabase-js, zod, supabase (CLI for migrations and type gen) (002-db-core-infrastructure)
 - TypeScript 5.9, Node 18+ + Next.js 16, React 19, Tailwind CSS, Shadcn/ui, Framer Motion, Zod, Resend, Supabase (JS client) (001-waitlist-launch)
@@ -54,8 +56,8 @@ npm test && npm run lint
 TypeScript 5.9: Follow standard conventions
 
 ## Recent Changes
+- 016-manual-scout-ui: Added TypeScript 5.x + Next.js 16 (App Router), React 19, Tailwind CSS, Shadcn/ui, @repo/db
 - 015-unified-mvp: Added TypeScript 5.9, Node ≥18 + Next.js 16, React 19, LangGraph 1.1, Supabase, Zod 3.24, Tailwind CSS 4, Shadcn/ui
-- 014-award-year-intelligence: Added TypeScript 5.9, Node ≥18 + Next.js 16, React 19, LangGraph 1.1, Supabase, Zod 3.24
 - 014-award-year-intelligence: Added TypeScript 5.9, Node ≥18 + Next.js 16, React 19, LangGraph 1.1, Supabase, Zod 3.24
 
 
