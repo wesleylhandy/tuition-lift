@@ -20,6 +20,8 @@ type QueriesOutput = z.infer<typeof QUERIES_SCHEMA>;
 
 function formatProfileForPrompt(profile: AnonymizedProfile): string {
   const parts: string[] = [];
+  if (profile.award_year != null)
+    parts.push(`Target award year: ${profile.award_year} (academic year ${profile.award_year}-${profile.award_year + 1})`);
   if (profile.gpa != null) parts.push(`GPA: ${profile.gpa.toFixed(2)}`);
   if (profile.major) parts.push(`Major: ${profile.major}`);
   if (profile.state) parts.push(`State: ${profile.state}`);
@@ -31,14 +33,26 @@ function formatProfileForPrompt(profile: AnonymizedProfile): string {
   }
   if (profile.spikes?.length)
     parts.push(`Activities: ${profile.spikes.join(", ")}`);
+  if (profile.first_gen === true)
+    parts.push("First-generation college student");
+  if (profile.parent_employer_category)
+    parts.push(`Parent employer category: ${profile.parent_employer_category}`);
+  if (profile.identity_eligibility_categories?.length)
+    parts.push(`Identity-based eligibility: ${profile.identity_eligibility_categories.join(", ")}`);
+  if (profile.savedInstitutionNames?.length)
+    parts.push(`Saved schools: ${profile.savedInstitutionNames.join(", ")}`);
   return parts.length > 0 ? parts.join("; ") : "No profile attributes available";
 }
 
 const PROMPT = `You are a scholarship search assistant. Generate 3–5 distinct search queries for finding scholarships.
 Each query must be different (different angles: need-based, field-specific, Pell-eligible, merit, etc.).
-Focus on 2025–2026 and 2026–2027 academic year scholarships.
+Target the academic year indicated in the profile (e.g., 2027-2028 for award year 2027). Only search for scholarships for that specific cycle.
 Use only the anonymized profile attributes provided. Never include names, SSN, or specific dollar amounts.
-Return exactly 3–5 query strings, one per search. Each query should be 5–15 words.`;
+Return exactly 3–5 query strings, one per search. Each query should be 5–15 words.
+
+Geographic scope (FR-016): When state is available, include at least one query targeting local/regional scholarships (e.g., "California scholarships", "scholarships in [State]"). Vary scope between local/regional and national.
+When saved schools are listed, include at least one query per school for institution-specific scholarships (e.g., "UCLA scholarships", "[School name] scholarships").
+When first-generation, parent employer, or identity-eligibility attributes are present, include queries that target those angles.`;
 
 const MERIT_FIRST_HINT = `IMPORTANT: This user qualifies for merit-first discovery. Prioritize queries that include "merit-based", "need-blind", "academic achievement", and "scholarship for high achievers" angles.`;
 

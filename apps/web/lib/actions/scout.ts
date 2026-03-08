@@ -7,12 +7,13 @@
 import { z } from "zod";
 import { createServerSupabaseClient } from "../supabase/server";
 import {
+  createDbClient,
   ExtractedScholarshipDataSchema,
   ScoutInputSchema,
+  awardYearToAcademicYear,
   type ExtractedScholarshipData,
   type TablesInsert,
 } from "@repo/db";
-import { getCurrentAcademicYear } from "../utils/academic-year";
 import { runManualResearchNode } from "agent/lib/nodes/manual-research";
 import { checkFuzzyDuplicate } from "agent/lib/scout/fuzzy-dedup";
 
@@ -228,6 +229,23 @@ export async function confirmScoutScholarship(
     return { success: false, error: "Not authenticated" };
   }
 
+  // T019: Derive academic_year from profile award_year; block when null
+  const db = createDbClient();
+  const { data: profile } = await db
+    .from("profiles")
+    .select("award_year")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.award_year) {
+    return {
+      success: false,
+      error: "Please select your target award year in onboarding before adding scholarships.",
+    };
+  }
+
+  const academicYear = awardYearToAcademicYear(profile.award_year);
+
   const parsed = ExtractedScholarshipDataSchema.safeParse(data);
   if (!parsed.success) {
     const msg = parsed.error.errors[0]?.message ?? "Invalid scholarship data";
@@ -309,7 +327,7 @@ export async function confirmScoutScholarship(
         return { success: false, error: "Failed to update scholarship" };
       }
 
-      const academicYear = getCurrentAcademicYear();
+      // T026 [US2]: Scout path — do NOT pass need_match_score (null); Discovery path uses trackScholarship with need_match_score.
       const { data: app, error: appErr } = await supabase
         .from("applications")
         .insert({
@@ -371,7 +389,7 @@ export async function confirmScoutScholarship(
     return { success: false, error: `Failed to create scholarship: ${insertErr.message}` };
   }
 
-  const academicYear = getCurrentAcademicYear();
+  // T026 [US2]: Scout path — do NOT pass need_match_score (null); Discovery path uses trackScholarship with need_match_score.
   const { data: app, error: appErr } = await supabase
     .from("applications")
     .insert({

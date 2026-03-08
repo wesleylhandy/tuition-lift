@@ -3,14 +3,16 @@
 /**
  * Server Action: trackScholarship
  * Adds a scholarship to the user's tracked applications.
- * Per contracts/server-actions.md §1 — authenticate, validate scholarship, insert applications.
+ * Per contracts/server-actions.md §2: fetches profile, derives academic_year from award_year;
+ * blocks when award_year null. need_match_score from DiscoveryResult when tracking from feed.
  */
+import { z } from "zod";
 import { createServerSupabaseClient } from "../supabase/server";
-import { createDbClient, applicationSchema } from "@repo/db";
+import { createDbClient, awardYearToAcademicYear } from "@repo/db";
 
-const trackInputSchema = applicationSchema.pick({
-  scholarship_id: true,
-  academic_year: true,
+const trackInputSchema = z.object({
+  scholarship_id: z.string().uuid(),
+  need_match_score: z.number().min(0).max(100).nullable().optional(),
 });
 
 export type TrackScholarshipResult = {
@@ -20,7 +22,7 @@ export type TrackScholarshipResult = {
 
 export async function trackScholarship(
   scholarshipId: string,
-  academicYear: string
+  needMatchScore?: number | null
 ): Promise<TrackScholarshipResult> {
   const supabase = await createServerSupabaseClient();
   const {
@@ -34,16 +36,31 @@ export async function trackScholarship(
 
   const parsed = trackInputSchema.safeParse({
     scholarship_id: scholarshipId,
-    academic_year: academicYear,
+    need_match_score: needMatchScore ?? null,
   });
   if (!parsed.success) {
     const message = parsed.error.errors[0]?.message ?? "Validation failed";
     return { success: false, error: message };
   }
 
-  const { scholarship_id: id, academic_year: year } = parsed.data;
-
+  const { scholarship_id: id } = parsed.data;
   const db = createDbClient();
+
+  // T016: Derive academic_year from profile award_year; block when null
+  const { data: profile } = await db
+    .from("profiles")
+    .select("award_year")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.award_year) {
+    return {
+      success: false,
+      error: "Please select your target award year in onboarding to track scholarships.",
+    };
+  }
+
+  const academicYear = awardYearToAcademicYear(profile.award_year);
 
   const { data: scholarship, error: fetchError } = await db
     .from("scholarships")
@@ -70,13 +87,18 @@ export async function trackScholarship(
     }
   }
 
+  const upsertPayload = {
+    user_id: user.id,
+    scholarship_id: id,
+    academic_year: academicYear,
+    status: "draft" as const,
+    ...(parsed.data.need_match_score != null && {
+      need_match_score: parsed.data.need_match_score,
+    }),
+  };
+
   const { error: insertError } = await db.from("applications").upsert(
-    {
-      user_id: user.id,
-      scholarship_id: id,
-      academic_year: year,
-      status: "draft",
-    },
+    upsertPayload,
     {
       onConflict: "user_id,scholarship_id,academic_year",
       ignoreDuplicates: true,

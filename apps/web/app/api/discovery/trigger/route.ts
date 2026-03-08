@@ -26,7 +26,18 @@ export async function POST(request: Request) {
   const userId = user.id;
   const threadId = `user_${userId}`;
 
-  const { user_profile } = await loadProfile(userId);
+  const { user_profile, award_year } = await loadProfile(userId);
+
+  if (!award_year) {
+    return NextResponse.json(
+      {
+        error: "Award year required",
+        message:
+          "Please select your target award year in onboarding before running discovery.",
+      },
+      { status: 400 }
+    );
+  }
 
   if (!user_profile?.major || !user_profile?.state) {
     return NextResponse.json(

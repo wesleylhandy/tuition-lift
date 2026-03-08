@@ -59,9 +59,14 @@ export {
   withEncryptedSai,
 } from './encryption';
 
+export { awardYearToAcademicYear } from './academic-year';
+
 export {
   getSaiZoneConfig,
   getMeritTierConfig,
+  getMeritFirstThreshold,
+  isScholarshipVerifiedForCycle,
+  upsertScholarshipCycleVerification,
 } from './config-queries';
 
 export type {
@@ -73,6 +78,8 @@ export {
   getCareerOutcomesByInterest,
   getInstitutionsForRecommendation,
 } from './major-pivot-queries';
+
+export { getSavedInstitutionNamesForUser } from './saved-institutions-queries';
 
 export type {
   CareerOutcomeRow,

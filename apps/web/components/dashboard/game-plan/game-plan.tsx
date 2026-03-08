@@ -12,11 +12,24 @@ import { NextWinCountdown } from "./next-win-countdown";
 import { useRealtimeApplications } from "@/lib/hooks/use-realtime-applications";
 import { GamePlanSkeleton } from "../skeletons/game-plan-skeleton";
 
+interface AlternativePathItem {
+  institutionType: string;
+  label: string;
+  sampleName: string;
+  estimatedNetPrice: number | null;
+}
+
+interface AlternativePathComparison {
+  disclaimer: string;
+  items: AlternativePathItem[];
+}
+
 interface GamePlanData {
   top3: Top3ApiItem[];
   debtLifted?: { totalCents: number };
   nextWin?: { deadline: string | null; label: string | null };
   suggestion?: string;
+  alternativePathComparison?: AlternativePathComparison;
 }
 
 interface Top3ApiItem {
@@ -112,6 +125,16 @@ export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
   const top3 = (data?.top3 ?? []).map(toTopThreeTask);
   const debtLifted = data?.debtLifted?.totalCents ?? 0;
   const nextWin = data?.nextWin ?? { deadline: null, label: null };
+  const altPath = data?.alternativePathComparison;
+
+  function formatCurrency(n: number): string {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(n);
+  }
 
   return (
     <section
@@ -137,6 +160,35 @@ export function GamePlan({ showDebtLifted = true }: GamePlanProps) {
               deadline={nextWin.deadline}
               label={nextWin.label}
             />
+          </div>
+        </div>
+      )}
+      {altPath && altPath.items.length >= 2 && (
+        <div
+          className="rounded-lg border border-border bg-muted/30 p-4"
+          aria-label="Alternative Path comparison"
+        >
+          <h3 className="font-medium text-foreground">
+            Alternative Path Comparison
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {altPath.disclaimer}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {altPath.items.map((item) => (
+              <div
+                key={item.institutionType}
+                className="rounded border border-border bg-background px-3 py-2"
+              >
+                <span className="font-medium">{item.label}</span>
+                <p className="text-sm text-muted-foreground">
+                  e.g. {item.sampleName}
+                </p>
+                {item.estimatedNetPrice != null && (
+                  <p className="text-sm">~{formatCurrency(item.estimatedNetPrice)}/yr</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}

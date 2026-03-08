@@ -8,23 +8,24 @@
  */
 
 export interface ProgressBarProps {
-  currentStep: 1 | 2 | 3;
+  /** 0-based step index (0=Award Year, 1=Identity, 2=Academic, 3=Financial). */
+  currentStep: 0 | 1 | 2 | 3;
   totalSteps?: number;
 }
 
-export function ProgressBar({ currentStep, totalSteps = 3 }: ProgressBarProps) {
+export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
   return (
     <div
       className="shrink-0"
       role="progressbar"
-      aria-valuenow={currentStep}
+      aria-valuenow={currentStep + 1}
       aria-valuemin={1}
       aria-valuemax={totalSteps}
-      aria-label={`Step ${currentStep} of ${totalSteps}`}
+      aria-label={`Step ${currentStep + 1} of ${totalSteps}`}
       aria-live="polite"
     >
       <p className="mb-3 text-sm font-medium text-foreground">
-        Step {currentStep} of {totalSteps}
+        Step {currentStep + 1} of {totalSteps}
       </p>
       <div
         className="flex gap-1"
@@ -32,8 +33,8 @@ export function ProgressBar({ currentStep, totalSteps = 3 }: ProgressBarProps) {
       >
         {Array.from({ length: totalSteps }, (_, i) => {
           const stepNum = i + 1;
-          const isCompleted = stepNum < currentStep;
-          const isCurrent = stepNum === currentStep;
+          const isCompleted = i < currentStep;
+          const isCurrent = i === currentStep;
           return (
             <div
               key={stepNum}

@@ -20,6 +20,7 @@ export const applicationSchema = z.object({
   scholarship_id: z.string().uuid(),
   academic_year: z.string().regex(academicYearRegex, 'YYYY-YYYY format'),
   status: applicationStatusEnum.optional(),
+  need_match_score: z.number().min(0).max(100).nullable().optional(),
   momentum_score: z.number().min(0).nullable().optional(),
   submitted_at: z.string().datetime().nullable().optional(),
   last_progress_at: z.string().datetime().nullable().optional(),

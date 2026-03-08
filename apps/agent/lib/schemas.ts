@@ -36,6 +36,12 @@ export const UserProfileSchema = z.object({
   act_composite: z.number().int().min(1).max(36).optional(),
   /** Extracurricular spikes (labels only; no PII). Max 10, each max 100 chars. */
   spikes: z.array(z.string().min(1).max(100)).max(10).optional(),
+  /** US7 C1: First-generation college student. */
+  first_gen: z.boolean().optional(),
+  /** US7 C1: Parent employer category (broad label only). */
+  parent_employer_category: z.string().max(100).optional(),
+  /** US7 C1: Identity-based eligibility categories (broad labels only). */
+  identity_eligibility_categories: z.array(z.string().max(100)).max(10).optional(),
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;

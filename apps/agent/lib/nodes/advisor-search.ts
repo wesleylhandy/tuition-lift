@@ -12,8 +12,10 @@ import type { DiscoveryResult } from "../schemas";
 import { createErrorEntry } from "../error-log";
 import { scrubPiiFromProfile } from "../discovery/pii-scrub";
 import { generateQueries } from "../discovery/query-generator";
+import { getSavedInstitutionNamesForUser } from "@repo/db";
 import { searchBatch } from "../discovery/tavily-client";
 import { deduplicate } from "../discovery/deduplicator";
+import { queryDbFirstScholarships } from "../discovery/db-first-lookup";
 
 export type AdvisorSearchConfig = {
   configurable?: {
@@ -72,26 +74,41 @@ export async function advisorSearchNode(
       });
     }
 
+    const userId = userProfile?.id;
+    const savedInstitutionNames =
+      userId != null
+        ? await getSavedInstitutionNamesForUser(userId)
+        : [];
+
     const profile = scrubPiiFromProfile({
       user_profile: userProfile ?? undefined,
       financial_profile: financialProfile ?? undefined,
+      award_year: state.award_year ?? undefined,
+      savedInstitutionNames: savedInstitutionNames.length > 0 ? savedInstitutionNames : undefined,
     });
+
+    // US4 T034: DB-first lookup BEFORE external search — reduces API latency
+    const dbResults = await queryDbFirstScholarships(
+      profile,
+      discoveryRunId
+    );
 
     const meritFirst =
       state.sai_above_merit_threshold === true &&
       state.merit_filter_preference === "merit_only";
     const queries = await generateQueries(profile, { meritFirst });
+
     if (queries.length === 0) {
       return new Command({
         goto: "Advisor_Verify",
         update: {
-          discovery_results: [],
+          discovery_results: dbResults,
           last_active_node: "Advisor_Search",
         },
       });
     }
 
-    // T032: Explicit timeout for Tavily calls; prevents indefinite hang (fetch has no built-in limit)
+    // Explicit timeout for Tavily calls; prevents indefinite hang (fetch has no built-in limit)
     const timeoutMs =
       parseInt(process.env.DISCOVERY_SEARCH_TIMEOUT_MS ?? "300000", 10) || 300000;
     const controller = new AbortController();
@@ -104,26 +121,27 @@ export async function advisorSearchNode(
       const rawResults = batchResults.flat();
       const deduped = deduplicate(rawResults);
 
-      // T031: When Tavily returns empty or no results, set discovery_results: [] and goto Advisor_Verify (no error)
-      if (deduped.length === 0) {
-        return new Command({
-          goto: "Advisor_Verify",
-          update: {
-            discovery_results: [],
-            last_active_node: "Advisor_Search",
-          },
-        });
+      // US4 T035: Merge DB results with Tavily; de-duplicate by URL (DB takes precedence)
+      const byUrl = new Map<string, DiscoveryResult>();
+      for (const r of dbResults) {
+        const url = r.url?.trim();
+        if (url) byUrl.set(url, r);
       }
-
-      const discoveryResults: DiscoveryResult[] = deduped.map((r) => ({
-        id: randomUUID(),
-        discovery_run_id: discoveryRunId,
-        title: r.title,
-        url: r.url,
-        trust_score: 0,
-        need_match_score: 0,
-        content: r.content || undefined,
-      }));
+      for (const r of deduped) {
+        const url = r.url?.trim();
+        if (url && !byUrl.has(url)) {
+          byUrl.set(url, {
+            id: randomUUID(),
+            discovery_run_id: discoveryRunId,
+            title: r.title,
+            url: r.url,
+            trust_score: 0,
+            need_match_score: 0,
+            content: r.content || undefined,
+          });
+        }
+      }
+      const discoveryResults = Array.from(byUrl.values());
 
       // Domains extracted for Live Pulse (006)
       void extractDomainsFromResults(deduped);

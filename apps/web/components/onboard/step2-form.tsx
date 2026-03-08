@@ -143,36 +143,6 @@ function FormFieldsWithStatus({ error }: { error: string | null }) {
           Up to 10 activities. Use labels only (no team names or addresses).
         </p>
       </div>
-      <div className="flex flex-col gap-3">
-        <label
-          htmlFor="step2-award-year"
-          className="block text-sm font-medium"
-        >
-          Award year <span className="text-muted-foreground">(optional)</span>
-        </label>
-        <select
-          id="step2-award-year"
-          name="award_year"
-          disabled={pending}
-          className={INPUT_CLASS}
-          aria-describedby="step2-award-year-hint"
-        >
-          <option value="">Select year</option>
-          {[new Date().getFullYear(), new Date().getFullYear() + 1].map(
-            (y) => (
-              <option key={y} value={y}>
-                {y}–{y + 1}
-              </option>
-            )
-          )}
-        </select>
-        <p
-          id="step2-award-year-hint"
-          className="text-xs text-muted-foreground"
-        >
-          Academic year for scholarship applications
-        </p>
-      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-3">
           <label htmlFor="step2-gpa-weighted" className="block text-sm font-medium">

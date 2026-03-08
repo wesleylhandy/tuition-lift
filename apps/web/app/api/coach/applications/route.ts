@@ -5,6 +5,7 @@
  * Tracked, Drafting, Review (draft); Submitted (submitted); Won (awarded); Lost (rejected, withdrawn).
  *
  * Per T028 [US3]: Application Tracker Lifecycle View.
+ * Per T027 [US2]: Expose need_match_score for prioritization display (Discovery-tracked apps have score; Scout apps have null).
  */
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../../../lib/supabase/server";
@@ -25,6 +26,7 @@ interface AppWithScholarship {
   id: string;
   status: DbApplicationStatus;
   last_progress_at: string | null;
+  need_match_score: number | null;
   scholarships: {
     title: string;
     url: string | null;
@@ -41,6 +43,8 @@ interface TrackerApplication {
   coachState: string;
   deadline: string | null;
   amount: number | null;
+  /** T027 [US2]: 0–100 from Discovery; null for Scout path; used for prioritization display */
+  needMatchScore: number | null;
 }
 
 function toDisplayBucket(
@@ -77,6 +81,7 @@ export async function GET() {
         id,
         status,
         last_progress_at,
+        need_match_score,
         scholarships (
           title,
           url,
@@ -116,6 +121,7 @@ export async function GET() {
         coachState,
         deadline: row.scholarships?.deadline ?? null,
         amount: row.scholarships?.amount ?? null,
+        needMatchScore: row.need_match_score ?? null,
       };
       buckets[bucket].push(item);
     }

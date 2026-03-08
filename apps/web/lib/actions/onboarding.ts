@@ -13,9 +13,33 @@ import { checkAndIncrementSignupRateLimit } from "../rate-limit";
 import { isUsStateCode } from "../constants/us-states";
 import { withEncryptedSai } from "@repo/db";
 
+function getAwardYearRange() {
+  const y = new Date().getFullYear();
+  return { min: y, max: y + 4 };
+}
+
+const signUpAwardYearSchema = z
+  .union([z.string(), z.number()])
+  .refine(
+    (v) => {
+      if (v === "" || v === undefined || v === null) return false;
+      const n = typeof v === "string" ? parseInt(v, 10) : v;
+      const { min, max } = getAwardYearRange();
+      return !Number.isNaN(n) && n >= min && n <= max;
+    },
+    (v) => ({
+      message: `Award year must be between ${getAwardYearRange().min} and ${getAwardYearRange().max}.`,
+    })
+  )
+  .transform((v) => {
+    const n = typeof v === "string" ? parseInt(v, 10) : v;
+    return Number.isNaN(n) ? null : n;
+  });
+
 const signUpInputSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
+  award_year: signUpAwardYearSchema,
 });
 
 export type SignUpResult = {
@@ -30,8 +54,13 @@ export type SignUpResult = {
 export async function signUp(formData: FormData): Promise<SignUpResult> {
   const email = (formData.get("email") as string)?.trim() ?? "";
   const password = (formData.get("password") as string) ?? "";
+  const awardYearRaw = formData.get("award_year");
 
-  const parsed = signUpInputSchema.safeParse({ email, password });
+  const parsed = signUpInputSchema.safeParse({
+    email,
+    password,
+    award_year: awardYearRaw ?? "",
+  });
   if (!parsed.success) {
     const msg = parsed.error.errors[0]?.message ?? "Invalid input.";
     return { success: false, error: msg };
@@ -83,9 +112,12 @@ export async function signUp(formData: FormData): Promise<SignUpResult> {
     };
   }
 
+  const awardYear = parsed.success ? parsed.data.award_year : null;
+
   const { error: insertError } = await supabase.from("profiles").insert({
     id: user.id,
     onboarding_complete: false,
+    award_year: awardYear,
   });
 
   if (insertError) {
@@ -101,21 +133,77 @@ export async function signUp(formData: FormData): Promise<SignUpResult> {
   return { success: true };
 }
 
-// --- saveAcademicProfile (Step 2) ---
+// --- saveAwardYear (Step 0 resume: logged-in user with no award_year) ---
 
-const currentYear = new Date().getFullYear();
-const awardYearSchema = z
+const saveAwardYearSchema = z
   .union([z.string(), z.number()])
-  .optional()
+  .refine(
+    (v) => {
+      if (v === "" || v === undefined || v === null) return false;
+      const n = typeof v === "string" ? parseInt(v, 10) : v;
+      const y = new Date().getFullYear();
+      return !Number.isNaN(n) && n >= y && n <= y + 4;
+    },
+    { message: "Please select a valid award year." }
+  )
   .transform((v) => {
-    if (v === "" || v === undefined || v === null) return undefined;
     const n = typeof v === "string" ? parseInt(v, 10) : v;
-    return Number.isNaN(n)
-      ? undefined
-      : n >= currentYear && n <= currentYear + 1
-        ? n
-        : undefined;
+    return Number.isNaN(n) ? null : n;
   });
+
+export type SaveAwardYearResult = {
+  success: boolean;
+  error?: string;
+};
+
+/**
+ * saveAwardYear — Persist award_year for logged-in user (Step 0 resume).
+ * Used when user returns mid-flow with account but no award_year in profile.
+ */
+export async function saveAwardYear(
+  formData: FormData
+): Promise<SaveAwardYearResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const raw = formData.get("award_year") ?? "";
+  const parsed = saveAwardYearSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message ?? "Invalid award year." };
+  }
+
+  const awardYear = parsed.data;
+  if (awardYear === null) {
+    return { success: false, error: "Please select a valid award year." };
+  }
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      award_year: awardYear,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+
+  if (updateError) {
+    return {
+      success: false,
+      error: "Failed to save. Please try again.",
+    };
+  }
+
+  return { success: true };
+}
+
+// --- saveAcademicProfile (Step 2) ---
+// award_year collected in Step 0; not in Step 2 form.
 
 const saveAcademicProfileInputSchema = z.object({
   intended_major: z
@@ -187,7 +275,6 @@ const saveAcademicProfileInputSchema = z.object({
         .filter((s) => s.length > 0)
         .slice(0, 10);
     }),
-  award_year: awardYearSchema,
 });
 
 export type SaveAcademicProfileResult = {
@@ -222,7 +309,6 @@ export async function saveAcademicProfile(
     sat_total: formData.get("sat_total") ?? "",
     act_composite: formData.get("act_composite") ?? "",
     spikes: formData.get("spikes") ?? "",
-    award_year: formData.get("award_year") ?? "",
   };
 
   const parsed = saveAcademicProfileInputSchema.safeParse(raw);
@@ -240,7 +326,6 @@ export async function saveAcademicProfile(
     sat_total,
     act_composite,
     spikes,
-    award_year,
   } = parsed.data;
 
   const stateCode = state.toUpperCase().trim();
@@ -258,7 +343,6 @@ export async function saveAcademicProfile(
         sat_total: sat_total ?? null,
         act_composite: act_composite ?? null,
         spikes: spikes?.length ? spikes : null,
-        award_year: award_year ?? null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }

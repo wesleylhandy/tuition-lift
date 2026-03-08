@@ -12,7 +12,6 @@ import { TrustShield } from "./trust-shield";
 import { CoachesTake } from "./coaches-take";
 import { trackScholarship } from "@/lib/actions/track";
 import { dismissScholarship } from "@/lib/actions/dismiss";
-import { getCurrentAcademicYear } from "@/lib/utils/academic-year";
 
 export interface MatchCardProps {
   id: string;
@@ -26,6 +25,8 @@ export interface MatchCardProps {
   deadline?: string | null;
   /** discovery_run_id from match; passed to dismissScholarship when available (003) */
   discoveryRunId?: string | null;
+  /** need_match_score from discovery result; passed to trackScholarship (US1 T018) */
+  needMatchScore?: number | null;
   /** Called after successful dismiss; parent should remove card from list */
   onDismissSuccess?: () => void;
   /** Called after successful track; parent may update isTracked state */
@@ -67,6 +68,7 @@ export function MatchCard({
   amount,
   deadline,
   discoveryRunId,
+  needMatchScore,
   onDismissSuccess,
   onTrackSuccess,
   isTracked = false,
@@ -77,9 +79,8 @@ export function MatchCard({
 
   const handleTrack = () => {
     if (pending || isTracked) return;
-    const academicYear = getCurrentAcademicYear();
     startTransition(async () => {
-      const result = await trackScholarship(scholarshipId, academicYear);
+      const result = await trackScholarship(scholarshipId, needMatchScore ?? null);
       if (!result.success) {
         toast.error(result.error ?? "Failed to track", {
           action: { label: "Retry", onClick: handleTrack },
