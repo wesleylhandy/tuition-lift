@@ -1,10 +1,125 @@
 /**
- * Config queries: sai_zone_config, merit_tier_config, merit_first_config, scout_config.
- * Tables created by migrations 00000000000021, 00000000000022, 00000000000037, 00000000000042.
- * Read by award_year for merit-first logic and tier matching; scout_config for rate limits.
+ * Config queries: sai_zone_config, merit_tier_config, merit_first_config, scout_config, discovery_config.
+ * Tables created by migrations 00000000000021, 00000000000022, 00000000000037, 00000000000042, 00000000000048.
+ * Read by award_year for merit-first logic and tier matching; scout_config for rate limits; discovery_config for rate limits and deep-scout bounds.
  */
 
 import { createDbClient } from "./client";
+
+/** Discovery config row (data-model.md §2.4, migration 48) — rate limits and deep-scout bounds */
+export interface DiscoveryConfig {
+  id: string;
+  cooldown_minutes: number;
+  per_day_cap: number;
+  max_depth: number;
+  max_links_per_page: number;
+  max_records_per_run: number;
+}
+
+/**
+ * Fetches discovery_config row (id='default') for rate limits and deep-scout bounds.
+ * Returns null if not found or on error.
+ * Table: discovery_config (migration 48); RLS SELECT public.
+ */
+export async function getDiscoveryConfig(): Promise<DiscoveryConfig | null> {
+  const db = createDbClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- discovery_config typed after migration 48 + db:generate
+  const { data, error } = await (db as any)
+    .from("discovery_config")
+    .select("id, cooldown_minutes, per_day_cap, max_depth, max_links_per_page, max_records_per_run")
+    .eq("id", "default")
+    .single();
+
+  if (error || !data) return null;
+  return data as DiscoveryConfig;
+}
+
+/** Result of canTriggerDiscovery — whether user may start a discovery run. */
+export interface CanTriggerDiscoveryResult {
+  allowed: boolean;
+  reason?: string;
+  retryAfterMinutes?: number;
+}
+
+const DISCOVERY_CONFIG_DEFAULTS: Pick<
+  DiscoveryConfig,
+  "cooldown_minutes" | "per_day_cap"
+> = {
+  cooldown_minutes: 60,
+  per_day_cap: 5,
+};
+
+/**
+ * Checks if user can trigger a discovery run per rate limits.
+ * Logic: config-queries.md §2 — running blocks; cooldown; per-day cap.
+ * Table: discovery_completions (migration 7); discovery_config (migration 48).
+ */
+export async function canTriggerDiscovery(
+  userId: string
+): Promise<CanTriggerDiscoveryResult> {
+  const config = await getDiscoveryConfig();
+  const cooldown = config?.cooldown_minutes ?? DISCOVERY_CONFIG_DEFAULTS.cooldown_minutes;
+  const perDayCap = config?.per_day_cap ?? DISCOVERY_CONFIG_DEFAULTS.per_day_cap;
+
+  const db = createDbClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- discovery_completions typed after migration 7
+  const client = db as any;
+
+  // 1. Block if status=running for user
+  const { data: runningRow } = await client
+    .from("discovery_completions")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("status", "running")
+    .limit(1)
+    .maybeSingle();
+
+  if (runningRow) {
+    return { allowed: false, reason: "Discovery in progress" };
+  }
+
+  // 2. Last completed run (completed or failed) — for cooldown
+  const { data: lastRun } = await client
+    .from("discovery_completions")
+    .select("completed_at")
+    .eq("user_id", userId)
+    .in("status", ["completed", "failed"])
+    .not("completed_at", "is", null)
+    .order("completed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastRun?.completed_at) {
+    const completedAt = new Date(lastRun.completed_at);
+    const elapsedMinutes = (Date.now() - completedAt.getTime()) / (60 * 1000);
+    if (elapsedMinutes < cooldown) {
+      const retryAfter = Math.ceil(cooldown - elapsedMinutes);
+      return {
+        allowed: false,
+        reason: `Please wait before running discovery again`,
+        retryAfterMinutes: retryAfter,
+      };
+    }
+  }
+
+  // 3. Count completed runs today (completed or failed)
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const dayStartIso = dayStart.toISOString();
+
+  const { count, error: countError } = await client
+    .from("discovery_completions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .in("status", ["completed", "failed"])
+    .gte("completed_at", dayStartIso);
+
+  if (!countError && count != null && count >= perDayCap) {
+    return { allowed: false, reason: "Daily limit reached" };
+  }
+
+  return { allowed: true };
+}
 
 /** SAI zone config row (data-model.md §3a) */
 export interface SaiZoneConfigRow {

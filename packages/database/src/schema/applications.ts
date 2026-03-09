@@ -26,6 +26,7 @@ export const applicationSchema = z.object({
   last_progress_at: z.string().datetime().nullable().optional(),
   confirmed_at: z.string().datetime().nullable().optional(),
   updated_at: z.string().datetime().optional(),
+  merit_tag: z.string().max(50).nullable().optional(),
 });
 
 export type ApplicationSchema = z.infer<typeof applicationSchema>;

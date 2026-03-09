@@ -71,6 +71,12 @@ export type { LandingStatsSchema } from './landing-stats';
 export { testimonialSchema } from './testimonials';
 export type { TestimonialSchema } from './testimonials';
 
+export {
+  userSavedSchoolsSchema,
+  userSavedSchoolsStatusEnum,
+} from './user-saved-schools';
+export type { UserSavedSchoolsSchema } from './user-saved-schools';
+
 /**
  * Validates data against schema; throws ZodError on failure.
  * Use before DB writes to reject invalid payloads.

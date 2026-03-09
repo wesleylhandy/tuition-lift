@@ -36,15 +36,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Create migration `00000000000045_scholarships_content_hash.sql` in `packages/database/supabase/migrations/` — ADD COLUMN content_hash; CREATE UNIQUE INDEX
-- [ ] T004 Create migration `00000000000046_user_saved_schools_status.sql` in `packages/database/supabase/migrations/` — ADD COLUMN status; CHECK constraint; UPDATE policy
-- [ ] T005 Create migration `00000000000047_applications_merit_tag.sql` in `packages/database/supabase/migrations/` — ADD COLUMN merit_tag
-- [ ] T006 Create migration `00000000000048_discovery_config.sql` in `packages/database/supabase/migrations/` — CREATE TABLE discovery_config; seed row id='default'
-- [ ] T007 Run `pnpm --filter @repo/db exec supabase db push` to apply migrations
-- [ ] T008 [P] Add getDiscoveryConfig() in `packages/database/src/config-queries.ts` returning DiscoveryConfig (id, cooldown_minutes, per_day_cap, max_depth, max_links_per_page, max_records_per_run)
-- [ ] T009 [P] Add canTriggerDiscovery(userId) in `packages/database/src/config-queries.ts` — check discovery_completions for running/last run/count today; return { allowed, reason?, retryAfterMinutes? }
-- [ ] T010 [P] Extend applications Zod schema with merit_tag in `packages/database/src/schema/applications.ts` — z.string().max(50).nullable().optional()
-- [ ] T011 [P] Extend user_saved_schools validation with status in `packages/database/src/schema/` — z.enum(['applied','accepted','committed']).optional().default('applied')
+- [x] T003 Create migration `00000000000045_scholarships_content_hash.sql` in `packages/database/supabase/migrations/` — ADD COLUMN content_hash; CREATE UNIQUE INDEX
+- [x] T004 Create migration `00000000000046_user_saved_schools_status.sql` in `packages/database/supabase/migrations/` — ADD COLUMN status; CHECK constraint; UPDATE policy
+- [x] T005 Create migration `00000000000047_applications_merit_tag.sql` in `packages/database/supabase/migrations/` — ADD COLUMN merit_tag
+- [x] T006 Create migration `00000000000048_discovery_config.sql` in `packages/database/supabase/migrations/` — CREATE TABLE discovery_config; seed row id='default'
+- [x] T007 Run `pnpm --filter @repo/db exec supabase db push` to apply migrations
+- [x] T008 [P] Add getDiscoveryConfig() in `packages/database/src/config-queries.ts` returning DiscoveryConfig (id, cooldown_minutes, per_day_cap, max_depth, max_links_per_page, max_records_per_run)
+- [x] T009 [P] Add canTriggerDiscovery(userId) in `packages/database/src/config-queries.ts` — check discovery_completions for running/last run/count today; return { allowed, reason?, retryAfterMinutes? }
+- [x] T010 [P] Extend applications Zod schema with merit_tag in `packages/database/src/schema/applications.ts` — z.string().max(50).nullable().optional()
+- [x] T011 [P] Extend user_saved_schools validation with status in `packages/database/src/schema/` — z.enum(['applied','accepted','committed']).optional().default('applied')
 
 **Checkpoint**: Foundation ready — user story implementation can begin
 
