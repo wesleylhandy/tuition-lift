@@ -26,11 +26,12 @@
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Project initialization, rate limit schema, and scholarship provenance
+**Purpose**: Project initialization, rate limit schema, scout config, and scholarship provenance
 
-- [ ] T001 Create `scout_submissions` migration in `packages/database/supabase/migrations/00000000000040_scout_submissions.sql` per contracts/scout-rate-limit-api.md §3 (CREATE TABLE, RLS, UNIQUE(user_id, academic_year))
-- [ ] T001b [P] Create `scholarships_source` migration in `packages/database/supabase/migrations/00000000000041_scholarships_source.sql`: add `source text` with CHECK (source IN ('manual','search','warehouse','institution')); nullable for backward compat per data-model.md §2
-- [ ] T002 [P] Add `SCOUT_SUBMISSION_LIMIT` env validation (default 15) in `apps/web` startup or Zod schema
+- [x] T001 Create `scout_submissions` migration in `packages/database/supabase/migrations/00000000000040_scout_submissions.sql` per contracts/scout-rate-limit-api.md §3 (CREATE TABLE, RLS, UNIQUE(user_id, academic_year))
+- [x] T001a [P] Create `scout_config` migration in `packages/database/supabase/migrations/00000000000042_scout_config.sql` per data-model.md §1a: CREATE TABLE scout_config (id, scout_submission_limit DEFAULT 15, updated_at); RLS SELECT public; INSERT default row (15)
+- [x] T001b [P] Create `scholarships_source` migration in `packages/database/supabase/migrations/00000000000041_scholarships_source.sql`: add `source text` with CHECK (source IN ('manual','search','warehouse','institution')); nullable for backward compat per data-model.md §2
+- [x] T002 [P] Add `getScoutSubmissionLimit()` in `packages/database/src/config-queries.ts`; read scout_config.scout_submission_limit, fallback 15; export from @repo/db per contracts/scout-rate-limit-api.md §4
 
 ---
 
@@ -40,9 +41,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Implement `getOrCreateScoutSubmission(userId, academicYear)` and `getCurrentAcademicYear()` in `packages/database/` (or use existing) for `scout_submissions` upsert
-- [ ] T004 Implement `checkScoutLimit` Server Action in `apps/web/lib/actions/scout.ts` returning `CheckScoutLimitResult` per contracts/scout-rate-limit-api.md §1
-- [ ] T005 Extend `confirmScoutScholarship` in `apps/web/lib/actions/scout.ts`: add rate-limit check before upsert; increment `scout_submissions.count` on success; set `source = 'manual'` on scholarship upsert; return `{ success: false; limitReached: true }` when count ≥ limit per data-model.md §6
+- [x] T003 Implement `getOrCreateScoutSubmission(userId, academicYear)` in `packages/database/` for `scout_submissions` upsert; caller (apps/web) supplies academic year via existing `getCurrentAcademicYear()` from apps/web/lib/utils/academic-year.ts
+- [x] T004 Implement `checkScoutLimit` Server Action in `apps/web/lib/actions/scout.ts` returning `CheckScoutLimitResult` per contracts/scout-rate-limit-api.md §1; use `getScoutSubmissionLimit()` from @repo/db
+- [x] T005 Extend `confirmScoutScholarship` in `apps/web/lib/actions/scout.ts`: add rate-limit check before upsert (use `getScoutSubmissionLimit()`); increment `scout_submissions.count` on success; set `source = 'manual'` on scholarship upsert; return `{ success: false; limitReached: true }` when count ≥ limit per data-model.md §6
 
 **Checkpoint**: Rate limit enforced; confirmation flow ready for UI integration
 
@@ -54,9 +55,9 @@
 
 **Independent Test**: Log in → dashboard → FAB visible → click → modal opens with "Manual Scout" / "Flyer-to-Fact Workspace" → close returns to dashboard. When not logged in, FAB hidden.
 
-- [ ] T006 [P] [US1] Create `ScoutFAB` in `apps/web/components/dashboard/scout/scout-fab.tsx` (fixed bottom-right, min 44×44px, opens modal on click) per contracts/scout-ui-016.md §1
-- [ ] T007 [US1] Create client wrapper (e.g. `ScoutDashboardEntry`) composing `ScoutFAB` + `ScoutModal`; add to `apps/web/app/(auth)/dashboard/page.tsx`; auth-gate FAB via session/userId (hide when not authenticated)
-- [ ] T008 [US1] Update `ScoutModal` title to "Manual Scout" and subtitle to "Flyer-to-Fact Workspace" in `apps/web/components/dashboard/scout/scout-modal.tsx`
+- [x] T006 [P] [US1] Create `ScoutFAB` in `apps/web/components/dashboard/scout/scout-fab.tsx` (fixed bottom-right, min 44×44px, opens modal on click) per contracts/scout-ui-016.md §1
+- [x] T007 [US1] Create client wrapper (e.g. `ScoutDashboardEntry`) composing `ScoutFAB` + `ScoutModal`; add to `apps/web/app/(auth)/dashboard/page.tsx`; auth-gate FAB via session/userId (hide when not authenticated)
+- [x] T008 [US1] Update `ScoutModal` title to "Manual Scout" and subtitle to "Flyer-to-Fact Workspace" in `apps/web/components/dashboard/scout/scout-modal.tsx`
 
 **Checkpoint**: User Story 1 — Scout entry discoverable and opens modal
 
@@ -68,11 +69,11 @@
 
 **Independent Test**: Open modal → three cards visible (icons, labels) → Paste URL shows URL input → Upload PDF opens file picker (PDF) → Snap Photo opens camera or image picker.
 
-- [ ] T009 [P] [US2] Create `ScoutInputCard` in `apps/web/components/dashboard/scout/scout-input-card.tsx` (Paste URL card, icon, min 44×44px, expands to input; accepts URL or scholarship name; send `input_type: "url"` or `"name"` per 007)
-- [ ] T010 [P] [US2] Create `ScoutUploadCard` in `apps/web/components/dashboard/scout/scout-upload-card.tsx` (Upload PDF card, icon, file picker `accept="application/pdf"`)
-- [ ] T011 [P] [US2] Create `ScoutPhotoCard` in `apps/web/components/dashboard/scout/scout-photo-card.tsx` (Snap Photo card, icon, camera or `accept="image/png,image/jpeg"`)
-- [ ] T012 [US2] Replace `ScoutEntryPoint` in-place in `apps/web/components/dashboard/scout/scout-entry-point.tsx` with three-card composition (ScoutInputCard, ScoutUploadCard, ScoutPhotoCard); wire cards to `onSubmit` with `input_type: url | file`; store `File` for preview per research.md §1
-- [ ] T013 [US2] Wire cards to Scout flow: URL/name → `onSubmit({ input_type: "url", url })` or `onSubmit({ input_type: "name", name })` (detect URL vs name); PDF/Photo → `uploadScoutFile` then `onSubmit({ input_type: "file", file_path })`; store `sourceFile`/`sourceUrl` in ScoutModal state for verification view
+- [x] T009 [P] [US2] Create `ScoutInputCard` in `apps/web/components/dashboard/scout/scout-input-card.tsx` (Paste URL card, icon, min 44×44px, expands to input; accepts URL or scholarship name; send `input_type: "url"` or `"name"` per 007)
+- [x] T010 [P] [US2] Create `ScoutUploadCard` in `apps/web/components/dashboard/scout/scout-upload-card.tsx` (Upload PDF card, icon, file picker `accept="application/pdf"`)
+- [x] T011 [P] [US2] Create `ScoutPhotoCard` in `apps/web/components/dashboard/scout/scout-photo-card.tsx` (Snap Photo card, icon, camera or `accept="image/png,image/jpeg"`)
+- [x] T012 [US2] Replace `ScoutEntryPoint` in-place in `apps/web/components/dashboard/scout/scout-entry-point.tsx` with three-card composition (ScoutInputCard, ScoutUploadCard, ScoutPhotoCard); wire cards to `onSubmit` with `input_type: url | file`; store `File` for preview per research.md §1
+- [x] T013 [US2] Wire cards to Scout flow: URL/name → `onSubmit({ input_type: "url", url })` or `onSubmit({ input_type: "name", name })` (detect URL vs name); PDF/Photo → `uploadScoutFile` then `onSubmit({ input_type: "file", file_path })`; store `sourceFile`/`sourceUrl` in ScoutModal state for verification view
 
 **Checkpoint**: User Story 2 — Three-card input selection working
 
@@ -84,12 +85,12 @@
 
 **Independent Test**: Submit URL/PDF/image → extraction completes → side-by-side layout (preview left, form right) → AI-extracted values visually distinguished → edit field → Confirm → scholarship + application created. Cancel → no persistence.
 
-- [ ] T014 [P] [US3] Create `ScoutVerificationView` in `apps/web/components/dashboard/scout/scout-verification-view.tsx` (grid/flex: document left, form right; stacked on mobile per contracts/scout-ui-016.md §4)
-- [ ] T015 [US3] Implement document preview left panel in `ScoutVerificationView`: URL → iframe/link fallback; PDF → `URL.createObjectURL` + iframe or fallback; Image → `URL.createObjectURL` + `<img>`; fallback: file name + "Preview unavailable" per research.md §2
-- [ ] T016 [US3] Integrate `ScoutVerificationView` into `ScoutModal` in `apps/web/components/dashboard/scout/scout-modal.tsx`; pass `sourcePreview` (blobUrl/url) and form props; replace current verification layout
-- [ ] T017 [US3] Visually distinguish AI-extracted values and display FR-009 cycle/deadline flags in verification form (`scout-verification-form.tsx`): ghost text or highlight for extracted values; show `verification_status` from ExtractedScholarshipData (e.g., "Potentially Expired", "ambiguous_deadline") via badge or field hint per spec edge case
-- [ ] T018 [US3] Handle "Enter manually" after extraction fail: show same verification view with empty form; user fills all fields and confirms
-- [ ] T019 [US3] Add rate-limit check before confirm: call `checkScoutLimit` (optional pre-check); handle `limitReached` in confirm result with friendly message and "Request more" option in `ScoutModal`
+- [x] T014 [P] [US3] Create `ScoutVerificationView` in `apps/web/components/dashboard/scout/scout-verification-view.tsx` (grid/flex: document left, form right; stacked on mobile per contracts/scout-ui-016.md §4)
+- [x] T015 [US3] Implement document preview left panel in `ScoutVerificationView`: URL → iframe/link fallback; PDF → `URL.createObjectURL` + iframe or fallback; Image → `URL.createObjectURL` + `<img>`; fallback: file name + "Preview unavailable" per research.md §2
+- [x] T016 [US3] Integrate `ScoutVerificationView` into `ScoutModal` in `apps/web/components/dashboard/scout/scout-modal.tsx`; pass `sourcePreview` (blobUrl/url) and form props; replace current verification layout
+- [x] T017 [US3] Visually distinguish AI-extracted values and display FR-009 cycle/deadline flags in verification form (`scout-verification-form.tsx`): ghost text or highlight for extracted values; show `verification_status` from ExtractedScholarshipData (e.g., "Potentially Expired", "ambiguous_deadline") via badge or field hint per spec edge case
+- [x] T018 [US3] Handle "Enter manually" after extraction fail: show same verification view with empty form; user fills all fields and confirms
+- [x] T019 [US3] Add rate-limit check before confirm: call `checkScoutLimit` (optional pre-check); handle `limitReached` in confirm result with friendly message and "Request more" option in `ScoutModal`
 
 **Checkpoint**: User Story 3 — Verification flow with persistence works
 
@@ -101,9 +102,9 @@
 
 **Independent Test**: Trigger extraction → processing overlay replaces input → step indicators visible → after 30s cancel appears → cancel returns to input → or wait 60s → timeout error with retry / Enter manually.
 
-- [ ] T020 [US4] Extend `useScoutStatus` in `apps/web/lib/hooks/use-scout-status.ts`: track elapsed time; set `canCancel: true` at ~30s; set `timedOut: true` at ~60s, stop polling; add `cancel()`, `onTimeout`; use AbortController for fetch when canceling per contracts/scout-ui-016.md §6
-- [ ] T021 [US4] Update `ScoutProcessingHUD` in `apps/web/components/dashboard/scout/scout-processing-hud.tsx`: add `canCancel`, `onCancel`, `timedOut` props; render cancel button when `canCancel`; when `timedOut` show "Extraction took too long" with Retry and Enter manually per contracts/scout-ui-016.md §5
-- [ ] T022 [US4] Wire `useScoutStatus` cancel and timeout into `ScoutModal` in `apps/web/components/dashboard/scout/scout-modal.tsx`; on cancel return to input selection; on timeout show error state with retry/Enter manually
+- [x] T020 [US4] Extend `useScoutStatus` in `apps/web/lib/hooks/use-scout-status.ts`: track elapsed time; set `canCancel: true` at ~30s; set `timedOut: true` at ~60s, stop polling; add `cancel()`, `onTimeout`; use AbortController for fetch when canceling per contracts/scout-ui-016.md §6
+- [x] T021 [US4] Update `ScoutProcessingHUD` in `apps/web/components/dashboard/scout/scout-processing-hud.tsx`: add `canCancel`, `onCancel`, `timedOut` props; render cancel button when `canCancel`; when `timedOut` show "Extraction took too long" with Retry and Enter manually per contracts/scout-ui-016.md §5
+- [x] T022 [US4] Wire `useScoutStatus` cancel and timeout into `ScoutModal` in `apps/web/components/dashboard/scout/scout-modal.tsx`; on cancel return to input selection; on timeout show error state with retry/Enter manually
 
 **Checkpoint**: User Story 4 — Processing feedback with cancel and timeout
 
@@ -115,11 +116,11 @@
 
 **Independent Test**: Resize to ≤640px → modal full-screen; Tab through elements → all reachable; Escape closes modal; touch targets ≥44×44px; labels for screen reader.
 
-- [ ] T023 [P] [US5] Update `ScoutModal` responsive styles in `apps/web/components/dashboard/scout/scout-modal.tsx`: full-screen (`fixed inset-0`) on viewport ≤640px (Tailwind `max-sm:` or `sm:`); `max-w-4xl` on larger per research.md §6
-- [ ] T024 [US5] Ensure `ScoutVerificationView` stacks vertically (document top, form below) on ≤640px in `apps/web/components/dashboard/scout/scout-verification-view.tsx`
-- [ ] T025 [US5] Verify keyboard navigability: Tab through cards, form fields, buttons; Enter/Space activate; Escape closes modal; focus trap in modal (existing logic)
-- [ ] T026 [US5] Verify touch targets ≥44×44px and Confirm action contrast (WCAG 2.1 AA) across Scout components
-- [ ] T027 [US5] Add smooth modal entrance and view-transition animations without obstructing interaction in `apps/web/components/dashboard/scout/scout-modal.tsx`
+- [x] T023 [P] [US5] Update `ScoutModal` responsive styles in `apps/web/components/dashboard/scout/scout-modal.tsx`: full-screen (`fixed inset-0`) on viewport ≤640px (Tailwind `max-sm:` or `sm:`); `max-w-4xl` on larger per research.md §6
+- [x] T024 [US5] Ensure `ScoutVerificationView` stacks vertically (document top, form below) on ≤640px in `apps/web/components/dashboard/scout/scout-verification-view.tsx`
+- [x] T025 [US5] Verify keyboard navigability: Tab through cards, form fields, buttons; Enter/Space activate; Escape closes modal; focus trap in modal (existing logic)
+- [x] T026 [US5] Verify touch targets ≥44×44px and Confirm action contrast (WCAG 2.1 AA) across Scout components
+- [x] T027 [US5] Add smooth modal entrance and view-transition animations without obstructing interaction in `apps/web/components/dashboard/scout/scout-modal.tsx`
 
 **Checkpoint**: User Story 5 — Responsive and accessible
 
@@ -129,10 +130,32 @@
 
 **Purpose**: Edge cases, cleanup, validation
 
-- [ ] T028 Reject unsupported file types with clear message in `ScoutUploadCard` / `ScoutPhotoCard` (PDF-only for upload; PNG/JPEG for photo)
-- [ ] T029 Handle duplicate scholarship (fuzzy title match): notify user, offer add anyway or cancel per spec edge case
-- [ ] T030 Reconcile ApplicationTracker "Add Scholarship" with Scout FAB: **Decision** — FAB is primary Scout entry; retain "Add Scholarship" as secondary entry that opens the same Scout modal (both trigger ScoutModal). Remove secondary only if UX testing shows redundancy.
-- [ ] T031 Run quickstart.md validation: FAB, three cards, verification, cancel/timeout, responsive, rate limit, accessibility
+- [x] T028 Reject unsupported file types with clear message in `ScoutUploadCard` / `ScoutPhotoCard` (PDF, PNG, JPEG for upload; PNG/JPEG for photo)
+- [x] T029 Handle duplicate scholarship (fuzzy title match): notify user, offer add anyway or cancel per spec edge case
+- [x] T030 Reconcile ApplicationTracker "Add Scholarship" with Scout FAB: **Decision** — FAB is primary Scout entry; retain "Add Scholarship" as secondary entry that opens the same Scout modal (both trigger ScoutModal). Remove secondary only if UX testing shows redundancy.
+- [x] T031 Run quickstart.md validation: FAB, three cards, verification, cancel/timeout, responsive, rate limit, accessibility; optionally verify full flow <90s typical (SC-002)
+
+---
+
+## Phase 9: Differential Rate Limits & URL Optimization (Priority: P2)
+
+**Purpose**: Differentiate URL/name input from file input (PDF/image). URL flows use Tavily (cheaper); file flows use Vision LLM (expensive). Add URL-existence check to avoid unnecessary Tavily calls when scholarship already exists in DB.
+
+**Rationale**: Cost and abuse control—image processing is expensive; URL lookups are cheaper. Skip Tavily when the URL is already in scholarships and user can add from existing record.
+
+**Independent Test**: (1) Paste URL that exists in scholarships → short-circuit to verification or "already tracked" without Tavily. (2) Submit 15 files → limit reached; submit 50 URLs → still allowed (or higher URL limit). (3) Paste same URL twice → second call skips Tavily.
+
+- [x] T032 [P] Add migration `00000000000043_scout_config_differential_limits.sql`: add `scout_url_limit` (integer, nullable, default 50 or NULL=unlimited) and `scout_file_limit` (integer, NOT NULL, default 15) to scout_config; backfill existing row
+- [x] T033 Extend `getScoutSubmissionLimit` or add `getScoutLimits()` in `packages/database/src/config-queries.ts`: return `{ urlLimit, fileLimit }`; export from @repo/db
+- [x] T034 Add `url_count` and `file_count` columns to `scout_submissions` via migration; update `getOrCreateScoutSubmission` to return both; add `incrementScoutSubmissionCount(userId, academicYear, inputType: "url"|"file")` in packages/database
+- [x] T035 Implement `checkScholarshipByUrl(url: string)` in `packages/database` or apps/agent: query `scholarships` for exact URL match; return `{ exists: true, scholarshipId, ... } | { exists: false }`; used to short-circuit before Tavily
+- [x] T036 Extend `startScoutProcess` in `apps/web/lib/actions/scout.ts`: when `input_type === "url"` and URL is valid, call `checkScholarshipByUrl` first; if exists and user has application → return `{ success: false, alreadyTracked: true, scholarshipId }`; if exists and user lacks application → create scout_run with step=complete and result (map scholarship to ExtractedScholarshipData), return run_id—client polls and gets instant complete, no Tavily; if not exists → proceed with manual_research_node as now
+- [x] T037 Update `checkScoutLimit` to accept optional `inputType?: "url"|"file"`: return `canSubmit` and `remaining` per type; when unspecified, return the more restrictive (file) limit for backward compat
+- [x] T038 Update `confirmScoutScholarship` to receive `inputType` (infer from metadata or pass from client): enforce `file_count < file_limit` for file inputs, `url_count < url_limit` for url/name inputs; call `incrementScoutSubmissionCount` with correct type
+- [x] T039 Update ScoutModal/ScoutEntryPoint to pass `input_type` through to `confirmScoutScholarship` (store when submitting, pass at confirm)
+- [x] T040 Handle `alreadyTracked` in ScoutModal: when `startScoutProcess` returns `{ success: false, alreadyTracked: true, scholarshipId }` → show "Already in your list" message with link to scholarship/application; do not proceed to processing
+
+**Checkpoint**: URL inputs bypass Tavily when scholarship exists; differential limits (higher URL, lower file) enforced.
 
 ---
 
@@ -148,6 +171,7 @@
 - **User Story 4 (Phase 6)**: Depends on Phase 3 — extends processing; can parallel with US3
 - **User Story 5 (Phase 7)**: Depends on Phase 3 — modal + verification; can parallel with US4
 - **Polish (Phase 8)**: Depends on Phases 3–7
+- **Differential Limits (Phase 9)**: Depends on Phases 2, 4 (rate limit + input flow); can parallel with Phase 8
 
 ### User Story Dependencies
 
@@ -159,11 +183,12 @@
 
 ### Parallel Opportunities
 
-- T001, T001b, T002 can run in parallel (Phase 1)
+- T001, T001a, T001b, T002 can run in parallel (Phase 1)
 - T009, T010, T011 can run in parallel
 - T014 can start once ScoutVerificationView contract is clear
 - T023, T024 can run in parallel
 - US4 and US5 can be worked in parallel after US1
+- T032, T033, T034 can run in parallel (Phase 9 migrations and queries)
 
 ---
 
@@ -182,7 +207,7 @@ Task T011: "Create ScoutPhotoCard in apps/web/components/dashboard/scout/scout-p
 
 ### MVP First (User Stories 1, 2, 3)
 
-1. Complete Phase 1: Setup (scout_submissions + scholarships.source migrations, env)
+1. Complete Phase 1: Setup (scout_submissions, scout_config, scholarships.source migrations; getScoutSubmissionLimit)
 2. Complete Phase 2: Foundational (rate limit)
 3. Complete Phase 3: US1 — Scout entry (FAB, modal)
 4. Complete Phase 4: US2 — Three-card input
@@ -199,12 +224,14 @@ Task T011: "Create ScoutPhotoCard in apps/web/components/dashboard/scout/scout-p
 5. US4 → Processing feedback → Test
 6. US5 → Responsive + a11y → Test
 7. Polish → quickstart validation
+8. **Phase 9** → Differential limits + URL optimization → Test (cost/abuse control)
 
 ### Parallel Team Strategy
 
 - Developer A: US1 + US2 (entry + input)
 - Developer B: Phase 2 + US3 (rate limit + verification)
 - Developer C: US4 + US5 (processing + responsive)
+- Developer D: Phase 9 (migrations + startScoutProcess + confirmScoutScholarship)
 
 ---
 

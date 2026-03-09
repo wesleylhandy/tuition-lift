@@ -65,6 +65,10 @@ export {
   getSaiZoneConfig,
   getMeritTierConfig,
   getMeritFirstThreshold,
+  getScoutSubmissionLimit,
+  getScoutLimits,
+  getOrCreateScoutSubmission,
+  incrementScoutSubmissionCount,
   isScholarshipVerifiedForCycle,
   upsertScholarshipCycleVerification,
 } from './config-queries';
@@ -72,7 +76,19 @@ export {
 export type {
   SaiZoneConfigRow,
   MeritTierConfigRow,
+  ScoutSubmissionRow,
+  ScoutLimits,
 } from './config-queries';
+
+export {
+  checkScholarshipByUrl,
+  scholarshipRowToExtracted,
+} from './scout-queries';
+
+export type {
+  CheckScholarshipByUrlResult,
+  ScholarshipByUrlRow,
+} from './scout-queries';
 
 export {
   getCareerOutcomesByInterest,

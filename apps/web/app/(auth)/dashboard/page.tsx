@@ -3,11 +3,13 @@
  * GlobalHeader, WelcomeAreaShell, BentoGrid (Game Plan, Discovery Feed, Deadline Calendar), StatsRowShell.
  * All sections show loading skeletons per US1; ReconnectionIndicator omitted for 010.
  * T016: Bento uses useViewParam for expand/collapse; T019: initialView for shareable links.
+ * T007 [US1]: Scout FAB entry — ScoutDashboardEntry auth-gated, bottom-right.
  */
 import { GlobalHeader } from "@/components/dashboard/global-header";
 import { WelcomeAreaShell } from "@/components/dashboard/welcome-area-shell";
 import { StatsRowShell } from "@/components/dashboard/stats-row-shell";
 import { DashboardBento } from "@/components/dashboard/dashboard-bento";
+import { ScoutDashboardEntry } from "@/components/dashboard/scout/scout-dashboard-entry";
 import { isValidWidgetId } from "@/lib/constants/widget-ids";
 
 export default async function DashboardPage({
@@ -36,6 +38,7 @@ export default async function DashboardPage({
 
         <StatsRowShell status={sectionStatus} />
       </main>
+      <ScoutDashboardEntry />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 /**
- * Config queries: sai_zone_config, merit_tier_config, merit_first_config.
- * Tables created by migrations 00000000000021, 00000000000022, 00000000000037.
- * Read by award_year for merit-first logic and tier matching.
+ * Config queries: sai_zone_config, merit_tier_config, merit_first_config, scout_config.
+ * Tables created by migrations 00000000000021, 00000000000022, 00000000000037, 00000000000042.
+ * Read by award_year for merit-first logic and tier matching; scout_config for rate limits.
  */
 
 import { createDbClient } from "./client";
@@ -87,6 +87,147 @@ export async function getMeritFirstThreshold(
 
   if (error || !data) return null;
   return data.merit_first_sai_threshold as number;
+}
+
+/** Default Scout submission limit when scout_config has no row. */
+const SCOUT_SUBMISSION_LIMIT_DEFAULT = 15;
+
+/** Phase 9: Differential limits (migration 43). */
+export interface ScoutLimits {
+  urlLimit: number | null;
+  fileLimit: number;
+}
+
+/**
+ * Fetches scout_submission_limit from scout_config (single row).
+ * Returns 15 if no row found. Used by checkScoutLimit and confirmScoutScholarship.
+ * Table: scout_config (migration 42); RLS SELECT public.
+ */
+export async function getScoutSubmissionLimit(): Promise<number> {
+  const limits = await getScoutLimits();
+  return limits.fileLimit;
+}
+
+/**
+ * Fetches differential Scout limits from scout_config (Phase 9, migration 43).
+ * urlLimit: null = unlimited for URL/name inputs; fileLimit for PDF/image inputs.
+ * When migration 43 not applied: falls back to scout_submission_limit for both.
+ */
+export async function getScoutLimits(): Promise<ScoutLimits> {
+  const db = createDbClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_config typed after migration 43 + db:generate
+  const { data, error } = await (db as any)
+    .from("scout_config")
+    .select("*")
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return {
+      urlLimit: 50,
+      fileLimit: SCOUT_SUBMISSION_LIMIT_DEFAULT,
+    };
+  }
+
+  const legacy = (data.scout_submission_limit as number) ?? SCOUT_SUBMISSION_LIMIT_DEFAULT;
+  const fileLimit =
+    (data.scout_file_limit as number | undefined) ?? legacy;
+  const urlLimitRaw = data.scout_url_limit as number | null | undefined;
+  const urlLimit =
+    urlLimitRaw === undefined ? 50 : urlLimitRaw;
+
+  return {
+    urlLimit,
+    fileLimit,
+  };
+}
+
+/** Scout submission row (scout_submissions table, migrations 40, 44). */
+export interface ScoutSubmissionRow {
+  id: string;
+  user_id: string;
+  academic_year: string;
+  count: number;
+  url_count?: number;
+  file_count?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Gets or creates a scout_submissions row for (userId, academicYear).
+ * On first use in a cycle: INSERT with count=0. On conflict: do not overwrite count; return existing row.
+ * Caller (apps/web) supplies academic year via getCurrentAcademicYear() or awardYearToAcademicYear(profile.award_year).
+ */
+export async function getOrCreateScoutSubmission(
+  userId: string,
+  academicYear: string
+): Promise<ScoutSubmissionRow> {
+  const db = createDbClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_submissions typed after migration 40 + db:generate
+  const client = db as any;
+
+  const { error: upsertError } = await client
+    .from("scout_submissions")
+    .upsert(
+      { user_id: userId, academic_year: academicYear },
+      { onConflict: "user_id,academic_year", ignoreDuplicates: true }
+    );
+
+  if (upsertError) {
+    throw new Error(
+      `Failed to upsert scout submission: ${upsertError.message}`
+    );
+  }
+
+  const { data, error } = await client
+    .from("scout_submissions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("academic_year", academicYear)
+    .single();
+
+  if (error || !data) {
+    throw new Error(
+      `Failed to get or create scout submission: ${error?.message ?? "no row returned"}`
+    );
+  }
+
+  return data as ScoutSubmissionRow;
+}
+
+/**
+ * Increments scout_submissions count for (userId, academicYear).
+ * Phase 9: When inputType is "url", increments url_count; when "file", increments file_count.
+ * Also increments count for backward compat. Call after successful confirmScoutScholarship.
+ */
+export async function incrementScoutSubmissionCount(
+  userId: string,
+  academicYear: string,
+  inputType: "url" | "file"
+): Promise<void> {
+  const row = await getOrCreateScoutSubmission(userId, academicYear);
+  const db = createDbClient();
+  const now = new Date().toISOString();
+  const urlCount = (row.url_count ?? 0) + (inputType === "url" ? 1 : 0);
+  const fileCount = (row.file_count ?? 0) + (inputType === "file" ? 1 : 0);
+  const count = row.count + 1;
+  const updates: Record<string, unknown> = {
+    count,
+    updated_at: now,
+  };
+  if (row.url_count !== undefined) {
+    updates.url_count = urlCount;
+    updates.file_count = fileCount;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_submissions typed after migration 44 + db:generate
+  const { error } = await (db as any)
+    .from("scout_submissions")
+    .update(updates)
+    .eq("user_id", userId)
+    .eq("academic_year", academicYear);
+
+  if (error) throw new Error(`Failed to increment scout submission: ${error.message}`);
 }
 
 /**

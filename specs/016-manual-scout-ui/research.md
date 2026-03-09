@@ -64,12 +64,13 @@
 
 ### 5. Rate Limit Storage (10–20 Submissions per Cycle)
 
-**Decision**: Add a **scout_submissions** table or **extend profiles** with a counter. Preferred: new table `scout_submissions(user_id, academic_year, count)` or `profiles.scout_submissions_count` + `profiles.scout_submissions_year`. On each successful `confirmScoutScholarship`, increment count for current user and academic year. If count ≥ limit (configurable 10–20, default 15), return `{ success: false, limitReached: true }` and block persistence. Expose `GET /api/scout/limit` or include limit info in a Server Action `checkScoutLimit()` called before opening Scout or before confirm. Reset logic: per academic year (e.g., `getCurrentAcademicYear()`); cycle resets when year changes.
+**Decision**: Add a **scout_submissions** table or **extend profiles** with a counter. Preferred: new table `scout_submissions(user_id, academic_year, count)` or `profiles.scout_submissions_count` + `profiles.scout_submissions_year`. Add **scout_config** table (single row) for global limit: `scout_submission_limit` (default 15). On each successful `confirmScoutScholarship`, increment count for current user and academic year. If count ≥ limit (from `getScoutSubmissionLimit()`), return `{ success: false, limitReached: true }` and block persistence. Expose limit via Server Action `checkScoutLimit()` called before opening Scout or before confirm. Reset logic: per academic year (e.g., `getCurrentAcademicYear()`); cycle resets when year changes.
 
-**Rationale**: Spec FR-015: "per-user limit of 10–20 successful Scout submissions per scholarship cycle." A dedicated count is cleaner than scanning applications table. `profiles` could work but risks schema drift; new table keeps Scout concerns isolated.
+**Rationale**: Spec FR-015: "per-user limit of 10–20 successful Scout submissions per scholarship cycle." A dedicated count is cleaner than scanning applications table. `profiles` could work but risks schema drift; new table keeps Scout concerns isolated. Limit in `scout_config` (DB) enables admin adjustment without redeploy; matches existing config pattern (sai_zone_config, merit_first_config).
 
 **Alternatives considered**:
 - Count from applications where source=scout: Accurate but slower; requires tagging applications.
+- Env var SCOUT_SUBMISSION_LIMIT: Requires redeploy to change; DB config allows runtime adjustment.
 - In-memory/cache: Not durable across serverless invocations; DB required.
 - profiles JSONB: Flexible but less structured; table is clearer.
 
@@ -88,6 +89,21 @@
 
 ---
 
+---
+
+### 7. Differential Rate Limits and URL Pre-Check (Phase 9)
+
+**Decision**: Differentiate URL/name inputs from file inputs (PDF/image). URL flows use Tavily (moderate cost); file flows use Vision LLM (high cost). Add **differential limits**: `scout_url_limit` (e.g., 50 or NULL=unlimited), `scout_file_limit` (15). Track `url_count` and `file_count` separately in scout_submissions. Add **URL pre-check**: Before invoking Tavily when user pastes a URL, query `scholarships` for exact URL match. If exists and user already has application → return "Already in your list" without Tavily. If exists but user lacks application → short-circuit: create scout_run with result from existing scholarship data, skip Tavily; user sees verification form immediately.
+
+**Rationale**: Cost control and abuse prevention. Image/PDF extraction is expensive (GPT-4o Vision); URL lookups are cheaper (Tavily + rule-based TrustScorer). Avoiding redundant Tavily calls when URL already in DB reduces API cost and improves UX (instant result for known scholarships).
+
+**Alternatives considered**:
+- Single limit for all: Simpler but treats cheap and expensive flows equally; over-limiting URL users.
+- No URL pre-check: Always call Tavily; higher cost when user re-adds or pastes known URL.
+- Pre-check only for "already tracked": Still saves when user re-pastes; short-circuit for "exists but not tracked" adds more value.
+
+---
+
 ## Dependencies on 007
 
 | 007 Artifact | 016 Usage |
@@ -95,6 +111,6 @@
 | POST /api/scout/process | Unchanged; invoked with url, name, or file_path |
 | GET /api/scout/status/:runId | Unchanged; polled by useScoutStatus |
 | uploadScoutFile | Unchanged; used for PDF and image upload |
-| confirmScoutScholarship | Extended: add rate-limit check; return limitReached |
+| confirmScoutScholarship | Extended: add rate-limit check; return limitReached; Phase 9: differential limits, inputType |
 | ExtractedScholarshipData | Unchanged |
 | ScoutProcessingHUD | Extended: cancel button, timeout handling |

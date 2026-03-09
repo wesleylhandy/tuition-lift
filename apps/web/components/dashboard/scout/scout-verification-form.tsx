@@ -51,6 +51,14 @@ export function ScoutVerificationForm({
   const potentiallyExpired =
     edited.deadline != null && edited.deadline < today;
 
+  /** T017: Field is AI-extracted if value matches original and original had content */
+  const isExtracted = (key: keyof ExtractedScholarshipData) => {
+    const orig = data[key];
+    const curr = edited[key];
+    if (orig === null || orig === undefined || orig === "") return false;
+    return curr === orig;
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -102,11 +110,32 @@ export function ScoutVerificationForm({
           </p>
         </div>
       )}
+      {edited.verification_status === "ambiguous_deadline" && !potentiallyExpired && (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-500/40 bg-amber-50/50 p-3 text-sm text-amber-800"
+          aria-live="polite"
+        >
+          <p>
+            <strong>Deadline unclear:</strong> Please verify the due date.
+          </p>
+        </div>
+      )}
+      {edited.verification_status === "needs_manual_review" && !potentiallyExpired && (
+        <div
+          role="status"
+          className="rounded-lg border border-muted-foreground/40 bg-muted/30 p-3 text-sm text-muted-foreground"
+          aria-live="polite"
+        >
+          <p>Manual review recommended—please verify all fields.</p>
+        </div>
+      )}
       <ScoutField
         label="Title"
         value={edited.title}
         onChange={(v) => updateField("title", typeof v === "string" ? v : "")}
         researchRequired={research.title}
+        extracted={isExtracted("title")}
         type="text"
         id="scout-field-title"
       />
@@ -115,6 +144,7 @@ export function ScoutVerificationForm({
         value={edited.amount}
         onChange={(v) => updateField("amount", typeof v === "number" ? v : null)}
         researchRequired={research.amount}
+        extracted={isExtracted("amount")}
         type="number"
         id="scout-field-amount"
       />
@@ -125,6 +155,7 @@ export function ScoutVerificationForm({
           updateField("deadline", typeof v === "string" ? v : null)
         }
         researchRequired={research.deadline}
+        extracted={isExtracted("deadline")}
         type="date"
         id="scout-field-deadline"
       />
@@ -135,6 +166,7 @@ export function ScoutVerificationForm({
           updateField("eligibility", typeof v === "string" ? v : null)
         }
         researchRequired={research.eligibility}
+        extracted={isExtracted("eligibility")}
         type="text"
         id="scout-field-eligibility"
       />
@@ -145,6 +177,7 @@ export function ScoutVerificationForm({
           updateField("url", typeof v === "string" ? (v || null) : null)
         }
         researchRequired={research.url}
+        extracted={isExtracted("url")}
         type="url"
         id="scout-field-url"
       />

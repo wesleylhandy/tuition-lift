@@ -13,7 +13,7 @@ Refine the Manual Scout UI to provide a premium Flyer-to-Fact workspace: (1) pro
 
 **Language/Version**: TypeScript 5.x  
 **Primary Dependencies**: Next.js latest (App Router), React 19, Tailwind CSS, Shadcn/ui, @repo/db  
-**Storage**: Supabase (scout_uploads bucket, scout_runs table); rate limit tracking via profiles or new scout_submissions table  
+**Storage**: Supabase (scout_uploads bucket, scout_runs table); rate limit via scout_submissions + scout_config (DB config for limit)  
 **Testing**: Playwright (E2E), manual verification per quickstart.md  
 **Target Platform**: Web (Vercel); apps/web  
 **Project Type**: Turborepo monorepo  

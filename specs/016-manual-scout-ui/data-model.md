@@ -5,7 +5,7 @@
 
 ## Overview
 
-Spec 016 extends the Scout UI; backend from 007 remains. New data: (1) **scout_submissions** table for per-user, per-cycle rate limiting; (2) **scholarships.source** column for provenance; (3) **client-side state** for document preview (File/blob URL held in memory). No other changes to `scholarships`, `applications`, `scout_uploads`, or `scout_runs`.
+Spec 016 extends the Scout UI; backend from 007 remains. New data: (1) **scout_config** table for global Scout settings (submission limit); (2) **scout_submissions** table for per-user, per-cycle rate limiting; (3) **scholarships.source** column for provenance; (4) **client-side state** for document preview (File/blob URL held in memory). No other changes to `scholarships`, `applications`, `scout_uploads`, or `scout_runs`.
 
 ---
 
@@ -24,7 +24,55 @@ Spec 016 extends the Scout UI; backend from 007 remains. New data: (1) **scout_s
 
 **RLS**: Authenticated users can SELECT/UPDATE only own rows. INSERT on first Scout confirm of cycle; UPDATE (increment count) on subsequent confirms.
 
-**Limit**: 10–20 per cycle (env `SCOUT_SUBMISSION_LIMIT`, default 15). When count ≥ limit, block confirm and return `limitReached: true`.
+**Limit**: Fetched from `scout_config.scout_submission_limit` (default 15). When count ≥ limit, block confirm and return `limitReached: true`. See §1a.
+
+---
+
+## 1a. scout_config (Global Scout Settings)
+
+| Field                   | Type        | Constraints                  | Notes                    |
+|-------------------------|-------------|------------------------------|--------------------------|
+| id                      | uuid        | PK, default gen_random_uuid()| Single row per instance  |
+| scout_submission_limit  | integer     | NOT NULL, default 15         | Max submissions per cycle|
+| updated_at              | timestamptz | NOT NULL, default now()      |                          |
+
+**Migration**: `packages/database/supabase/migrations/00000000000042_scout_config.sql`
+
+```sql
+CREATE TABLE public.scout_config (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  scout_submission_limit integer NOT NULL DEFAULT 15,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.scout_config ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "scout_config_select_public"
+  ON public.scout_config FOR SELECT USING (true);
+
+-- Single default row (service-role INSERT)
+INSERT INTO public.scout_config (scout_submission_limit) VALUES (15);
+```
+
+**Query**: `getScoutSubmissionLimit()` in `packages/database/src/config-queries.ts`; exported from `@repo/db`. Returns limit (fallback 15 if no row). Admin updates via service-role.
+
+### Phase 9: Differential Limits
+
+| Field                   | Type        | Constraints                  | Notes                    |
+|-------------------------|-------------|------------------------------|--------------------------|
+| scout_url_limit         | integer     | nullable, default 50        | URL/name submissions; NULL = unlimited |
+| scout_file_limit        | integer     | NOT NULL, default 15         | PDF/image submissions    |
+
+**Migration**: `00000000000043_scout_config_differential_limits.sql`. Existing `scout_submission_limit` retained for backward compat; new limits take precedence when present.
+
+**scout_submissions Phase 9**:
+
+| Field       | Type    | Notes                                  |
+|-------------|---------|----------------------------------------|
+| url_count   | integer | NOT NULL, default 0; URL/name confirms |
+| file_count  | integer | NOT NULL, default 0; PDF/image confirms|
+
+Migration adds columns; `count` may be deprecated in favor of url_count + file_count, or retained as total.
 
 ---
 
@@ -72,10 +120,11 @@ Scout confirm sets `source = 'manual'` on upsert. Existing rows remain NULL; dis
 
 ---
 
-## 5. Consumed Entities (Unchanged from 007, except scholarships.source)
+## 5. Consumed Entities (Unchanged from 007, except scholarships.source, + scout_config)
 
 | Entity         | Usage                                                                 |
 |----------------|-----------------------------------------------------------------------|
+| scout_config   | Read scout_submission_limit via getScoutSubmissionLimit()             |
 | scout_runs     | Status polling; step, result                                          |
 | scout_uploads  | File storage path for file_path input                                 |
 | scholarships   | Upsert on confirm                                                     |
@@ -89,7 +138,7 @@ Scout confirm sets `source = 'manual'` on upsert. Existing rows remain NULL; dis
 Before upsert and insert:
 
 1. Call `getOrCreateScoutSubmission(userId, academicYear)`.
-2. If `count >= SCOUT_SUBMISSION_LIMIT`, return `{ success: false, limitReached: true }`.
+2. Call `getScoutSubmissionLimit()`; if `count >= limit`, return `{ success: false, limitReached: true }`.
 3. Otherwise, proceed with 007 logic; on success increment `count` and return ids.
 4. On scholarship upsert, set `source = 'manual'` for Scout-originated entries.
 
@@ -116,3 +165,20 @@ type CheckScoutLimitResult =
 ```
 
 **Usage**: Optional pre-check; `confirmScoutScholarship` remains the enforcement point.
+
+---
+
+## 8. Phase 9: URL Pre-Check (checkScholarshipByUrl)
+
+**Purpose**: Avoid Tavily calls when scholarship URL already exists. Called before `startScoutProcess` when `input_type === "url"`.
+
+**Query**: `checkScholarshipByUrl(url: string, userId: string)`
+
+**Returns**:
+```ts
+| { exists: true; alreadyTracked: true; scholarshipId: string; applicationId?: string }
+| { exists: true; alreadyTracked: false; scholarship: ScholarshipRow }  // user can add
+| { exists: false }
+```
+
+**Logic**: SELECT from scholarships WHERE url = $1. If found, check applications for (user_id, scholarship_id, academic_year). If application exists → alreadyTracked. Else → return scholarship for short-circuit (map to ExtractedScholarshipData, create scout_run with result, skip Tavily).
