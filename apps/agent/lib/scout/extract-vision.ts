@@ -25,10 +25,9 @@ const VISION_EXTRACT_SCHEMA = z.object({
   eligibility: z.string().nullable().describe("Eligibility requirements text, or null"),
   url: z
     .string()
-    .url()
     .nullable()
     .or(z.literal(""))
-    .describe("Application or official URL, or empty if not found"),
+    .describe("Application or official URL, or empty string if not found"),
   title_research_required: z.boolean().describe("True if title is unclear or inferred"),
   amount_research_required: z.boolean().describe("True if amount is unclear or inferred"),
   deadline_research_required: z.boolean().describe("True if deadline is unclear or inferred"),

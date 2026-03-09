@@ -56,6 +56,24 @@ INSERT INTO public.scout_config (scout_submission_limit) VALUES (15);
 
 **Query**: `getScoutSubmissionLimit()` in `packages/database/src/config-queries.ts`; exported from `@repo/db`. Returns limit (fallback 15 if no row). Admin updates via service-role.
 
+### Phase 9: Differential Limits
+
+| Field                   | Type        | Constraints                  | Notes                    |
+|-------------------------|-------------|------------------------------|--------------------------|
+| scout_url_limit         | integer     | nullable, default 50        | URL/name submissions; NULL = unlimited |
+| scout_file_limit        | integer     | NOT NULL, default 15         | PDF/image submissions    |
+
+**Migration**: `00000000000043_scout_config_differential_limits.sql`. Existing `scout_submission_limit` retained for backward compat; new limits take precedence when present.
+
+**scout_submissions Phase 9**:
+
+| Field       | Type    | Notes                                  |
+|-------------|---------|----------------------------------------|
+| url_count   | integer | NOT NULL, default 0; URL/name confirms |
+| file_count  | integer | NOT NULL, default 0; PDF/image confirms|
+
+Migration adds columns; `count` may be deprecated in favor of url_count + file_count, or retained as total.
+
 ---
 
 ## 2. scholarships.source (Provenance)
@@ -147,3 +165,20 @@ type CheckScoutLimitResult =
 ```
 
 **Usage**: Optional pre-check; `confirmScoutScholarship` remains the enforcement point.
+
+---
+
+## 8. Phase 9: URL Pre-Check (checkScholarshipByUrl)
+
+**Purpose**: Avoid Tavily calls when scholarship URL already exists. Called before `startScoutProcess` when `input_type === "url"`.
+
+**Query**: `checkScholarshipByUrl(url: string, userId: string)`
+
+**Returns**:
+```ts
+| { exists: true; alreadyTracked: true; scholarshipId: string; applicationId?: string }
+| { exists: true; alreadyTracked: false; scholarship: ScholarshipRow }  // user can add
+| { exists: false }
+```
+
+**Logic**: SELECT from scholarships WHERE url = $1. If found, check applications for (user_id, scholarship_id, academic_year). If application exists → alreadyTracked. Else → return scholarship for short-circuit (map to ExtractedScholarshipData, create scout_run with result, skip Tavily).

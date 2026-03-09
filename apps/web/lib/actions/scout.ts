@@ -11,9 +11,11 @@ import {
   ExtractedScholarshipDataSchema,
   ScoutInputSchema,
   awardYearToAcademicYear,
-  getScoutSubmissionLimit,
+  getScoutLimits,
   getOrCreateScoutSubmission,
   incrementScoutSubmissionCount,
+  checkScholarshipByUrl,
+  scholarshipRowToExtracted,
   type ExtractedScholarshipData,
   type TablesInsert,
 } from "@repo/db";
@@ -35,9 +37,12 @@ export type CheckScoutLimitResult =
 
 /**
  * Pre-check whether user can submit more Scout scholarships this cycle.
- * Uses profile-derived academic year (award_year) to match confirmScoutScholarship.
+ * Phase 9: When inputType specified, returns remaining/limit for that type.
+ * When unspecified, returns file limit (more restrictive) for backward compat.
  */
-export async function checkScoutLimit(): Promise<CheckScoutLimitResult> {
+export async function checkScoutLimit(
+  inputType?: "url" | "file"
+): Promise<CheckScoutLimitResult> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -62,24 +67,33 @@ export async function checkScoutLimit(): Promise<CheckScoutLimitResult> {
   }
 
   const academicYear = awardYearToAcademicYear(profile.award_year);
-  const [limit, submission] = await Promise.all([
-    getScoutSubmissionLimit(),
+  const [limits, submission] = await Promise.all([
+    getScoutLimits(),
     getOrCreateScoutSubmission(user.id, academicYear),
   ]);
 
-  const count = submission.count;
+  const effectiveType = inputType ?? "file";
+  const limit =
+    effectiveType === "url"
+      ? (limits.urlLimit ?? Number.MAX_SAFE_INTEGER)
+      : limits.fileLimit;
+  const count =
+    effectiveType === "url"
+      ? (submission.url_count ?? submission.count)
+      : (submission.file_count ?? submission.count);
+  const limitNum = limit === null ? Number.MAX_SAFE_INTEGER : limit;
 
-  if (count < limit) {
+  if (count < limitNum) {
     return {
       canSubmit: true,
-      remaining: limit - count,
-      limit,
+      remaining: limitNum - count,
+      limit: limitNum,
     };
   }
 
   return {
     canSubmit: false,
-    limit,
+    limit: limitNum,
   };
 }
 
@@ -168,7 +182,8 @@ export type ScoutProcessInput =
 
 export type StartScoutProcessResult =
   | { success: true; run_id: string }
-  | { success: false; error: string };
+  | { success: false; error: string }
+  | { success: false; alreadyTracked: true; scholarshipId: string; applicationId?: string };
 
 function toScoutInput(input: ScoutProcessInput) {
   const type = input.input_type;
@@ -276,7 +291,7 @@ function toPrimaryCategory(categories: string[]): ScholarshipCategory {
 
 export async function confirmScoutScholarship(
   data: unknown,
-  options?: { forceAdd?: boolean }
+  options?: { forceAdd?: boolean; inputType?: "url" | "file" }
 ): Promise<ConfirmScoutResult> {
   const supabase = await createServerSupabaseClient();
   const {
@@ -324,12 +339,21 @@ export async function confirmScoutScholarship(
     }
   }
 
-  // T005: Rate limit check before upsert
-  const [limit, submission] = await Promise.all([
-    getScoutSubmissionLimit(),
+  // T005/T038: Rate limit check before upsert (Phase 9: differential limits)
+  const inputType = options?.inputType ?? "file";
+  const [limits, submission] = await Promise.all([
+    getScoutLimits(),
     getOrCreateScoutSubmission(user.id, academicYear),
   ]);
-  if (submission.count >= limit) {
+  const limit =
+    inputType === "url"
+      ? (limits.urlLimit ?? Number.MAX_SAFE_INTEGER)
+      : limits.fileLimit;
+  const count =
+    inputType === "url"
+      ? (submission.url_count ?? submission.count)
+      : (submission.file_count ?? submission.count);
+  if (count >= limit) {
     return { success: false, limitReached: true };
   }
 
@@ -418,7 +442,7 @@ export async function confirmScoutScholarship(
             .eq("scholarship_id", existing.id)
             .eq("academic_year", academicYear)
             .maybeSingle();
-          await incrementScoutSubmissionCount(user.id, academicYear);
+          await incrementScoutSubmissionCount(user.id, academicYear, inputType);
           return potentiallyExpired
             ? {
                 success: true,
@@ -435,7 +459,7 @@ export async function confirmScoutScholarship(
         return { success: false, error: "Failed to add application" };
       }
 
-      await incrementScoutSubmissionCount(user.id, academicYear);
+      await incrementScoutSubmissionCount(user.id, academicYear, inputType);
       return potentiallyExpired
         ? {
             success: true,
@@ -477,7 +501,7 @@ export async function confirmScoutScholarship(
     return { success: false, error: "Failed to add application" };
   }
 
-  await incrementScoutSubmissionCount(user.id, academicYear);
+  await incrementScoutSubmissionCount(user.id, academicYear, inputType);
   return potentiallyExpired
     ? {
         success: true,

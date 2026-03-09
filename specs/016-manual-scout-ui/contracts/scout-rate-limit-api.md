@@ -85,3 +85,50 @@ CREATE POLICY "Users can manage own scout submissions"
 | scout_submission_limit  | integer | 15      | Max submissions per cycle|
 
 **Query**: `getScoutSubmissionLimit(): Promise<number>` in `packages/database/src/config-queries.ts`; exported from `@repo/db`. Returns limit; fallback 15 if no row.
+
+---
+
+## 5. Phase 9: Differential Limits
+
+**Purpose**: URL/name inputs (Tavily) have lower cost than file inputs (Vision LLM). Enforce separate limits.
+
+### scout_config (extended)
+
+| Column                  | Type    | Default | Notes                         |
+|-------------------------|---------|---------|-------------------------------|
+| scout_url_limit         | integer | 50      | URL/name limit; NULL=unlimited|
+| scout_file_limit        | integer | 15      | PDF/image limit               |
+
+### scout_submissions (extended)
+
+| Column     | Type    | Notes                     |
+|------------|---------|---------------------------|
+| url_count  | integer | URL/name confirms         |
+| file_count | integer | PDF/image confirms        |
+
+### checkScoutLimit (extended)
+
+```ts
+checkScoutLimit(inputType?: "url" | "file"): Promise<CheckScoutLimitResult>
+```
+
+When `inputType` specified: return remaining/limit for that type. When unspecified: return file limit (more restrictive) for backward compat.
+
+### confirmScoutScholarship (extended)
+
+Accept `inputType: "url" | "file"` (from client or inferred). Enforce `url_count < url_limit` or `file_count < file_limit` accordingly. Increment correct counter on success.
+
+---
+
+## 6. Phase 9: URL Pre-Check (checkScholarshipByUrl)
+
+**Purpose**: Before Tavily, check if URL exists in scholarships. Skip external call when possible.
+
+**Location**: `packages/database` or `apps/web/lib/actions/scout.ts`
+
+**Called from**: `startScoutProcess` when `input_type === "url"`
+
+**Returns**:
+- `{ exists: true, alreadyTracked: true, scholarshipId }` → UI shows "Already in your list"
+- `{ exists: true, alreadyTracked: false, scholarship }` → Short-circuit: create scout_run with result, skip Tavily
+- `{ exists: false }` → Proceed with manual_research_node (Tavily)

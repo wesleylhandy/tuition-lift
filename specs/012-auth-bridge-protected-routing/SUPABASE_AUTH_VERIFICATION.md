@@ -60,3 +60,21 @@ Supabase allows wildcards for preview deploys. Do **not** use `*` for production
 - [ ] Magic Link enabled (under Email provider)
 - [ ] Site URL set to app origin (e.g. `http://localhost:3000` for dev)
 - [ ] `{origin}/auth/callback` added to Redirect URLs (dev + prod)
+
+## Troubleshooting: "Invalid or expired code" when entering 6-digit OTP
+
+If users receive a 6-digit code but verification fails with "Invalid or expired code":
+
+### 1. Email template (most common cause)
+
+The Magic Link email template may include both a clickable link (`{{ .ConfirmationURL }}`) and the 6-digit code (`{{ .Token }}`). **Both consume the same underlying token.** Email clients, security scanners, and link-prefetching tools often auto-click links in emails, which consumes the token before the user can enter the code.
+
+**Fix**: In Supabase Dashboard → **Authentication → Email Templates → Magic Link**, ensure the template includes `{{ .Token }}` for the 6-digit code. For OTP-only flows (login/check-email with code entry), use a template that shows only the code and does **not** include a clickable confirmation link. Or ensure users enter the code quickly before any prefetch can occur.
+
+### 2. Token expiry
+
+OTPs expire (default ~1h; configurable under Auth → Providers → Email). Request a fresh code and enter it within a few minutes.
+
+### 3. Debug logging
+
+In development, failed `verifyOtp` calls log the actual Supabase error to the server console. Check logs for `[verifyOtp] Supabase error:` to see the underlying message.

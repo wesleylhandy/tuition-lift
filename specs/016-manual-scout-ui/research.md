@@ -89,6 +89,21 @@
 
 ---
 
+---
+
+### 7. Differential Rate Limits and URL Pre-Check (Phase 9)
+
+**Decision**: Differentiate URL/name inputs from file inputs (PDF/image). URL flows use Tavily (moderate cost); file flows use Vision LLM (high cost). Add **differential limits**: `scout_url_limit` (e.g., 50 or NULL=unlimited), `scout_file_limit` (15). Track `url_count` and `file_count` separately in scout_submissions. Add **URL pre-check**: Before invoking Tavily when user pastes a URL, query `scholarships` for exact URL match. If exists and user already has application → return "Already in your list" without Tavily. If exists but user lacks application → short-circuit: create scout_run with result from existing scholarship data, skip Tavily; user sees verification form immediately.
+
+**Rationale**: Cost control and abuse prevention. Image/PDF extraction is expensive (GPT-4o Vision); URL lookups are cheaper (Tavily + rule-based TrustScorer). Avoiding redundant Tavily calls when URL already in DB reduces API cost and improves UX (instant result for known scholarships).
+
+**Alternatives considered**:
+- Single limit for all: Simpler but treats cheap and expensive flows equally; over-limiting URL users.
+- No URL pre-check: Always call Tavily; higher cost when user re-adds or pastes known URL.
+- Pre-check only for "already tracked": Still saves when user re-pastes; short-circuit for "exists but not tracked" adds more value.
+
+---
+
 ## Dependencies on 007
 
 | 007 Artifact | 016 Usage |
@@ -96,6 +111,6 @@
 | POST /api/scout/process | Unchanged; invoked with url, name, or file_path |
 | GET /api/scout/status/:runId | Unchanged; polled by useScoutStatus |
 | uploadScoutFile | Unchanged; used for PDF and image upload |
-| confirmScoutScholarship | Extended: add rate-limit check; return limitReached |
+| confirmScoutScholarship | Extended: add rate-limit check; return limitReached; Phase 9: differential limits, inputType |
 | ExtractedScholarshipData | Unchanged |
 | ScoutProcessingHUD | Extended: cancel button, timeout handling |

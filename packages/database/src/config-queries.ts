@@ -92,30 +92,64 @@ export async function getMeritFirstThreshold(
 /** Default Scout submission limit when scout_config has no row. */
 const SCOUT_SUBMISSION_LIMIT_DEFAULT = 15;
 
+/** Phase 9: Differential limits (migration 43). */
+export interface ScoutLimits {
+  urlLimit: number | null;
+  fileLimit: number;
+}
+
 /**
  * Fetches scout_submission_limit from scout_config (single row).
  * Returns 15 if no row found. Used by checkScoutLimit and confirmScoutScholarship.
  * Table: scout_config (migration 42); RLS SELECT public.
  */
 export async function getScoutSubmissionLimit(): Promise<number> {
+  const limits = await getScoutLimits();
+  return limits.fileLimit;
+}
+
+/**
+ * Fetches differential Scout limits from scout_config (Phase 9, migration 43).
+ * urlLimit: null = unlimited for URL/name inputs; fileLimit for PDF/image inputs.
+ * When migration 43 not applied: falls back to scout_submission_limit for both.
+ */
+export async function getScoutLimits(): Promise<ScoutLimits> {
   const db = createDbClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_config typed after migration 42 + db:generate
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_config typed after migration 43 + db:generate
   const { data, error } = await (db as any)
     .from("scout_config")
-    .select("scout_submission_limit")
+    .select("*")
     .limit(1)
     .maybeSingle();
 
-  if (error || !data) return SCOUT_SUBMISSION_LIMIT_DEFAULT;
-  return (data.scout_submission_limit as number) ?? SCOUT_SUBMISSION_LIMIT_DEFAULT;
+  if (error || !data) {
+    return {
+      urlLimit: 50,
+      fileLimit: SCOUT_SUBMISSION_LIMIT_DEFAULT,
+    };
+  }
+
+  const legacy = (data.scout_submission_limit as number) ?? SCOUT_SUBMISSION_LIMIT_DEFAULT;
+  const fileLimit =
+    (data.scout_file_limit as number | undefined) ?? legacy;
+  const urlLimitRaw = data.scout_url_limit as number | null | undefined;
+  const urlLimit =
+    urlLimitRaw === undefined ? 50 : urlLimitRaw;
+
+  return {
+    urlLimit,
+    fileLimit,
+  };
 }
 
-/** Scout submission row (scout_submissions table, migration 40). */
+/** Scout submission row (scout_submissions table, migrations 40, 44). */
 export interface ScoutSubmissionRow {
   id: string;
   user_id: string;
   academic_year: string;
   count: number;
+  url_count?: number;
+  file_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -163,20 +197,33 @@ export async function getOrCreateScoutSubmission(
 }
 
 /**
- * Increments scout_submissions.count for (userId, academicYear).
- * Call after successful confirmScoutScholarship to enforce rate limit.
+ * Increments scout_submissions count for (userId, academicYear).
+ * Phase 9: When inputType is "url", increments url_count; when "file", increments file_count.
+ * Also increments count for backward compat. Call after successful confirmScoutScholarship.
  */
 export async function incrementScoutSubmissionCount(
   userId: string,
-  academicYear: string
+  academicYear: string,
+  inputType: "url" | "file"
 ): Promise<void> {
   const row = await getOrCreateScoutSubmission(userId, academicYear);
   const db = createDbClient();
   const now = new Date().toISOString();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_submissions typed after migration 40 + db:generate
+  const urlCount = (row.url_count ?? 0) + (inputType === "url" ? 1 : 0);
+  const fileCount = (row.file_count ?? 0) + (inputType === "file" ? 1 : 0);
+  const count = row.count + 1;
+  const updates: Record<string, unknown> = {
+    count,
+    updated_at: now,
+  };
+  if (row.url_count !== undefined) {
+    updates.url_count = urlCount;
+    updates.file_count = fileCount;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scout_submissions typed after migration 44 + db:generate
   const { error } = await (db as any)
     .from("scout_submissions")
-    .update({ count: row.count + 1, updated_at: now })
+    .update(updates)
     .eq("user_id", userId)
     .eq("academic_year", academicYear);
 

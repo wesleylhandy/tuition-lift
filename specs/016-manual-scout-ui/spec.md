@@ -119,6 +119,8 @@ A student on a mobile device or using keyboard/assistive technology can complete
 - What happens when the document preview cannot be rendered (e.g., unsupported format)? The left panel shows a fallback (e.g., file name, placeholder) so the user can still verify the right-panel form.
 - What happens when the user has an existing scholarship with a fuzzy title match? The system notifies the user and offers the choice to add anyway or cancel, per spec 007. Duplicate prevention also uses URL-based upsert: same URL updates existing scholarship.
 - What happens when the user has reached their Scout submission limit (10–20 successful submissions per scholarship cycle)? The system presents a friendly message, offers the option to request more, and blocks further submissions until the limit is raised or the cycle resets.
+- What happens when the user pastes a URL that already exists in the database and they already track it? (Phase 9) The system shows "Already in your list" without calling Tavily; no external API cost.
+- What happens when the user pastes a URL that exists in the database but they do not yet track it? (Phase 9) The system may short-circuit to verification with pre-filled data from the existing scholarship, skipping Tavily.
 
 ## Requirements *(mandatory)*
 
@@ -139,6 +141,8 @@ A student on a mobile device or using keyboard/assistive technology can complete
 - **FR-013**: System MUST ensure the Confirm action and key interactions meet high-contrast requirements for accessibility.
 - **FR-014**: System MUST use smooth modal entrance and view-transition animations that do not obstruct usability.
 - **FR-015**: System MUST enforce a per-user limit of 10–20 successful Scout submissions per scholarship cycle. The limit MUST be configurable without redeploy (see plan/data-model for implementation). When the limit is reached, the system MUST display a friendly message (e.g., "You've reached your Scout limit for this cycle. Request more or wait until next year."), block further submissions, and offer the option to request more. Future premium tier may raise the limit.
+- **FR-017** *(Phase 9)*: System MAY enforce differential limits: URL/name inputs (Tavily, lower cost) have a higher or separate limit than file inputs (PDF/image, Vision LLM, higher cost). Limits MUST be configurable per type (scout_url_limit, scout_file_limit).
+- **FR-018** *(Phase 9)*: When the user pastes a URL, the system MUST check whether that scholarship URL already exists in the database before invoking external search (Tavily). If the scholarship exists and the user already tracks it, the system MUST indicate "Already in your list" without calling Tavily. If the scholarship exists but the user does not track it, the system MAY short-circuit to pre-filled verification using existing data (skip Tavily).
 - **FR-016**: System MUST record scholarship provenance via `source` when Scout confirms: set `source = 'manual'` for Scout-originated scholarships. Enables "Added from Scout" display and future cross-source deduplication (see data-model.md §2).
 
 ### Key Entities
@@ -158,6 +162,7 @@ A student on a mobile device or using keyboard/assistive technology can complete
 - Scout submissions are limited per user per scholarship cycle; limit configurable without redeploy (default 15). **"Request more" MVP**: UI shows the option when limit reached; blocks further submissions. Backend flow (support ticket, premium upgrade) deferred; button may link to contact or show "Coming soon." Admin can raise limit via config.
 - Premium academic aesthetic aligns with the design system established in spec 010.
 - **Paste URL card**: Accepts both URLs and scholarship names; the 007 backend treats name input as a search query (manual_research node). No separate "name only" card—same flow as 007.
+- **Phase 9 (Differential limits, URL pre-check)**: Enhancement phase. When implemented: URL inputs may have higher limit; pasting a URL that already exists and is tracked shows "Already in your list" without calling Tavily; pasting a URL that exists but is not tracked may short-circuit to verification using existing data.
 
 ## Success Criteria *(mandatory)*
 

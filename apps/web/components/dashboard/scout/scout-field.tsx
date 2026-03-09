@@ -10,6 +10,8 @@ export interface ScoutFieldProps {
   value: string | number | null;
   onChange: (value: string | number | null) => void;
   researchRequired?: boolean;
+  /** T017 [US3]: Visual distinction for AI-extracted values */
+  extracted?: boolean;
   type?: "text" | "number" | "date" | "url";
   id?: string;
   /** Optional helper text (e.g. "Research Required—please verify") */
@@ -22,11 +24,15 @@ const INPUT_BASE =
 const INPUT_RESEARCH_REQUIRED =
   "border-amber-500 focus-visible:ring-amber-500";
 
+/** T017: Subtle highlight for AI-extracted values */
+const INPUT_EXTRACTED = "bg-blue-50/50 dark:bg-blue-950/20";
+
 export function ScoutField({
   label,
   value,
   onChange,
   researchRequired = false,
+  extracted = false,
   type = "text",
   id,
   ariaDescribedBy,
@@ -49,7 +55,18 @@ export function ScoutField({
     }
   };
 
-  const inputClass = [INPUT_BASE, researchRequired && INPUT_RESEARCH_REQUIRED]
+  const inputClass = [
+    INPUT_BASE,
+    researchRequired && INPUT_RESEARCH_REQUIRED,
+    extracted && INPUT_EXTRACTED,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const hintIds = [
+    researchRequired && `${inputId}-hint`,
+    extracted && `${inputId}-extracted`,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -70,16 +87,24 @@ export function ScoutField({
           placeholder="https://..."
           className={inputClass}
           aria-describedby={
-            researchRequired ? (ariaDescribedBy ?? `${inputId}-hint`) : ariaDescribedBy
+            hintIds || ariaDescribedBy || undefined
           }
           aria-invalid={researchRequired}
         />
         {researchRequired && (
           <p
-            id={ariaDescribedBy ?? `${inputId}-hint`}
+            id={`${inputId}-hint`}
             className="text-xs text-amber-600"
           >
             Research Required—please verify
+          </p>
+        )}
+        {extracted && !researchRequired && (
+          <p
+            id={`${inputId}-extracted`}
+            className="text-xs text-muted-foreground"
+          >
+            AI-extracted—please verify
           </p>
         )}
       </div>
@@ -101,15 +126,23 @@ export function ScoutField({
         onChange={handleChange}
         placeholder={type === "date" ? "YYYY-MM-DD" : undefined}
         className={inputClass}
-        aria-describedby={ariaDescribedBy ?? (researchRequired ? `${inputId}-hint` : undefined)}
+        aria-describedby={hintIds || ariaDescribedBy || undefined}
         aria-invalid={researchRequired}
       />
       {researchRequired && (
         <p
-          id={ariaDescribedBy ?? `${inputId}-hint`}
+          id={`${inputId}-hint`}
           className="text-xs text-amber-600"
         >
           Research Required—please verify
+        </p>
+      )}
+      {extracted && !researchRequired && (
+        <p
+          id={`${inputId}-extracted`}
+          className="text-xs text-muted-foreground"
+        >
+          AI-extracted—please verify
         </p>
       )}
     </div>

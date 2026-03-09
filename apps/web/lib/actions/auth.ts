@@ -275,17 +275,20 @@ const verifyOtpInputSchema = z.object({
  * verifyOtp — Verify 6-digit OTP code sent via email (after requestMagicLink).
  * Rate limit: 5 attempts per email per 15 min (same as failed login).
  * On success: redirect to /onboard or /dashboard based on onboarding_complete.
+ * Supports redirectTo for post-login redirect (e.g. from /login page).
  */
 export async function verifyOtp(
-  formData: FormData | { email: string; token: string }
+  formData: FormData | { email: string; token: string; redirectTo?: string }
 ): Promise<AuthActionResult> {
-  const { email, token } =
+  const raw =
     formData instanceof FormData
       ? {
           email: (formData.get("email") as string)?.trim() ?? "",
           token: (formData.get("token") as string)?.trim() ?? "",
+          redirectTo: (formData.get("redirectTo") as string) ?? undefined,
         }
       : formData;
+  const { email, token, redirectTo } = raw;
 
   const parsed = verifyOtpInputSchema.safeParse({ email, token });
   if (!parsed.success) {
@@ -303,13 +306,20 @@ export async function verifyOtp(
   }
 
   const supabase = await createServerSupabaseClient();
+  const normalizedEmail = parsed.data.email.toLowerCase().trim();
   const { data, error } = await supabase.auth.verifyOtp({
-    email: parsed.data.email,
+    email: normalizedEmail,
     token: parsed.data.token,
     type: "email",
   });
 
   if (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("[verifyOtp] Supabase error:", {
+        message: error.message,
+        status: error.status,
+      });
+    }
     return {
       success: false,
       error: "Invalid or expired code. Please try again.",
@@ -349,7 +359,7 @@ export async function verifyOtp(
 
   const defaultPath =
     profile?.onboarding_complete === true ? "/dashboard" : "/onboard";
-  const redirect = getSafeRedirectTo(null, defaultPath);
+  const redirect = getSafeRedirectTo(redirectTo ?? null, defaultPath);
 
   return { success: true, redirect };
 }
