@@ -25,8 +25,8 @@
 
 **Purpose**: Verify environment and feature readiness
 
-- [ ] T001 Verify feature branch `015-unified-mvp` and run `pnpm install` from repo root
-- [ ] T002 [P] Verify Constitution alignment per plan.md; no new violations introduced
+- [x] T001 Verify feature branch `015-unified-mvp` and run `pnpm install` from repo root
+- [x] T002 [P] Verify Constitution alignment per plan.md; no new violations introduced
 
 ---
 
