@@ -56,12 +56,12 @@
 
 ## 3. Migration Order
 
-Next migration numbers (highest existing: 39): 40, 41, 42, 43.
+Next migration numbers (highest existing: 44; spec 016 used 40–44). Use 45, 46, 47, 48.
 
-1. `00000000000040_scholarships_content_hash.sql` — ADD COLUMN content_hash; CREATE UNIQUE INDEX
-2. `00000000000041_user_saved_schools_status.sql` — ADD COLUMN status; CHECK constraint; UPDATE policy
-3. `00000000000042_applications_merit_tag.sql` — ADD COLUMN merit_tag
-4. `00000000000043_discovery_config.sql` — CREATE TABLE discovery_config; seed row
+1. `00000000000045_scholarships_content_hash.sql` — ADD COLUMN content_hash; CREATE UNIQUE INDEX
+2. `00000000000046_user_saved_schools_status.sql` — ADD COLUMN status; CHECK constraint; UPDATE policy
+3. `00000000000047_applications_merit_tag.sql` — ADD COLUMN merit_tag
+4. `00000000000048_discovery_config.sql` — CREATE TABLE discovery_config; seed row
 
 ## 4. Validation Rules (Zod)
 

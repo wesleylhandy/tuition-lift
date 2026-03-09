@@ -15,10 +15,10 @@ pnpm --filter @repo/db exec supabase db push
 ```
 
 Migrations added:
-- `00000000000040_scholarships_content_hash.sql`
-- `00000000000041_user_saved_schools_status.sql`
-- `00000000000042_applications_merit_tag.sql`
-- `00000000000043_discovery_config.sql`
+- `00000000000045_scholarships_content_hash.sql`
+- `00000000000046_user_saved_schools_status.sql`
+- `00000000000047_applications_merit_tag.sql`
+- `00000000000048_discovery_config.sql`
 
 ## 2. Seed Discovery Config (Optional)
 
@@ -74,7 +74,16 @@ pnpm --filter web build
 - **US10**: Discovery trigger visible from dashboard; run; feedback
 - **US11**: Access dashboard unauthenticated → sign-in; incomplete profile (missing award_year, major, state, or GPA) → onboarding
 
-## 6. References
+## 6. Display Conventions (Debt Lifted)
+
+Debt Lifted formatting is configurable by context. Default thresholds:
+- **K abbreviation**: amounts ≥ 1,000 (e.g., 12.55K)
+- **M abbreviation**: amounts ≥ 1,000,000 (e.g., 1.275M)
+- Full amount shown when below threshold or when context requires precision
+
+Won = `applications.status = 'awarded'` AND `applications.confirmed_at IS NOT NULL` (DB enum `application_status`).
+
+## 7. References
 
 - [spec.md](./spec.md) — Functional requirements
 - [data-model.md](./data-model.md) — Schema and migrations
